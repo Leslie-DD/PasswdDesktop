@@ -1,16 +1,21 @@
+package network
+
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
+import network.Api.API_PASSWDS
+import network.entity.KtorResult
+import passwds.entity.Passwd
 
-object CatSource {
+object KtorRequest {
 
-    suspend fun postPasswds(): Result<String> = runCatching {
-        httpClient.post {
-            url("Passwd/passwd/passwds.do")
+    suspend fun postPasswds(): Result<List<Passwd>> = runCatching {
+        return httpClient.post {
+            url(API_PASSWDS)
             setBody(MultiPartFormDataContent(partData()))
             contentType(ContentType.Application.Json)
-        }.body()
+        }.body<KtorResult<List<Passwd>>>().result()
     }
 
     private fun HttpRequestBuilder.partData() = formData {

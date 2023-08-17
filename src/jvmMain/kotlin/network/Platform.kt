@@ -1,3 +1,5 @@
+package network
+
 import io.ktor.client.*
 
 expect fun getPlatformName(): String
