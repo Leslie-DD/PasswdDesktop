@@ -4,11 +4,17 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
+import network.Api.API_GROUPS
+import network.Api.API_GROUP_PASSWDS
 import network.Api.API_PASSWDS
 import network.entity.KtorResult
+import passwds.entity.Group
 import passwds.entity.Passwd
 
 object KtorRequest {
+
+    const val ACCESS_TOKEN =
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE2OTI0MjYzNDksInVzZXJuYW1lIjoibHVjYXMifQ.2lapTgjCqbXRZF28ICeUhxnpvtMzqTpzr9xN7xqOWao"
 
     suspend fun postPasswds(): Result<List<Passwd>> = runCatching {
         return httpClient.post {
@@ -18,12 +24,38 @@ object KtorRequest {
         }.body<KtorResult<List<Passwd>>>().result()
     }
 
+    suspend fun postGroups(): Result<List<Group>> = runCatching {
+        return httpClient.post {
+            url(API_GROUPS)
+            setBody(MultiPartFormDataContent(formData {
+                headers {
+                    append("access_token", ACCESS_TOKEN)
+                }
+                append("user_id", 1)
+                append("secret_key", "SkGk5x4IqWs0HC5w9b5Fcak8NX0lgBmMrvVRFxg3nAQ=")
+            }))
+            contentType(ContentType.Application.Json)
+        }.body<KtorResult<List<Group>>>().result()
+    }
+
+    suspend fun postGroupPasswds(groupId: Int): Result<List<Passwd>> = runCatching {
+        return httpClient.post {
+            url(API_GROUP_PASSWDS)
+            setBody(MultiPartFormDataContent(formData {
+                headers {
+                    append("access_token", ACCESS_TOKEN)
+                }
+                append("user_id", 1)
+                append("group_id", groupId)
+                append("secret_key", "SkGk5x4IqWs0HC5w9b5Fcak8NX0lgBmMrvVRFxg3nAQ=")
+            }))
+            contentType(ContentType.Application.Json)
+        }.body<KtorResult<List<Passwd>>>().result()
+    }
+
     private fun HttpRequestBuilder.partData() = formData {
         headers {
-            append(
-                "access_token",
-                "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE2OTI0MjYzNDksInVzZXJuYW1lIjoibHVjYXMifQ.2lapTgjCqbXRZF28ICeUhxnpvtMzqTpzr9xN7xqOWao"
-            )
+            append("access_token", ACCESS_TOKEN)
         }
         append("user_id", 1)
         append("secret_key", "SkGk5x4IqWs0HC5w9b5Fcak8NX0lgBmMrvVRFxg3nAQ=")

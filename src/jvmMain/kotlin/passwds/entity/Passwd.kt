@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class Passwd(
     val comment: String?,
     val groupId: Int?,
-    val id: Int?,
+    val id: Int,
     val link: String?,
     val password: String?,
     val passwordString: String?,
@@ -14,4 +14,5 @@ data class Passwd(
     val userId: Int?,
     val username: String?,
     val usernameString: String?
-)
+) {
+}

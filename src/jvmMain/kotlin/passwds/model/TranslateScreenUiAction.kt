@@ -17,6 +17,12 @@ sealed class TranslateScreenUiAction {
      */
     object ExitApp : TranslateScreenUiAction()
 
+    class WindowVisible(val visible: Boolean) : TranslateScreenUiAction()
+
     class GoScreen(val screen: UiScreen) : TranslateScreenUiAction()
+
+    class ShowGroupPasswds(val groupId: Int) : TranslateScreenUiAction()
+
+    class ShowPasswd(val passwdId: Int) : TranslateScreenUiAction()
 
 }

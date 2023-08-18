@@ -7,7 +7,8 @@ data class KtorResult<T>(
     val success: Boolean,
     val code: Int,
     val msg: String,
-    val data: T
+    val data: T,
+    val timestamp: Long
 ) {
     fun result(): Result<T> {
         return if (success) {

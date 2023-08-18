@@ -1,5 +1,7 @@
 package passwds.model
 
+import passwds.entity.Group
+import passwds.entity.Passwd
 import platform.desktop.Platform
 import platform.desktop.currentPlatform
 
@@ -11,6 +13,13 @@ data class TranslateUiState(
     val windowVisible: Boolean,
     val isLandscape: Boolean,
     val uiScreen: UiScreen,
+
+    val groups: List<Group>,
+    val groupPasswds: List<Passwd>,
+    val passwds: List<Passwd>,
+
+    val selectGroup: Group? = null,
+    val selectPasswd: Passwd? = null
 ) {
     companion object {
         val Default = TranslateUiState(
@@ -21,6 +30,10 @@ data class TranslateUiState(
             windowVisible = true,
             isLandscape = currentPlatform == Platform.Desktop,
             uiScreen = UiScreen.Default,
+
+            groups = emptyList(),
+            groupPasswds = emptyList(),
+            passwds = emptyList(),
         )
     }
 }

@@ -11,23 +11,40 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import passwds.model.PasswdsViewModel
 import passwds.model.UiScreen
+import theme.LocalSpacing
+import theme.Spacing
+
+@Composable
+fun PasswdApp(viewModel: PasswdsViewModel) {
+    val theme by viewModel.theme.collectAsState()
+    CompositionLocalProvider(LocalSpacing provides Spacing()) {
+        androidx.compose.material.MaterialTheme(colors = theme.materialColors) {
+            MaterialTheme(colorScheme = theme.materialColorScheme) {
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    PasswdMainScreen(viewModel)
+                }
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(viewModel: PasswdsViewModel) {
+fun PasswdMainScreen(viewModel: PasswdsViewModel) {
     val isLandscape = viewModel.uiState.isLandscape
     val coroutine = rememberCoroutineScope()
     val scaffoldState = viewModel.scaffoldState
@@ -46,25 +63,40 @@ fun MainScreen(viewModel: PasswdsViewModel) {
         },
         topBar = {
             if (!isLandscape) {
-                TopAppBar(title = {
-                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Spacer(modifier = Modifier.width(5.dp))
-                        IconButton(onClick = {
-                            coroutine.launch {
-                                scaffoldState.drawerState.open()
+                TopAppBar(
+                    title = {
+                        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Spacer(modifier = Modifier.width(5.dp))
+                            IconButton(onClick = {
+                                coroutine.launch {
+                                    scaffoldState.drawerState.open()
+                                }
+                            }) {
+                                Icon(imageVector = Icons.Default.Menu, contentDescription = null)
                             }
-                        }) {
-                            Icon(imageVector = Icons.Default.Menu, contentDescription = null)
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(
+                                    text = "Passwd",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(modifier = Modifier.height(3.dp))
+                                Text(
+                                    text = "Compose Multiplatform",
+                                    modifier = Modifier,
+                                    fontSize = 10.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                            Spacer(modifier = Modifier.weight(1f))
                         }
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column {
-                            Text(text = "Translator", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                            Spacer(modifier = Modifier.height(3.dp))
-                            Text(text = "Compose Multiplatform", modifier = Modifier, fontSize = 10.sp)
-                        }
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-                }, modifier = Modifier.fillMaxWidth())
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     ) {
@@ -81,11 +113,13 @@ fun MainScreen(viewModel: PasswdsViewModel) {
 fun MainContentScreen(viewModel: PasswdsViewModel) {
     val content: @Composable (UiScreen) -> Unit = {
         when (it) {
-            UiScreen.Translate -> TranslateContentScreen(viewModel)
+            UiScreen.Translate -> PasswdContentScreen(viewModel)
             UiScreen.Settings -> SettingsScreen(viewModel)
+            else -> {}
         }
     }
-    if (viewModel.uiState.isLandscape) {
+    val uiState = viewModel.uiState
+    if (uiState.isLandscape) {
         Row(
             modifier = Modifier.fillMaxSize()
                 .background(color = MaterialTheme.colorScheme.surface)
@@ -103,19 +137,11 @@ fun MainContentScreen(viewModel: PasswdsViewModel) {
                         alpha = 0.6f
                     )
             )
-            Crossfade(targetState = viewModel.uiState.uiScreen, content = content)
+            Crossfade(targetState = uiState.uiScreen, content = content)
         }
     } else {
-        Crossfade(targetState = viewModel.uiState.uiScreen, content = content)
+        Crossfade(targetState = uiState.uiScreen, content = content)
     }
-}
-
-/**
- * 翻译界面主要内容的显示屏
- */
-@Composable
-fun TranslateContentScreen(viewModel: PasswdsViewModel, modifier: Modifier = Modifier) {
-    Text("This is the TranslateContentScreen.")
 }
 
 @Composable

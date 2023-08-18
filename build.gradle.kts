@@ -12,6 +12,7 @@ version = "1.0-SNAPSHOT"
 repositories {
     google()
     mavenCentral()
+    maven("https://jitpack.io")
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
 
@@ -50,6 +51,8 @@ kotlin {
             commonMainImplementation("com.google.code.gson:gson:2.9.0")
             commonMainImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
             commonMainImplementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.3")
+
+            commonMainImplementation("com.gitee.liang_dh:KtPref:1.0.0")
         }
     }
 }

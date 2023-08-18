@@ -1,11 +1,9 @@
 package model
 
 object Res {
-    object drawable {
+    object Drawable {
         private const val BASE_DIR = "drawable-nodpi"
-        val icon_baidu = "$BASE_DIR/icon_baidu.png"
-        val icon_youdao = "$BASE_DIR/icon_youdao.png"
-        val app_icon = "$BASE_DIR/app_icon.png"
-        val app_icon_round_corner = "$BASE_DIR/app_icon_round_corner.png"
+        const val APP_ICON = "$BASE_DIR/app_icon.png"
+        const val APP_ICON_ROUND_CORNER = "$BASE_DIR/app_icon_round_corner.png"
     }
 }
