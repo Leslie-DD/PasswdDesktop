@@ -44,7 +44,7 @@ import passwds.model.UiScreen
 @Composable
 fun SideMenuScreen(
     viewModel: PasswdsViewModel,
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
 
     val coroutine = rememberCoroutineScope()

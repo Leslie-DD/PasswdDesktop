@@ -35,7 +35,7 @@ fun main() = application {
         title = "Passwd",
         state = state
     ) {
-        PasswdApp(viewModel = viewModel)
+        PasswdApp(viewModel = viewModel, state)
     }
 }
 
