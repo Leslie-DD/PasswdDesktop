@@ -1,47 +1,25 @@
-import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.*
-import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Tray
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import kotlinx.coroutines.flow.single
-import kotlinx.coroutines.launch
+import androidx.compose.ui.window.rememberWindowState
+import model.Res
 import passwds.entity.Passwd
 import passwds.model.PasswdsViewModel
-
-@Composable
-fun App() {
-    val scope = rememberCoroutineScope()
-
-    var text by remember { mutableStateOf("Hello, World!") }
-
-    val viewModel = remember { PasswdsViewModel() }
-    val passwds = viewModel.passwds.collectAsState()
-    MaterialTheme {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Button(onClick = {
-                text = "开始请求。。。"
-                scope.launch {
-                    viewModel.fetchPasswds()
-                }
-            }) {
-                Text("${passwds.value.size}")
-            }
-
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(passwds.value) {
-                    PasswdCard(it)
-                }
-            }
-        }
-    }
-}
+import passwds.ui.MainScreen
 
 @Composable
 fun PasswdCard(passwd: Passwd) {
@@ -62,7 +40,47 @@ fun PasswdCard(passwd: Passwd) {
 
 
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication) {
-        App()
+
+    val state = rememberWindowState(width = 1000.dp)
+    val viewModel = remember { PasswdsViewModel() }
+    if (viewModel.exitApp.collectAsState().value) {
+        exitApplication()
+    }
+    viewModel.shouldBeLandscape.tryEmit(!state.size.isLandscape)
+    //这是一个托盘
+    Tray(
+        icon = painterResource(Res.drawable.app_icon_round_corner),
+        onAction = {
+            viewModel.updateUiState { copy(windowVisible = true) }
+        },
+        tooltip = "双击(windows)\\右击(mac)打开翻译器",
+    ) {
+        Item("Open Window", onClick = {viewModel.updateUiState { copy(windowVisible = true) }})
+        Item("Exit App", onClick = ::exitApplication)
+    }
+    Window(
+        onCloseRequest = { viewModel.updateUiState { copy(windowVisible = false) } },
+        visible = viewModel.uiState.windowVisible,
+        title = "Passwd",
+        state = state
+    ) {
+        val passwds = viewModel.passwds.collectAsState()
+        MaterialTheme {
+            Surface(modifier = Modifier.fillMaxSize()) {
+                MainScreen(viewModel)
+            }
+
+//            LazyColumn(modifier = Modifier.fillMaxSize()) {
+//                items(passwds.value) {
+//                    PasswdCard(it)
+//                }
+//            }
+        }
     }
 }
+
+/**
+ * 认为 4:3 是区分横竖屏的分界点
+ */
+private val DpSize.isLandscape: Boolean
+    get() = (height / width) > (4f / 3f)

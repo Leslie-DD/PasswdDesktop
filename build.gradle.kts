@@ -22,8 +22,13 @@ kotlin {
     }
     sourceSets {
         val jvmMain by getting {
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
             dependencies {
                 implementation(compose.desktop.currentOs)
+                api(compose.runtime)
+                api(compose.foundation)
+                api(compose.material3)
+                api(compose.materialIconsExtended)
             }
         }
         val jvmTest by getting
