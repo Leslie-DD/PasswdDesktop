@@ -14,7 +14,7 @@ import passwds.entity.Passwd
 object KtorRequest {
 
     const val ACCESS_TOKEN =
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE2OTI0MjYzNDksInVzZXJuYW1lIjoibHVjYXMifQ.2lapTgjCqbXRZF28ICeUhxnpvtMzqTpzr9xN7xqOWao"
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE2OTI5NDg2NTgsInVzZXJuYW1lIjoibHVjYXMifQ.EZADpCZW4CmOyx8O30r1i2gVHKkzsQSLcueHRgg_aFE"
 
     suspend fun postPasswds(): Result<List<Passwd>> = runCatching {
         return httpClient.post {
