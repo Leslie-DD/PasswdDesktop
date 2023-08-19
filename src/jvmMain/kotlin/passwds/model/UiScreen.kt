@@ -27,4 +27,10 @@ sealed interface UiScreen {
         override val icon = Icons.Default.Settings
     }
 
+    object Login : UiScreen {
+        override val name = "登录"
+        override val icon = Icons.Default.Settings
+    }
+
+
 }

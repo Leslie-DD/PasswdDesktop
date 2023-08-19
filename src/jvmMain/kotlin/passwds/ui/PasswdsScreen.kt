@@ -28,7 +28,7 @@ import passwds.model.TranslateScreenUiAction
  * 密码界面主要内容的显示区域
  */
 @Composable
-fun PasswdContentScreen(
+fun PasswdsScreen(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -37,7 +37,7 @@ fun PasswdContentScreen(
         Divider(
             modifier = Modifier
                 .padding(0.dp, 10.dp)
-                .fillMaxHeight()  //fill the max height
+                .fillMaxHeight()
                 .width(1.dp)
         )
         PasswdItemsContent(viewModel = viewModel)
@@ -87,7 +87,7 @@ fun PasswdItemsContent(
                     .fillMaxHeight()  //fill the max height
                     .width(1.dp)
             )
-            PasswdScreen(viewModel = viewModel)
+            PasswdDetailScreen(viewModel = viewModel)
         }
     }
 }
@@ -121,7 +121,7 @@ fun PasswdItemsList(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PasswdScreen(
+fun PasswdDetailScreen(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -179,12 +179,6 @@ fun PasswdScreen(
         }
     }
 }
-
-@Composable
-fun TextFieldIcon() {
-    Icon(imageVector = Icons.Default.Lock, contentDescription = null)
-}
-
 
 @Composable
 fun GroupCard(

@@ -11,6 +11,10 @@ class Setting {
 
     val screenOrientation = MutableStateFlow(LocalPref.screenOrientation)
 
+    val accessToken = MutableStateFlow(LocalPref.accessToken)
+
+    val secretKey = MutableStateFlow(LocalPref.secretKey)
+
     companion object {
 
     }
@@ -22,6 +26,18 @@ class Setting {
             launch {
                 screenOrientation.collectLatest {
                     LocalPref.screenOrientation = it
+                }
+            }
+
+            launch {
+                accessToken.collectLatest {
+                    LocalPref.accessToken = it
+                }
+            }
+
+            launch {
+                secretKey.collectLatest {
+                    LocalPref.secretKey = it
                 }
             }
 

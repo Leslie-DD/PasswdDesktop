@@ -53,6 +53,8 @@ kotlin {
             commonMainImplementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.3")
 
             commonMainImplementation("com.gitee.liang_dh:KtPref:1.0.0")
+
+            commonMainImplementation("com.moriatsushi.insetsx:insetsx:0.1.0-alpha10")
         }
     }
 }

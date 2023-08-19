@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import model.Setting
 import org.jetbrains.skia.impl.Log
 import passwds.entity.Group
 import passwds.entity.Passwd
@@ -34,6 +35,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     val exitApp = MutableStateFlow(false)
 
     val theme = MutableStateFlow(LocalPref.theme)
+
+    val settings = Setting()
 
     init {
         launch(Dispatchers.IO) {

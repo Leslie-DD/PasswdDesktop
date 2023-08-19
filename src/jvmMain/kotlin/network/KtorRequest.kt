@@ -1,5 +1,6 @@
 package network
 
+import config.LocalPref
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
@@ -15,6 +16,7 @@ object KtorRequest {
 
     const val ACCESS_TOKEN =
         "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE2OTI5NDg2NTgsInVzZXJuYW1lIjoibHVjYXMifQ.EZADpCZW4CmOyx8O30r1i2gVHKkzsQSLcueHRgg_aFE"
+    const val SECRET_KEY = "SkGk5x4IqWs0HC5w9b5Fcak8NX0lgBmMrvVRFxg3nAQ="
 
     suspend fun postPasswds(): Result<List<Passwd>> = runCatching {
         return httpClient.post {
@@ -32,7 +34,7 @@ object KtorRequest {
                     append("access_token", ACCESS_TOKEN)
                 }
                 append("user_id", 1)
-                append("secret_key", "SkGk5x4IqWs0HC5w9b5Fcak8NX0lgBmMrvVRFxg3nAQ=")
+                append("secret_key", LocalPref.secretKey)
             }))
             contentType(ContentType.Application.Json)
         }.body<KtorResult<List<Group>>>().result()
@@ -47,7 +49,7 @@ object KtorRequest {
                 }
                 append("user_id", 1)
                 append("group_id", groupId)
-                append("secret_key", "SkGk5x4IqWs0HC5w9b5Fcak8NX0lgBmMrvVRFxg3nAQ=")
+                append("secret_key", LocalPref.secretKey)
             }))
             contentType(ContentType.Application.Json)
         }.body<KtorResult<List<Passwd>>>().result()
@@ -58,7 +60,7 @@ object KtorRequest {
             append("access_token", ACCESS_TOKEN)
         }
         append("user_id", 1)
-        append("secret_key", "SkGk5x4IqWs0HC5w9b5Fcak8NX0lgBmMrvVRFxg3nAQ=")
+        append("secret_key", LocalPref.secretKey)
     }
 
 }

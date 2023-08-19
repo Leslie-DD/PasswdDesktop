@@ -27,17 +27,17 @@ object LocalPref {
         get() = ScreenOrientation.ScreenOrientations.find { KtPref.default.getString(ScreenOrientation.className) == it.className }
             ?: ScreenOrientation.Default
 
-    var youDaoAppKey: String
+    var accessToken: String
         set(value) {
-            apiConfig.put("YouDaoAppKey", value)
+            apiConfig.put("access_token", value)
         }
-        get() = apiConfig.getString("YouDaoAppKey", "")
+        get() = apiConfig.getString("access_token", "")
 
-    var youDaoAppSecret: String
+    var secretKey: String
         set(value) {
-            apiConfig.put("YouDaoAppSecret", value)
+            apiConfig.put("SecretKey", value)
         }
-        get() = apiConfig.getString("YouDaoAppSecret", "")
+        get() = apiConfig.getString("SecretKey", "这是秘钥")
 
     var baiduAppKey: String
         set(value) {

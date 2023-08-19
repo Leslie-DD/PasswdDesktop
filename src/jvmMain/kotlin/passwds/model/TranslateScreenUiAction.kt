@@ -17,6 +17,8 @@ sealed class TranslateScreenUiAction {
      */
     object ExitApp : TranslateScreenUiAction()
 
+    object Logout : TranslateScreenUiAction()
+
     class WindowVisible(val visible: Boolean) : TranslateScreenUiAction()
 
     class GoScreen(val screen: UiScreen) : TranslateScreenUiAction()
