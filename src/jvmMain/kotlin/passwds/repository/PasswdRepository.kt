@@ -9,7 +9,7 @@ import passwds.entity.RegisterResult
 class PasswdRepository {
     suspend fun fetchPasswds(): Result<List<Passwd>> = KtorRequest.postPasswds()
     suspend fun fetchGroups(): Result<MutableList<Group>> = KtorRequest.postGroups()
-    suspend fun fetchGroupPasswds(groupId: Int): Result<List<Passwd>> = KtorRequest.postGroupPasswds(groupId)
+    suspend fun fetchGroupPasswds(groupId: Int): Result<MutableList<Passwd>> = KtorRequest.postGroupPasswds(groupId)
 
     suspend fun loginByToken(
         username: String,
@@ -47,5 +47,23 @@ class PasswdRepository {
         groupComment = groupComment,
     )
 
-    suspend fun deleteGroup(groupId: Int): Result<Int> = KtorRequest.deleteGroup(groupId = groupId)
+    suspend fun deleteGroup(groupId: Int): Result<Int> = KtorRequest.deleteGroup(groupId)
+
+    suspend fun newPasswd(
+        groupId: Int,
+        title: String,
+        username: String,
+        password: String,
+        link: String,
+        comment: String,
+    ): Result<Int> = KtorRequest.newPasswd(
+        groupId = groupId,
+        title = title,
+        username = username,
+        password = password,
+        link = link,
+        comment = comment
+    )
+
+    suspend fun deletePasswd(passwdId: Int): Result<Int> = KtorRequest.deletePasswd(passwdId)
 }

@@ -19,6 +19,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -282,15 +283,41 @@ fun PasswdItemsList(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val listState = rememberLazyListState()
+    val groupPasswds = viewModel.translateUiState.groupPasswds
+    val effect = viewModel.uiState.effect
+
+    val isNewPasswdDialogOpened = remember { mutableStateOf(false) }
+    val isDeletePasswdConfirmDialogOpened = remember { mutableStateOf(false) }
+    when (effect) {
+        is UiEffect.NewPasswdResult -> {
+            isNewPasswdDialogOpened.value = false
+            viewModel.onAction(UiAction.ClearEffect)
+
+            coroutineScope.launch {
+                listState.animateScrollToItem(index = groupPasswds.size - 1)
+            }
+        }
+
+        is UiEffect.DeletePasswdResult -> {
+            isDeletePasswdConfirmDialogOpened.value = false
+            viewModel.onAction(UiAction.ClearEffect)
+        }
+
+        else -> {}
+    }
     Column(
         modifier = modifier.fillMaxSize()
     ) {
+        val selectGroupId = viewModel.uiState.selectGroup?.id
         LazyColumn(
             modifier = modifier
                 .weight(1f)
-                .padding(vertical = 10.dp)
+                .padding(vertical = 10.dp),
+            state = listState
         ) {
-            items(viewModel.translateUiState.groupPasswds) { passwd ->
+            items(groupPasswds) { passwd ->
                 PasswdCard(
                     passwd = passwd,
                     isSelected = passwd.id == viewModel.uiState.selectPasswd?.id
@@ -305,16 +332,194 @@ fun PasswdItemsList(
                 .padding(horizontal = 20.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            IconButton(onClick = {
 
-            }) {
+            val isNewPasswdIconButtonEnabled = viewModel.uiState.selectGroup != null
+            IconButton(
+                enabled = isNewPasswdIconButtonEnabled,
+                onClick = {
+                    isNewPasswdDialogOpened.value = true
+                }
+            ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
             }
 
-            IconButton(onClick = {
+            if (isNewPasswdDialogOpened.value) {
+                AddPasswdDialog(
+                    onCloseClick = {
+                        isNewPasswdDialogOpened.value = false
+                    },
+                    onAddClick = { title, username, password, link, comment ->
+                        selectGroupId?.let {
+                            viewModel.onAction(
+                                UiAction.NewPasswd(
+                                    groupId = it,
+                                    title = title,
+                                    username = username,
+                                    password = password,
+                                    link = link,
+                                    comment = comment
+                                )
+                            )
+                        }
+                    }
+                )
+            }
 
-            }) {
+            val isDeletePasswdIconButtonEnabled = viewModel.uiState.selectPasswd != null
+            IconButton(
+                enabled = isDeletePasswdIconButtonEnabled,
+                onClick = {
+                    isDeletePasswdConfirmDialogOpened.value = true
+                }
+            ) {
                 Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+            }
+
+            if (isDeletePasswdConfirmDialogOpened.value) {
+                DeletePasswdConfirmDialog {
+                    if (it) {
+                        viewModel.onAction(UiAction.DeletePasswd)
+                    } else {
+                        isDeletePasswdConfirmDialogOpened.value = false
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddPasswdDialog(
+    onCloseClick: () -> Unit,
+    onAddClick: (String, String, String, String, String) -> Unit
+) {
+    val title = remember { mutableStateOf("") }
+    val username = remember { mutableStateOf("") }
+    val password = remember { mutableStateOf("") }
+    val comment = remember { mutableStateOf("") }
+    val link = remember { mutableStateOf("") }
+    val enable = remember { mutableStateOf(true) }
+    Dialog(
+        onCloseRequest = { onCloseClick() },
+        state = rememberDialogState(
+            position = WindowPosition(Alignment.Center),
+            size = DpSize(400.dp, 800.dp)
+        )
+    ) {
+        Box(Modifier.fillMaxSize().padding(16.dp)) {
+            Column {
+                TextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("title", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.Title, contentDescription = null)
+                    },
+                    value = title.value,
+                    maxLines = 1,
+                    onValueChange = { title.value = it },
+                )
+                TextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("username", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.People, contentDescription = null)
+                    },
+                    value = username.value,
+                    maxLines = 1,
+                    onValueChange = { username.value = it }
+                )
+                TextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("password", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.Lock, contentDescription = null)
+                    },
+                    value = password.value,
+                    maxLines = 1,
+                    onValueChange = { password.value = it }
+                )
+                TextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("link", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.Link, contentDescription = null)
+                    },
+                    value = link.value,
+                    maxLines = 1,
+                    onValueChange = { link.value = it }
+                )
+                OutlinedTextField(
+                    modifier = Modifier.weight(1f).fillMaxWidth().align(Alignment.Start),
+                    label = { Text("comment", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    value = comment.value,
+                    onValueChange = { comment.value = it }
+                )
+
+                Button(
+                    enabled = enable.value,
+                    onClick = {
+                        enable.value = false
+                        onAddClick(title.value, username.value, password.value, link.value, comment.value)
+                    }
+                ) {
+                    Text("Add")
+                }
+            }
+        }
+
+    }
+}
+
+@Composable
+fun DeletePasswdConfirmDialog(
+    onDeleteConfirmOrCancelClick: (Boolean) -> Unit
+) {
+    Dialog(
+        onCloseRequest = { onDeleteConfirmOrCancelClick(false) },
+        state = rememberDialogState(position = WindowPosition(Alignment.Center))
+    ) {
+        val enable = remember { mutableStateOf(true) }
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Delete the Passwd",
+                fontSize = 18.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                modifier = Modifier.padding(vertical = 10.dp, horizontal = 30.dp),
+                text = "删除该密码将不可恢复，确定删除吗？",
+                fontSize = 14.sp
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Button(
+                    enabled = enable.value,
+                    onClick = {
+                        enable.value = false
+                        onDeleteConfirmOrCancelClick(true)
+                    }
+                ) {
+                    Text(text = "Confirm")
+                }
+                Spacer(modifier = Modifier.width(20.dp))
+                Button(
+                    enabled = enable.value,
+                    onClick = {
+                        enable.value = false
+                        onDeleteConfirmOrCancelClick(false)
+                    }
+                ) {
+                    Text(text = "Cancel")
+                }
             }
         }
     }

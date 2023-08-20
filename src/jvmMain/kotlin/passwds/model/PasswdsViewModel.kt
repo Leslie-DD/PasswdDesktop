@@ -47,7 +47,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             copy(
                 passwds = emptyList(),
                 groups = arrayListOf(),
-                groupPasswds = emptyList(),
+                groupPasswds = arrayListOf(),
                 selectGroup = null,
                 selectPasswd = null
             )
@@ -211,7 +211,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 Log.error("PasswdsViewModel().fetchGroupPasswds error:${it.message}")
                 updateUiState {
                     copy(
-                        groupPasswds = emptyList()
+                        groupPasswds = arrayListOf()
                     )
                 }
                 it.printStackTrace()
@@ -239,7 +239,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                         groups = groups.apply { add(newGroup) },
                         effect = UiEffect.NewGroupResult(newGroup),
                         selectGroup = newGroup,
-                        groupPasswds = emptyList()
+                        groupPasswds = arrayListOf()
                     )
                 }
             }.onFailure {
@@ -260,6 +260,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                         groups = groups.apply {
                             remove(deleteGroup)
                         },
+                        groupPasswds = arrayListOf(),
+                        selectGroup = null,
                         effect = UiEffect.DeleteGroupResult(deleteGroup)
                     )
                 }
@@ -268,6 +270,76 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 updateUiState {
                     copy(
                         effect = UiEffect.DeleteGroupResult(null)
+                    )
+                }
+            }
+    }
+
+    private suspend fun newPasswd(
+        groupId: Int,
+        title: String,
+        username: String,
+        password: String,
+        link: String,
+        comment: String,
+    ) {
+        Log.error("PasswdsViewModel().newPasswd start")
+        repository.newPasswd(
+            groupId = groupId,
+            title = title,
+            username = username,
+            password = password,
+            link = link,
+            comment = comment,
+        )
+            .onSuccess {
+                Log.error("PasswdsViewModel().newPasswd onSuccess, id: $it")
+                val newPasswd = Passwd(
+                    id = it,
+                    groupId = groupId,
+                    title = title,
+                    usernameString = username,
+                    passwordString = password,
+                    link = link,
+                    comment = comment,
+                    userId = settings.userId.value
+                )
+                updateUiState {
+                    copy(
+                        groupPasswds = groupPasswds.apply { add(newPasswd) },
+                        effect = UiEffect.NewPasswdResult(newPasswd),
+                        selectPasswd = newPasswd,
+                    )
+                }
+            }.onFailure {
+                Log.error("PasswdsViewModel().newPasswd onFailure")
+                it.printStackTrace()
+                updateUiState {
+                    copy(
+                        effect = UiEffect.NewGroupResult(null)
+                    )
+                }
+            }
+    }
+
+    private suspend fun deletePasswd(passwdId: Int) {
+        repository.deletePasswd(passwdId)
+            .onSuccess {
+                val deletePasswd = getGroupPasswd(passwdId)
+                updateUiState {
+                    copy(
+                        groupPasswds = groupPasswds.apply {
+                            remove(deletePasswd)
+                        },
+                        selectPasswd = null,
+                        effect = UiEffect.DeletePasswdResult(deletePasswd)
+                    )
+                }
+            }.onFailure {
+                // TODO: 删除失败的情况 tips 提示
+                updateUiState {
+                    copy(
+                        effect = UiEffect.DeletePasswdResult(null)
                     )
                 }
             }
@@ -305,7 +377,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 is UiAction.ShowPasswd -> {
                     updateUiState {
                         copy(
-                            selectPasswd = getPasswd(passwdId)
+                            selectPasswd = getGroupPasswd(passwdId)
                         )
                     }
                 }
@@ -353,13 +425,33 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     }
                 }
 
+                is UiAction.NewPasswd -> {
+                    launch(Dispatchers.IO) {
+                        newPasswd(
+                            groupId = groupId,
+                            title = title,
+                            username = username,
+                            password = password,
+                            link = link,
+                            comment = comment,
+                        )
+                    }
+                }
+
+                is UiAction.DeletePasswd -> {
+                    val selectGroupId = translateUiState.selectPasswd?.id ?: return
+                    launch(Dispatchers.IO) {
+                        deletePasswd(selectGroupId)
+                    }
+                }
+
                 else -> {}
             }
         }
     }
 
-    private fun getPasswd(passwdId: Int): Passwd? =
-        translateUiState.passwds.find { passwd: Passwd -> passwd.id == passwdId }
+    private fun getGroupPasswd(passwdId: Int): Passwd? =
+        translateUiState.groupPasswds.find { passwd: Passwd -> passwd.id == passwdId }
 
     private fun getGroup(groupId: Int): Group? = translateUiState.groups.find { group: Group -> group.id == groupId }
 

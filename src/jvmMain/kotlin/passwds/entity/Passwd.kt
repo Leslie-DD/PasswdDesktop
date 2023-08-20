@@ -10,8 +10,8 @@ data class Passwd(
     val link: String?,
     val usernameString: String?,
     val passwordString: String?,
-    val username: ByteArray?,
-    val password: ByteArray?,
+    val username: ByteArray? = null,
+    val password: ByteArray? = null,
     val title: String?,
     val userId: Int?,
 )

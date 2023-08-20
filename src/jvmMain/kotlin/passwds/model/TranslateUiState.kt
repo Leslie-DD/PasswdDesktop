@@ -15,7 +15,7 @@ data class TranslateUiState(
     val uiScreen: UiScreen,
 
     val groups: MutableList<Group>,
-    val groupPasswds: List<Passwd>,
+    val groupPasswds: MutableList<Passwd>,
     val passwds: List<Passwd>,
 
     val selectGroup: Group? = null,
@@ -34,7 +34,7 @@ data class TranslateUiState(
             uiScreen = UiScreen.Default,
 
             groups = arrayListOf(),
-            groupPasswds = emptyList(),
+            groupPasswds = arrayListOf(),
             passwds = emptyList(),
         )
     }

@@ -35,7 +35,17 @@ sealed class UiAction {
 
     object ClearEffect : UiAction()
 
-
     object DeleteGroup : UiAction()
+
+    class NewPasswd(
+        val groupId: Int,
+        val title: String,
+        val username: String,
+        val password: String,
+        val link: String,
+        val comment: String
+    ) : UiAction()
+
+    object DeletePasswd : UiAction()
 
 }

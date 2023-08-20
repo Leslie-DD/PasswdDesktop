@@ -12,4 +12,7 @@ object Api {
 
     const val API_NEW_GROUP = "Passwd/passwd/newGroup.do"
     const val API_DELETE_GROUP = "Passwd/passwd/deleteGroupById.do"
+
+    const val API_NEW_PASSWD = "Passwd/passwd/newPasswd.do"
+    const val API_DELETE_PASSWD = "Passwd/passwd/deletePasswdById.do"
 }
