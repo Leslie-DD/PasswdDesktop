@@ -10,25 +10,25 @@ import network.Api.API_GROUP_PASSWDS
 import network.Api.API_LOGIN_BY_PASSWORD
 import network.Api.API_LOGIN_BY_TOKEN
 import network.Api.API_PASSWDS
+import network.Api.API_REGISTER
 import network.entity.KtorResult
 import passwds.entity.Group
 import passwds.entity.LoginResult
 import passwds.entity.Passwd
+import passwds.entity.RegisterResult
 
 object KtorRequest {
-
-    private fun HttpRequestBuilder.partData() = formData {
-        headers {
-            append("access_token", LocalPref.accessToken)
-        }
-        append("user_id", 1)
-        append("secret_key", LocalPref.secretKey)
-    }
 
     suspend fun postPasswds(): Result<List<Passwd>> = runCatching {
         return httpClient.post {
             url(API_PASSWDS)
-            setBody(MultiPartFormDataContent(partData()))
+            setBody(MultiPartFormDataContent(formData {
+                headers {
+                    append("access_token", LocalPref.accessToken)
+                }
+                append("user_id", LocalPref.userId)
+                append("secret_key", LocalPref.secretKey)
+            }))
             contentType(ContentType.Application.Json)
         }.body<KtorResult<List<Passwd>>>().result()
     }
@@ -40,7 +40,7 @@ object KtorRequest {
                 headers {
                     append("access_token", LocalPref.accessToken)
                 }
-                append("user_id", 1)
+                append("user_id", LocalPref.userId)
                 append("secret_key", LocalPref.secretKey)
             }))
             contentType(ContentType.Application.Json)
@@ -54,7 +54,7 @@ object KtorRequest {
                 headers {
                     append("access_token", LocalPref.accessToken)
                 }
-                append("user_id", 1)
+                append("user_id", LocalPref.userId)
                 append("group_id", groupId)
                 append("secret_key", LocalPref.secretKey)
             }))
@@ -92,6 +92,20 @@ object KtorRequest {
             }))
             contentType(ContentType.Application.Json)
         }.body<KtorResult<LoginResult>>().result()
+    }
+
+    suspend fun register(
+        username: String,
+        password: String,
+    ): Result<RegisterResult> = runCatching {
+        return httpClient.post {
+            url(API_REGISTER)
+            setBody(MultiPartFormDataContent(formData {
+                append("username", username)
+                append("password", password)
+            }))
+            contentType(ContentType.Application.Json)
+        }.body<KtorResult<RegisterResult>>().result()
     }
 
 }

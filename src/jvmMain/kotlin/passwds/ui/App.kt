@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Scaffold
+import androidx.compose.material.ScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBar
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowState
+import kotlinx.coroutines.CoroutineScope
 import passwds.model.PasswdsViewModel
 import passwds.model.UiScreen
 
@@ -68,24 +70,20 @@ fun MainScreen(
             )
         ),
         topBar = {
-            TopAppBar(
-                title = {
-                    when (uiScreen) {
-                        UiScreen.Settings, UiScreen.Passwds -> {
-
-                            TopBarTitle(
-                                uiScreen = uiScreen,
-                                coroutine = coroutine,
-                                scaffoldState = scaffoldState,
-                                viewModel = viewModel
-                            )
-                        }
-
-                        else -> {}
+            when (uiScreen) {
+                UiScreen.Passwds, UiScreen.Settings -> TopAppBar(
+                    modifier = Modifier.fillMaxWidth(),
+                    title = {
+                        TopBarTitle(
+                            uiScreen = uiScreen,
+                            coroutine = coroutine,
+                            scaffoldState = scaffoldState,
+                            viewModel = viewModel
+                        )
                     }
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
+                )
+                else -> {}
+            }
         }
     ) {
         Box(
@@ -96,7 +94,7 @@ fun MainScreen(
             when (uiScreen) {
                 UiScreen.Passwds -> PasswdsScreen(viewModel)
                 UiScreen.Settings -> SettingsScreen(viewModel)
-                UiScreen.Login -> LoginScreen(viewModel)
+                UiScreen.Login, UiScreen.Register -> LoginAndRegisterScreen(viewModel)
                 UiScreen.Loading -> LoadingScreen()
             }
         }

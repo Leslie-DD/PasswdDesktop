@@ -1,9 +1,7 @@
 package passwds.model
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Downloading
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed interface UiScreen {
@@ -16,6 +14,9 @@ sealed interface UiScreen {
         val Default = Loading
 
         val Screens = listOf(Passwds, Settings)
+
+
+        val LoginAndRegister = listOf(Login, Register)
     }
 
     object Passwds : UiScreen {
@@ -30,7 +31,12 @@ sealed interface UiScreen {
 
     object Login : UiScreen {
         override val name = "登录"
-        override val icon = Icons.Default.Settings
+        override val icon = Icons.Default.Login
+    }
+
+    object Register : UiScreen {
+        override val name = "注册"
+        override val icon = Icons.Default.AppRegistration
     }
 
     object Loading : UiScreen {

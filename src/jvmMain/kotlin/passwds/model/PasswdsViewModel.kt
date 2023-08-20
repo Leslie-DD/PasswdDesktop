@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.*
 import model.Setting
 import org.jetbrains.skia.impl.Log
 import passwds.entity.Group
+import passwds.entity.LoginResult
 import passwds.entity.Passwd
 import passwds.repository.PasswdRepository
 import platform.desktop.Platform
@@ -65,12 +66,52 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             secretKey = secretKey
         ).onSuccess {
             Log.error("PasswdsViewModel().loginByToken success, result: $it")
+            onLoginSuccess(secretKey, it)
+        }.onFailure {
+            Log.error("PasswdsViewModel().loginByToken error:${it.message}")
+            it.printStackTrace()
+            updateUiState { copy(uiScreen = UiScreen.Login) }
+        }
+    }
+
+    private suspend fun onLoginSuccess(secretKey: String, it: LoginResult) {
+        updateUiState { copy(uiScreen = UiScreen.Passwds) }
+        coroutineScope {
+            withContext(Dispatchers.IO) {
+                settings.secretKey.emit(secretKey)
+                settings.userId.emit(it.user_id)
+                settings.username.emit(it.username)
+                settings.accessToken.emit(it.token)
+            }
+            launch(Dispatchers.IO) {
+                fetchPasswds()
+            }
+            launch(Dispatchers.IO) {
+                fetchGroups()
+            }
+        }
+    }
+
+    private suspend fun register(
+        username: String,
+        password: String,
+    ) {
+        Log.error("PasswdsViewModel().register start")
+        if (username.isBlank() || password.isBlank()) {
+            Log.error("PasswdsViewModel().register error, $username, $password")
+            return
+        }
+        repository.register(
+            username = username,
+            password = password,
+        ).onSuccess {
+            Log.error("PasswdsViewModel().register success, result: $it")
             updateUiState { copy(uiScreen = UiScreen.Passwds) }
             coroutineScope {
                 withContext(Dispatchers.IO) {
-                    settings.secretKey.emit(secretKey)
+                    settings.secretKey.emit(it.secret_key)
                     settings.userId.emit(it.user_id)
-                    settings.username.emit(it.username)
+                    settings.username.emit(username)
                     settings.accessToken.emit(it.token)
                 }
                 launch(Dispatchers.IO) {
@@ -79,12 +120,10 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 launch(Dispatchers.IO) {
                     fetchGroups()
                 }
-
             }
         }.onFailure {
-            Log.error("PasswdsViewModel().loginByToken error:${it.message}")
+            Log.error("PasswdsViewModel().register error: ${it.message}")
             it.printStackTrace()
-            updateUiState { copy(uiScreen = UiScreen.Login) }
         }
     }
 
@@ -104,25 +143,10 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             secretKey = secretKey
         ).onSuccess {
             Log.error("PasswdsViewModel().loginByPassword success, result: $it")
-            updateUiState { copy(uiScreen = UiScreen.Passwds) }
-            coroutineScope {
-                withContext(Dispatchers.IO) {
-                    settings.secretKey.emit(secretKey)
-                    settings.userId.emit(it.user_id)
-                    settings.username.emit(it.username)
-                    settings.accessToken.emit(it.token)
-                }
-                launch(Dispatchers.IO) {
-                    fetchPasswds()
-                }
-                launch(Dispatchers.IO) {
-                    fetchGroups()
-                }
-            }
+            onLoginSuccess(secretKey, it)
         }.onFailure {
             Log.error("PasswdsViewModel().loginByPassword error: ${it.message}")
             it.printStackTrace()
-            updateUiState { copy(uiScreen = UiScreen.Login) }
         }
     }
 
@@ -222,6 +246,15 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                             username = username,
                             password = password,
                             secretKey = secretKey
+                        )
+                    }
+                }
+
+                is UiAction.Register -> {
+                    launch(Dispatchers.IO) {
+                        register(
+                            username = username,
+                            password = password
                         )
                     }
                 }

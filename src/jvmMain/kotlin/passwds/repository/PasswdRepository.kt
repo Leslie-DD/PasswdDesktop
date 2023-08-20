@@ -4,6 +4,7 @@ import network.KtorRequest
 import passwds.entity.Group
 import passwds.entity.LoginResult
 import passwds.entity.Passwd
+import passwds.entity.RegisterResult
 
 class PasswdRepository {
     suspend fun fetchPasswds(): Result<List<Passwd>> = KtorRequest.postPasswds()
@@ -28,5 +29,13 @@ class PasswdRepository {
         username = username,
         password = password,
         secretKey = secretKey
+    )
+
+    suspend fun register(
+        username: String,
+        password: String,
+    ): Result<RegisterResult> = KtorRequest.register(
+        username = username,
+        password = password,
     )
 }

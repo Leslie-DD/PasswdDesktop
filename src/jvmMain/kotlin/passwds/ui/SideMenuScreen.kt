@@ -37,7 +37,6 @@ import passwds.model.PasswdsViewModel
 import passwds.model.UiAction
 import passwds.model.UiScreen
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun SideMenuScreen(
     viewModel: PasswdsViewModel,
@@ -63,7 +62,12 @@ fun SideMenuScreen(
 
             item { Spacer(modifier = Modifier.height(20.dp)) }
 
-            screensListMenu(viewModel, uiScreen)
+            screensListMenu(UiScreen.Screens, uiScreen) {
+                viewModel.onAction(UiAction.GoScreen(it))
+                coroutine.launch {
+                    viewModel.scaffoldState.drawerState.close()
+                }
+            }
 
             item { Spacer(modifier = Modifier.height(80.dp)) }
 
@@ -127,10 +131,11 @@ fun AppSymbolBox(modifier: Modifier = Modifier) {
 }
 
 fun LazyListScope.screensListMenu(
-    viewModel: PasswdsViewModel,
+    screens: List<UiScreen>,
     currentScreen: UiScreen,
+    onChoice: (screen: UiScreen) -> Unit
 ) {
-    items(UiScreen.Screens) { screen ->
+    items(screens) { screen ->
         val isSelected = screen == currentScreen
         Box(
             modifier = Modifier.fillMaxWidth().height(60.dp).padding(end = 10.dp, top = 5.dp, bottom = 5.dp),
@@ -156,12 +161,7 @@ fun LazyListScope.screensListMenu(
             TextButton(
                 modifier = Modifier.fillMaxWidth(),
                 interactionSource = remember { NoRippleInteractionSource() },
-                onClick = {
-                    viewModel.onAction(UiAction.GoScreen(screen))
-                    coroutine.launch {
-                        viewModel.scaffoldState.drawerState.close()
-                    }
-                },
+                onClick = { onChoice(screen) },
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = if (isSelected) {
                         MaterialTheme.colorScheme.primary

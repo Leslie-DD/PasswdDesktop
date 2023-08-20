@@ -8,4 +8,5 @@ object Api {
 
     const val API_LOGIN_BY_TOKEN = "Passwd/passwd/loginByToken.do"
     const val API_LOGIN_BY_PASSWORD = "Passwd/passwd/loginByPassword.do"
+    const val API_REGISTER = "Passwd/passwd/register.do"
 }

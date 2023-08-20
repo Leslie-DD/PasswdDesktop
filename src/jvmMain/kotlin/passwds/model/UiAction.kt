@@ -29,4 +29,6 @@ sealed class UiAction {
 
     class Login(val username: String, val password: String, val secretKey: String) : UiAction()
 
+    class Register(val username: String, val password: String) : UiAction()
+
 }
