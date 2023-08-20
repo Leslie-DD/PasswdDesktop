@@ -1,0 +1,4 @@
+-dontwarn kotlinx.datetime.**
+-dontwarn okhttp3.**
+-dontwarn org.slf4j.**
+-keep class org.slf4j.**

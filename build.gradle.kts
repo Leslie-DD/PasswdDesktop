@@ -65,6 +65,12 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "PasswdDesktop"
             packageVersion = "1.0.0"
+
+            buildTypes.release {
+                proguard {
+                    configurationFiles.from("compose-desktop.pro")
+                }
+            }
         }
     }
 }

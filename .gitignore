@@ -36,7 +36,9 @@ bin/
 /.nb-gradle/
 
 ### VS Code ###
-.vscode/
+.vscode/w
 
 ### Mac OS ###
 .DS_Store
+
+files/
