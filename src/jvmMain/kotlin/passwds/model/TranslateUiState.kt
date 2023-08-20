@@ -14,12 +14,14 @@ data class TranslateUiState(
     val isLandscape: Boolean,
     val uiScreen: UiScreen,
 
-    val groups: List<Group>,
+    val groups: MutableList<Group>,
     val groupPasswds: List<Passwd>,
     val passwds: List<Passwd>,
 
     val selectGroup: Group? = null,
-    val selectPasswd: Passwd? = null
+    val selectPasswd: Passwd? = null,
+
+    val effect: UiEffect? = null,
 ) {
     companion object {
         val Default = TranslateUiState(
@@ -31,7 +33,7 @@ data class TranslateUiState(
             isLandscape = currentPlatform == Platform.Desktop,
             uiScreen = UiScreen.Default,
 
-            groups = emptyList(),
+            groups = arrayListOf(),
             groupPasswds = emptyList(),
             passwds = emptyList(),
         )

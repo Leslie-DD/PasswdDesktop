@@ -42,6 +42,18 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
     }
 
+    private fun clearData() {
+        updateUiState {
+            copy(
+                passwds = emptyList(),
+                groups = arrayListOf(),
+                groupPasswds = emptyList(),
+                selectGroup = null,
+                selectPasswd = null
+            )
+        }
+    }
+
     private suspend fun loginByToken() {
         Log.error("PasswdsViewModel().loginByToken start")
         val username = LocalPref.username
@@ -74,14 +86,15 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
     }
 
-    private suspend fun onLoginSuccess(secretKey: String, it: LoginResult) {
+    private suspend fun onLoginSuccess(secretKey: String, loginResult: LoginResult) {
         updateUiState { copy(uiScreen = UiScreen.Passwds) }
         coroutineScope {
             withContext(Dispatchers.IO) {
                 settings.secretKey.emit(secretKey)
-                settings.userId.emit(it.user_id)
-                settings.username.emit(it.username)
-                settings.accessToken.emit(it.token)
+                settings.userId.emit(loginResult.user_id)
+                settings.username.emit(loginResult.username)
+                settings.accessToken.emit(loginResult.token)
+                clearData()
             }
             launch(Dispatchers.IO) {
                 fetchPasswds()
@@ -113,7 +126,9 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     settings.userId.emit(it.user_id)
                     settings.username.emit(username)
                     settings.accessToken.emit(it.token)
+                    clearData()
                 }
+
                 launch(Dispatchers.IO) {
                     fetchPasswds()
                 }
@@ -203,6 +218,61 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             }
     }
 
+    private suspend fun newGroup(
+        groupName: String,
+        groupComment: String
+    ) {
+        if (groupName.isBlank()) {
+            // TODO: tips 提示 groupName 不能为空
+            return
+        }
+        repository.newGroup(groupName, groupComment)
+            .onSuccess {
+                val newGroup = Group(
+                    id = it,
+                    userId = settings.userId.value,
+                    groupName = groupName,
+                    groupComment = groupComment
+                )
+                updateUiState {
+                    copy(
+                        groups = groups.apply { add(newGroup) },
+                        effect = UiEffect.NewGroupResult(newGroup),
+                        selectGroup = newGroup,
+                        groupPasswds = emptyList()
+                    )
+                }
+            }.onFailure {
+                updateUiState {
+                    copy(
+                        effect = UiEffect.NewGroupResult(null)
+                    )
+                }
+            }
+    }
+
+    private suspend fun deleteGroup(groupId: Int) {
+        repository.deleteGroup(groupId)
+            .onSuccess {
+                val deleteGroup = getGroup(groupId)
+                updateUiState {
+                    copy(
+                        groups = groups.apply {
+                            remove(deleteGroup)
+                        },
+                        effect = UiEffect.DeleteGroupResult(deleteGroup)
+                    )
+                }
+            }.onFailure {
+                // TODO: 删除失败的情况 tips 提示
+                updateUiState {
+                    copy(
+                        effect = UiEffect.DeleteGroupResult(null)
+                    )
+                }
+            }
+    }
+
     fun onAction(action: UiAction) {
         with(action) {
             when (this) {
@@ -255,6 +325,30 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                         register(
                             username = username,
                             password = password
+                        )
+                    }
+                }
+
+                is UiAction.NewGroup -> {
+                    launch(Dispatchers.IO) {
+                        newGroup(
+                            groupName = groupName,
+                            groupComment = groupComment
+                        )
+                    }
+                }
+
+                is UiAction.DeleteGroup -> {
+                    val selectGroupId = translateUiState.selectGroup?.id ?: return
+                    launch(Dispatchers.IO) {
+                        deleteGroup(selectGroupId)
+                    }
+                }
+
+                is UiAction.ClearEffect -> {
+                    updateUiState {
+                        copy(
+                            effect = null
                         )
                     }
                 }

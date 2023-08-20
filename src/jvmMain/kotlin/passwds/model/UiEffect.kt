@@ -1,8 +1,12 @@
 package passwds.model
 
+import passwds.entity.Group
+
 sealed interface UiEffect {
 
-    object LoginScreen : UiEffect
+    class NewGroupResult(val group: Group?) : UiEffect
+
+    class DeleteGroupResult(val group: Group?) : UiEffect
 
     object PasswdScreen : UiEffect
 

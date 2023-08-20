@@ -31,4 +31,11 @@ sealed class UiAction {
 
     class Register(val username: String, val password: String) : UiAction()
 
+    class NewGroup(val groupName: String, val groupComment: String) : UiAction()
+
+    object ClearEffect : UiAction()
+
+
+    object DeleteGroup : UiAction()
+
 }

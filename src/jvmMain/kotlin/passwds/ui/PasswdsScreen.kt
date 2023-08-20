@@ -5,24 +5,31 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.Title
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Comment
+import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.rememberDialogState
+import kotlinx.coroutines.launch
 import passwds.entity.Group
 import passwds.entity.Passwd
 import passwds.model.PasswdsViewModel
 import passwds.model.UiAction
+import passwds.model.UiEffect
 
 /**
  * 密码界面主要内容的显示区域
@@ -52,16 +59,191 @@ fun PasswdGroupList(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    val coroutineScope = rememberCoroutineScope()
+    val effect = viewModel.uiState.effect
+
+    val listState = rememberLazyListState()
+    val groups = viewModel.translateUiState.groups
+
+    val isNewGroupDialogOpen = remember { mutableStateOf(false) }
+    val onNewGroupDialogClose = {
+        isNewGroupDialogOpen.value = false
+        viewModel.onAction(UiAction.ClearEffect)
+    }
+
+    val isDeleteGroupConfirmDialogOpen = remember { mutableStateOf(false) }
+
+
+    when (effect) {
+        is UiEffect.NewGroupResult -> {
+            onNewGroupDialogClose()
+            coroutineScope.launch {
+                listState.animateScrollToItem(index = groups.size - 1)
+            }
+        }
+
+        is UiEffect.DeleteGroupResult -> {
+            isDeleteGroupConfirmDialogOpen.value = false
+            viewModel.onAction(UiAction.ClearEffect)
+        }
+
+        else -> {}
+    }
+
+    Column(
         modifier = modifier.fillMaxSize()
     ) {
-        LazyColumn(modifier = Modifier.fillMaxSize().padding(10.dp)) {
-            items(viewModel.translateUiState.groups) { group ->
+        LazyColumn(
+            modifier = Modifier.weight(1f).padding(10.dp),
+            state = listState
+        ) {
+            items(groups) { group ->
                 GroupCard(
                     group = group,
                     isSelected = group.id == viewModel.uiState.selectGroup?.id
                 ) {
                     viewModel.onAction(UiAction.ShowGroupPasswds(groupId = it))
+                }
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            IconButton(
+                onClick = { isNewGroupDialogOpen.value = true }
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = null)
+            }
+
+            if (isNewGroupDialogOpen.value) {
+                AddGroupDialog(
+                    onCloseClick = onNewGroupDialogClose,
+                    onAddClick = { groupName, groupComment ->
+                        viewModel.onAction(UiAction.NewGroup(groupName, groupComment))
+                    }
+                )
+            }
+
+            IconButton(
+                enabled = viewModel.uiState.selectGroup != null,
+                onClick = { isDeleteGroupConfirmDialogOpen.value = true }
+            ) {
+                Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+            }
+
+            if (isDeleteGroupConfirmDialogOpen.value) {
+                DeleteGroupConfirmDialog { delete ->
+                    if (delete) {
+                        viewModel.onAction(UiAction.DeleteGroup)
+                    } else {
+                        isDeleteGroupConfirmDialogOpen.value = false
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AddGroupDialog(
+    onCloseClick: () -> Unit,
+    onAddClick: (String, String) -> Unit
+) {
+    val groupName = remember { mutableStateOf("") }
+    val commentName = remember { mutableStateOf("") }
+    val enable = remember { mutableStateOf(true) }
+    Dialog(
+        onCloseRequest = { onCloseClick() },
+        state = rememberDialogState(position = WindowPosition(Alignment.Center))
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Add a Group")
+            Spacer(modifier = Modifier.height(30.dp))
+
+            EditTextBox(
+                value = groupName.value,
+                labelValue = "Group Name",
+                imageVector = Icons.Outlined.Group
+            ) {
+                groupName.value = it
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+
+            EditTextBox(
+                value = commentName.value,
+                labelValue = "Group Comment",
+                imageVector = Icons.Outlined.Comment
+            ) {
+                commentName.value = it
+            }
+
+            Button(
+                enabled = enable.value,
+                onClick = {
+                    enable.value = false
+                    onAddClick(groupName.value, commentName.value)
+                }
+            ) {
+                Text("Add")
+            }
+        }
+    }
+}
+
+@Composable
+fun DeleteGroupConfirmDialog(
+    onDeleteConfirmOrCancelClick: (Boolean) -> Unit
+) {
+    Dialog(
+        onCloseRequest = { onDeleteConfirmOrCancelClick(false) },
+        state = rememberDialogState(position = WindowPosition(Alignment.Center))
+    ) {
+        val enable = remember { mutableStateOf(true) }
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Delete the Group",
+                fontSize = 18.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                modifier = Modifier.padding(vertical = 10.dp, horizontal = 30.dp),
+                text = "删除该分组，该分组下所有密码将会被删除并且不可恢复，确定删除吗？",
+                fontSize = 14.sp
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Button(
+                    enabled = enable.value,
+                    onClick = {
+                        enable.value = false
+                        onDeleteConfirmOrCancelClick(true)
+                    }
+                ) {
+                    Text(text = "Confirm")
+                }
+                Spacer(modifier = Modifier.width(20.dp))
+                Button(
+                    enabled = enable.value,
+                    onClick = {
+                        enable.value = false
+                        onDeleteConfirmOrCancelClick(false)
+                    }
+                ) {
+                    Text(text = "Cancel")
                 }
             }
         }
@@ -84,7 +266,7 @@ fun PasswdItemsContent(
             Divider(
                 modifier = Modifier
                     .padding(0.dp, 10.dp)
-                    .fillMaxHeight()  //fill the max height
+                    .fillMaxHeight()
                     .width(1.dp)
             )
             PasswdDetailScreen(viewModel = viewModel)
@@ -100,17 +282,39 @@ fun PasswdItemsList(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(vertical = 10.dp)
+    Column(
+        modifier = modifier.fillMaxSize()
     ) {
-        items(viewModel.translateUiState.groupPasswds) { passwd ->
-            PasswdCard(
-                passwd = passwd,
-                isSelected = passwd.id == viewModel.uiState.selectPasswd?.id
-            ) {
-                viewModel.onAction(UiAction.ShowPasswd(passwdId = it))
+        LazyColumn(
+            modifier = modifier
+                .weight(1f)
+                .padding(vertical = 10.dp)
+        ) {
+            items(viewModel.translateUiState.groupPasswds) { passwd ->
+                PasswdCard(
+                    passwd = passwd,
+                    isSelected = passwd.id == viewModel.uiState.selectPasswd?.id
+                ) {
+                    viewModel.onAction(UiAction.ShowPasswd(passwdId = it))
+                }
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            IconButton(onClick = {
+
+            }) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = null)
+            }
+
+            IconButton(onClick = {
+
+            }) {
+                Icon(imageVector = Icons.Default.Delete, contentDescription = null)
             }
         }
     }
@@ -187,7 +391,7 @@ fun GroupCard(
     onClick: (Int) -> Unit
 ) {
     Box(
-        modifier = Modifier.fillMaxWidth().height(60.dp).padding(end = 10.dp, top = 5.dp, bottom = 5.dp),
+        modifier = Modifier.fillMaxWidth().height(40.dp).padding(end = 10.dp),
         contentAlignment = Alignment.Center
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
@@ -217,7 +421,7 @@ fun GroupCard(
             )
         ) {
             Spacer(modifier = Modifier.width(15.dp).fillMaxHeight())
-            Text(text = group.groupName ?: "", fontSize = 18.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(text = group.groupName ?: "", fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Spacer(modifier = Modifier.weight(0.6f))
         }
     }
