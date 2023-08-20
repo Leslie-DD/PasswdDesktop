@@ -7,11 +7,8 @@ import androidx.compose.material.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import config.LocalPref
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import model.Setting
 import org.jetbrains.skia.impl.Log
 import passwds.entity.Group
@@ -40,18 +37,100 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     init {
         launch(Dispatchers.IO) {
-            fetchPasswds()
+            loginByToken()
         }
-        launch(Dispatchers.IO) {
-            fetchGroups()
+    }
+
+    private suspend fun loginByToken() {
+        Log.error("PasswdsViewModel().loginByToken start")
+        val username = LocalPref.username
+        if (username.isBlank()) {
+            updateUiState { copy(uiScreen = UiScreen.Login) }
+            return
+        }
+        val token = LocalPref.accessToken
+        if (token.isBlank()) {
+            updateUiState { copy(uiScreen = UiScreen.Login) }
+            return
+        }
+        val secretKey = LocalPref.secretKey
+        if (secretKey.isBlank()) {
+            updateUiState { copy(uiScreen = UiScreen.Login) }
+            return
+        }
+        Log.error("PasswdsViewModel().loginByToken start, token: $token")
+        repository.loginByToken(
+            username = username,
+            token = token,
+            secretKey = secretKey
+        ).onSuccess {
+            Log.error("PasswdsViewModel().loginByToken success, result: $it")
+            updateUiState { copy(uiScreen = UiScreen.Passwds) }
+            coroutineScope {
+                withContext(Dispatchers.IO) {
+                    settings.secretKey.emit(secretKey)
+                    settings.userId.emit(it.user_id)
+                    settings.username.emit(it.username)
+                    settings.accessToken.emit(it.token)
+                }
+                launch(Dispatchers.IO) {
+                    fetchPasswds()
+                }
+                launch(Dispatchers.IO) {
+                    fetchGroups()
+                }
+
+            }
+        }.onFailure {
+            Log.error("PasswdsViewModel().loginByToken error:${it.message}")
+            it.printStackTrace()
+            updateUiState { copy(uiScreen = UiScreen.Login) }
+        }
+    }
+
+    private suspend fun loginByPassword(
+        username: String,
+        password: String,
+        secretKey: String
+    ) {
+        Log.error("PasswdsViewModel().loginByPassword start")
+        if (username.isBlank() || password.isBlank() || secretKey.isBlank()) {
+            Log.error("PasswdsViewModel().loginByPassword error, $username, $password, $secretKey")
+            return
+        }
+        repository.loginByPassword(
+            username = username,
+            password = password,
+            secretKey = secretKey
+        ).onSuccess {
+            Log.error("PasswdsViewModel().loginByPassword success, result: $it")
+            updateUiState { copy(uiScreen = UiScreen.Passwds) }
+            coroutineScope {
+                withContext(Dispatchers.IO) {
+                    settings.secretKey.emit(secretKey)
+                    settings.userId.emit(it.user_id)
+                    settings.username.emit(it.username)
+                    settings.accessToken.emit(it.token)
+                }
+                launch(Dispatchers.IO) {
+                    fetchPasswds()
+                }
+                launch(Dispatchers.IO) {
+                    fetchGroups()
+                }
+            }
+        }.onFailure {
+            Log.error("PasswdsViewModel().loginByPassword error: ${it.message}")
+            it.printStackTrace()
+            updateUiState { copy(uiScreen = UiScreen.Login) }
         }
     }
 
     private suspend fun fetchPasswds() {
-        Log.debug("PasswdsViewModel().fetchPasswds start")
+        Log.error("PasswdsViewModel().fetchPasswds start")
         repository.fetchPasswds()
             .onSuccess {
-                Log.info("PasswdsViewModel().fetchPasswds success, size:${it.size}")
+                Log.error("PasswdsViewModel().fetchPasswds success, size:${it.size}")
                 updateUiState {
                     copy(
                         passwds = it
@@ -64,10 +143,10 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private suspend fun fetchGroups() {
-        Log.debug("PasswdsViewModel().fetchGroups start")
+        Log.error("PasswdsViewModel().fetchGroups start")
         repository.fetchGroups()
             .onSuccess {
-                Log.info("PasswdsViewModel().fetchGroups success, size:${it.size}")
+                Log.error("PasswdsViewModel().fetchGroups success, size:${it.size}")
                 updateUiState {
                     copy(
                         groups = it
@@ -80,10 +159,10 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private suspend fun fetchGroupPasswds(groupId: Int) = withContext(Dispatchers.IO) {
-        Log.debug("PasswdsViewModel().fetchGroupPasswds start")
+        Log.error("PasswdsViewModel().fetchGroupPasswds start")
         repository.fetchGroupPasswds(groupId)
             .onSuccess {
-                Log.info("PasswdsViewModel().fetchGroupPasswds success, size:${it.size}")
+                Log.error("PasswdsViewModel().fetchGroupPasswds success, size:${it.size}")
                 updateUiState {
                     copy(
                         groupPasswds = it
@@ -100,24 +179,24 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             }
     }
 
-    fun onAction(action: TranslateScreenUiAction) {
+    fun onAction(action: UiAction) {
         with(action) {
             when (this) {
-                is TranslateScreenUiAction.GoScreen -> {
+                is UiAction.GoScreen -> {
                     updateUiState { copy(uiScreen = screen) }
                 }
 
-                is TranslateScreenUiAction.ExitApp -> {
+                is UiAction.ExitApp -> {
                     exitApp.tryEmit(true)
                 }
 
-                is TranslateScreenUiAction.WindowVisible -> {
+                is UiAction.WindowVisible -> {
                     updateUiState {
                         copy(windowVisible = visible)
                     }
                 }
 
-                is TranslateScreenUiAction.ShowGroupPasswds -> {
+                is UiAction.ShowGroupPasswds -> {
                     updateUiState {
                         copy(
                             selectGroup = getGroup(groupId),
@@ -129,10 +208,20 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     }
                 }
 
-                is TranslateScreenUiAction.ShowPasswd -> {
+                is UiAction.ShowPasswd -> {
                     updateUiState {
                         copy(
                             selectPasswd = getPasswd(passwdId)
+                        )
+                    }
+                }
+
+                is UiAction.Login -> {
+                    launch(Dispatchers.IO) {
+                        loginByPassword(
+                            username = username,
+                            password = password,
+                            secretKey = secretKey
                         )
                     }
                 }

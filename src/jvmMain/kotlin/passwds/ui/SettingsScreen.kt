@@ -28,9 +28,9 @@ fun SettingsScreen(viewModel: PasswdsViewModel) {
             modifier = Modifier.wrapContentSize(), horizontalAlignment = Alignment.Start
         ) {
 
-            UsernameView(viewModel)
+            UsernameView(viewModel.settings.username.value)
             Spacer(modifier = Modifier.height(10.dp))
-            PasswordView(viewModel)
+            PasswordView("")
             Spacer(modifier = Modifier.height(10.dp))
             SecretKeyView(viewModel)
         }
@@ -39,7 +39,7 @@ fun SettingsScreen(viewModel: PasswdsViewModel) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UsernameView(viewModel: PasswdsViewModel) {
+fun UsernameView(username: String) {
     OutlinedTextField(
         modifier = Modifier.width(300.dp),
         enabled = false,
@@ -47,7 +47,7 @@ fun UsernameView(viewModel: PasswdsViewModel) {
         leadingIcon = {
             Icon(imageVector = Icons.Outlined.People, contentDescription = null)
         },
-        value = "",
+        value = username,
         maxLines = 1,
         singleLine = true,
         onValueChange = {},
@@ -57,7 +57,7 @@ fun UsernameView(viewModel: PasswdsViewModel) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PasswordView(viewModel: PasswdsViewModel) {
+fun PasswordView(password: String) {
     OutlinedTextField(
         modifier = Modifier.width(300.dp),
         enabled = false,
@@ -65,7 +65,7 @@ fun PasswordView(viewModel: PasswdsViewModel) {
         leadingIcon = {
             Icon(imageVector = Icons.Outlined.Lock, contentDescription = null)
         },
-        value = "",
+        value = password,
         maxLines = 1,
         singleLine = true,
         onValueChange = {},

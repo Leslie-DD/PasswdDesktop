@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import model.Res
 import passwds.model.PasswdsViewModel
-import passwds.model.TranslateScreenUiAction
+import passwds.model.UiAction
 import passwds.model.UiScreen
 import passwds.ui.App
 import theme.LocalSpacing
@@ -29,15 +29,15 @@ fun main() = application {
     // 这是 菜单栏
     Tray(
         icon = painterResource(Res.Drawable.APP_ICON_ROUND_CORNER),
-        onAction = { viewModel.onAction(TranslateScreenUiAction.WindowVisible(true)) },
+        onAction = { viewModel.onAction(UiAction.WindowVisible(true)) },
         tooltip = "双击(windows)\\右击(mac)打开翻译器",
     ) {
-        Item("Open Window", onClick = { viewModel.onAction(TranslateScreenUiAction.WindowVisible(true)) })
+        Item("Open Window", onClick = { viewModel.onAction(UiAction.WindowVisible(true)) })
         Separator()
         Item("Exit App", onClick = ::exitApplication)
     }
     Window(
-        onCloseRequest = { viewModel.onAction(TranslateScreenUiAction.WindowVisible(false)) },
+        onCloseRequest = { viewModel.onAction(UiAction.WindowVisible(false)) },
         visible = viewModel.uiState.windowVisible,
         title = "Passwd",
         state = state,
@@ -64,7 +64,7 @@ fun main() = application {
                     Item("Exit", onClick = { })
                 }
                 Item("设置", onClick = {
-                    viewModel.onAction(TranslateScreenUiAction.GoScreen(UiScreen.Settings))
+                    viewModel.onAction(UiAction.GoScreen(UiScreen.Settings))
                 }, icon = painterResource(Res.Drawable.APP_ICON_ROUND_CORNER))
             }
         }

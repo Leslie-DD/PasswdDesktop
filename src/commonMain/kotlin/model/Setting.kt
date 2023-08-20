@@ -15,13 +15,16 @@ class Setting {
 
     val secretKey = MutableStateFlow(LocalPref.secretKey)
 
+    val userId = MutableStateFlow(LocalPref.userId)
+
+    val username = MutableStateFlow(LocalPref.username)
+
     companion object {
 
     }
 
     init {
         CoroutineScope(Dispatchers.IO).apply {
-
 
             launch {
                 screenOrientation.collectLatest {
@@ -38,6 +41,18 @@ class Setting {
             launch {
                 secretKey.collectLatest {
                     LocalPref.secretKey = it
+                }
+            }
+
+            launch {
+                userId.collectLatest {
+                    LocalPref.userId = it
+                }
+            }
+
+            launch {
+                username.collectLatest {
+                    LocalPref.username = it
                 }
             }
 

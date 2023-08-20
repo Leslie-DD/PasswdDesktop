@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import passwds.entity.Group
 import passwds.entity.Passwd
 import passwds.model.PasswdsViewModel
-import passwds.model.TranslateScreenUiAction
+import passwds.model.UiAction
 
 /**
  * 密码界面主要内容的显示区域
@@ -61,7 +61,7 @@ fun PasswdGroupList(
                     group = group,
                     isSelected = group.id == viewModel.uiState.selectGroup?.id
                 ) {
-                    viewModel.onAction(TranslateScreenUiAction.ShowGroupPasswds(groupId = it))
+                    viewModel.onAction(UiAction.ShowGroupPasswds(groupId = it))
                 }
             }
         }
@@ -110,7 +110,7 @@ fun PasswdItemsList(
                 passwd = passwd,
                 isSelected = passwd.id == viewModel.uiState.selectPasswd?.id
             ) {
-                viewModel.onAction(TranslateScreenUiAction.ShowPasswd(passwdId = it))
+                viewModel.onAction(UiAction.ShowPasswd(passwdId = it))
             }
         }
     }

@@ -7,16 +7,23 @@ import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import network.Api.API_GROUPS
 import network.Api.API_GROUP_PASSWDS
+import network.Api.API_LOGIN_BY_PASSWORD
+import network.Api.API_LOGIN_BY_TOKEN
 import network.Api.API_PASSWDS
 import network.entity.KtorResult
 import passwds.entity.Group
+import passwds.entity.LoginResult
 import passwds.entity.Passwd
 
 object KtorRequest {
 
-    const val ACCESS_TOKEN =
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE2OTI5NDg2NTgsInVzZXJuYW1lIjoibHVjYXMifQ.EZADpCZW4CmOyx8O30r1i2gVHKkzsQSLcueHRgg_aFE"
-    const val SECRET_KEY = "SkGk5x4IqWs0HC5w9b5Fcak8NX0lgBmMrvVRFxg3nAQ="
+    private fun HttpRequestBuilder.partData() = formData {
+        headers {
+            append("access_token", LocalPref.accessToken)
+        }
+        append("user_id", 1)
+        append("secret_key", LocalPref.secretKey)
+    }
 
     suspend fun postPasswds(): Result<List<Passwd>> = runCatching {
         return httpClient.post {
@@ -31,7 +38,7 @@ object KtorRequest {
             url(API_GROUPS)
             setBody(MultiPartFormDataContent(formData {
                 headers {
-                    append("access_token", ACCESS_TOKEN)
+                    append("access_token", LocalPref.accessToken)
                 }
                 append("user_id", 1)
                 append("secret_key", LocalPref.secretKey)
@@ -45,7 +52,7 @@ object KtorRequest {
             url(API_GROUP_PASSWDS)
             setBody(MultiPartFormDataContent(formData {
                 headers {
-                    append("access_token", ACCESS_TOKEN)
+                    append("access_token", LocalPref.accessToken)
                 }
                 append("user_id", 1)
                 append("group_id", groupId)
@@ -55,12 +62,36 @@ object KtorRequest {
         }.body<KtorResult<List<Passwd>>>().result()
     }
 
-    private fun HttpRequestBuilder.partData() = formData {
-        headers {
-            append("access_token", ACCESS_TOKEN)
-        }
-        append("user_id", 1)
-        append("secret_key", LocalPref.secretKey)
+    suspend fun loginByToken(
+        username: String,
+        token: String,
+        secretKey: String
+    ): Result<LoginResult> = runCatching {
+        return httpClient.post {
+            url(API_LOGIN_BY_TOKEN)
+            setBody(MultiPartFormDataContent(formData {
+                append("username", username)
+                append("token", token)
+                append("secret_key", secretKey)
+            }))
+            contentType(ContentType.Application.Json)
+        }.body<KtorResult<LoginResult>>().result()
+    }
+
+    suspend fun loginByPassword(
+        username: String,
+        password: String,
+        secretKey: String
+    ): Result<LoginResult> = runCatching {
+        return httpClient.post {
+            url(API_LOGIN_BY_PASSWORD)
+            setBody(MultiPartFormDataContent(formData {
+                append("username", username)
+                append("password", password)
+                append("secret_key", secretKey)
+            }))
+            contentType(ContentType.Application.Json)
+        }.body<KtorResult<LoginResult>>().result()
     }
 
 }

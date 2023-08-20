@@ -8,11 +8,10 @@ data class Passwd(
     val groupId: Int?,
     val id: Int,
     val link: String?,
-    val password: String?,
+    val usernameString: String?,
     val passwordString: String?,
+    val username: ByteArray?,
+    val password: ByteArray?,
     val title: String?,
     val userId: Int?,
-    val username: String?,
-    val usernameString: String?
-) {
-}
+)

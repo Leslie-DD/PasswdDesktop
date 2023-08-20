@@ -2,12 +2,12 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
     kotlin("multiplatform")
-    kotlin("plugin.serialization") version "1.8.0"
+    kotlin("plugin.serialization") version "1.7.20"
     id("org.jetbrains.compose")
 }
 
-group = "com.leslie"
-version = "1.0-SNAPSHOT"
+//group = "com.leslie"
+//version = "1.0-SNAPSHOT"
 
 repositories {
     google()
@@ -29,6 +29,7 @@ kotlin {
                 api(compose.runtime)
                 api(compose.foundation)
                 api(compose.material3)
+                api(compose.material)
                 api(compose.materialIconsExtended)
             }
         }
@@ -53,8 +54,6 @@ kotlin {
             commonMainImplementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.3")
 
             commonMainImplementation("com.gitee.liang_dh:KtPref:1.0.0")
-
-            commonMainImplementation("com.moriatsushi.insetsx:insetsx:0.1.0-alpha10")
         }
     }
 }

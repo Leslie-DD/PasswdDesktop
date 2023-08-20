@@ -34,7 +34,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import model.Res
 import passwds.model.PasswdsViewModel
-import passwds.model.TranslateScreenUiAction
+import passwds.model.UiAction
 import passwds.model.UiScreen
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -77,7 +77,7 @@ fun SideMenuScreen(
         ) {
             TextButton(
                 onClick = {
-                    viewModel.onAction(TranslateScreenUiAction.GoScreen(UiScreen.Login))
+                    viewModel.onAction(UiAction.GoScreen(UiScreen.Login))
                     coroutine.launch {
                         viewModel.scaffoldState.drawerState.close()
                     }
@@ -107,7 +107,7 @@ fun AppSymbolBox(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         Image(
             painter = painterResource(Res.Drawable.APP_ICON_ROUND_CORNER),
             contentDescription = null,
@@ -157,7 +157,7 @@ fun LazyListScope.screensListMenu(
                 modifier = Modifier.fillMaxWidth(),
                 interactionSource = remember { NoRippleInteractionSource() },
                 onClick = {
-                    viewModel.onAction(TranslateScreenUiAction.GoScreen(screen))
+                    viewModel.onAction(UiAction.GoScreen(screen))
                     coroutine.launch {
                         viewModel.scaffoldState.drawerState.close()
                     }

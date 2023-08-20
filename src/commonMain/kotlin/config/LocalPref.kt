@@ -37,19 +37,19 @@ object LocalPref {
         set(value) {
             apiConfig.put("SecretKey", value)
         }
-        get() = apiConfig.getString("SecretKey", "这是秘钥")
+        get() = apiConfig.getString("SecretKey", "")
 
-    var baiduAppKey: String
+    var userId: Int
         set(value) {
-            apiConfig.put("BaiduAppKey", value)
+            apiConfig.put("UserId", value)
         }
-        get() = apiConfig.getString("BaiduAppKey", "")
+        get() = apiConfig.getInt("UserId", 0)
 
-    var baiduAppSecret: String
+    var username: String
         set(value) {
-            apiConfig.put("BaiduAppSecret", value)
+            apiConfig.put("Username", value)
         }
-        get() = apiConfig.getString("BaiduAppSecret", "")
+        get() = apiConfig.getString("Username", "")
 
 }
 

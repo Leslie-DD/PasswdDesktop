@@ -53,7 +53,7 @@ fun MainScreen(
         scaffoldState = scaffoldState,
         drawerContent = {
             when (uiScreen) {
-                UiScreen.Settings, UiScreen.Translate -> SideMenuScreen(
+                UiScreen.Settings, UiScreen.Passwds -> SideMenuScreen(
                     viewModel = viewModel,
                     modifier = Modifier.width(200.dp)
                 )
@@ -71,7 +71,7 @@ fun MainScreen(
             TopAppBar(
                 title = {
                     when (uiScreen) {
-                        UiScreen.Settings, UiScreen.Translate -> {
+                        UiScreen.Settings, UiScreen.Passwds -> {
 
                             TopBarTitle(
                                 uiScreen = uiScreen,
@@ -94,9 +94,10 @@ fun MainScreen(
                 .background(color = MaterialTheme.colorScheme.surface)
         ) {
             when (uiScreen) {
-                UiScreen.Translate -> PasswdsScreen(viewModel)
+                UiScreen.Passwds -> PasswdsScreen(viewModel)
                 UiScreen.Settings -> SettingsScreen(viewModel)
                 UiScreen.Login -> LoginScreen(viewModel)
+                UiScreen.Loading -> LoadingScreen()
             }
         }
     }

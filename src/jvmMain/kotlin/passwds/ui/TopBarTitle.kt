@@ -69,7 +69,7 @@ fun TopBarTitle(
                 }
                 Spacer(modifier = Modifier.width(30.dp))
 
-                if (uiScreen is UiScreen.Translate) {
+                if (uiScreen is UiScreen.Passwds) {
                     SearchBox()
                 }
             }
