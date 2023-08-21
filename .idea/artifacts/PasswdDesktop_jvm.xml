@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="PasswdDesktop-jvm">
+    <output-path>$PROJECT_DIR$/build/libs</output-path>
+    <root id="archive" name="PasswdDesktop-jvm.jar">
+      <element id="module-output" name="PasswdDesktop.jvmMain" />
+    </root>
+  </artifact>
+</component>
