@@ -1,5 +1,7 @@
 package passwds.model
 
+import passwds.entity.Passwd
+
 sealed class UiAction {
 
     class OnInputChanged(val newText: String) : UiAction()
@@ -37,6 +39,8 @@ sealed class UiAction {
 
     object DeleteGroup : UiAction()
 
+    class UpdateGroup(val groupName: String, val groupComment: String) : UiAction()
+
     class NewPasswd(
         val groupId: Int,
         val title: String,
@@ -45,6 +49,8 @@ sealed class UiAction {
         val link: String,
         val comment: String
     ) : UiAction()
+
+    class UpdatePasswd(val passwd: Passwd) : UiAction()
 
     object DeletePasswd : UiAction()
 

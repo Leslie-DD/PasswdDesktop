@@ -55,23 +55,24 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private suspend fun loginByToken() {
-        Log.error("PasswdsViewModel().loginByToken start")
         val username = LocalPref.username
+        Log.error("PasswdsViewModel().loginByToken, username: $username")
         if (username.isBlank()) {
             updateUiState { copy(uiScreen = UiScreen.Login) }
             return
         }
         val token = LocalPref.accessToken
+        Log.error("PasswdsViewModel().loginByToken, token: $token")
         if (token.isBlank()) {
             updateUiState { copy(uiScreen = UiScreen.Login) }
             return
         }
         val secretKey = LocalPref.secretKey
+        Log.error("PasswdsViewModel().loginByToken, secretKey: $secretKey")
         if (secretKey.isBlank()) {
             updateUiState { copy(uiScreen = UiScreen.Login) }
             return
         }
-        Log.error("PasswdsViewModel().loginByToken start, token: $token")
         repository.loginByToken(
             username = username,
             token = token,
@@ -83,6 +84,29 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             Log.error("PasswdsViewModel().loginByToken error:${it.message}")
             it.printStackTrace()
             updateUiState { copy(uiScreen = UiScreen.Login) }
+        }
+    }
+
+    private suspend fun loginByPassword(
+        username: String,
+        password: String,
+        secretKey: String
+    ) {
+        Log.error("PasswdsViewModel().loginByPassword start")
+        if (username.isBlank() || password.isBlank() || secretKey.isBlank()) {
+            Log.error("PasswdsViewModel().loginByPassword error, $username, $password, $secretKey")
+            return
+        }
+        repository.loginByPassword(
+            username = username,
+            password = password,
+            secretKey = secretKey
+        ).onSuccess {
+            Log.error("PasswdsViewModel().loginByPassword success, result: $it")
+            onLoginSuccess(secretKey, it)
+        }.onFailure {
+            Log.error("PasswdsViewModel().loginByPassword error: ${it.message}")
+            it.printStackTrace()
         }
     }
 
@@ -138,29 +162,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             }
         }.onFailure {
             Log.error("PasswdsViewModel().register error: ${it.message}")
-            it.printStackTrace()
-        }
-    }
-
-    private suspend fun loginByPassword(
-        username: String,
-        password: String,
-        secretKey: String
-    ) {
-        Log.error("PasswdsViewModel().loginByPassword start")
-        if (username.isBlank() || password.isBlank() || secretKey.isBlank()) {
-            Log.error("PasswdsViewModel().loginByPassword error, $username, $password, $secretKey")
-            return
-        }
-        repository.loginByPassword(
-            username = username,
-            password = password,
-            secretKey = secretKey
-        ).onSuccess {
-            Log.error("PasswdsViewModel().loginByPassword success, result: $it")
-            onLoginSuccess(secretKey, it)
-        }.onFailure {
-            Log.error("PasswdsViewModel().loginByPassword error: ${it.message}")
             it.printStackTrace()
         }
     }
@@ -275,6 +276,38 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             }
     }
 
+    private suspend fun updateGroup(
+        groupId: Int,
+        groupName: String,
+        groupComment: String
+    ) {
+        repository.updateGroup(
+            groupId = groupId,
+            groupName = groupName,
+            groupComment = groupComment
+        )
+            .onSuccess {
+                val updateGroup = getGroup(groupId)
+                updateGroup?.let {
+                    it.groupName = groupName
+                    it.groupComment = groupComment
+                }
+                updateUiState {
+                    copy(
+                        groups = groups,
+                        effect = UiEffect.UpdateGroupResult(updateGroup)
+                    )
+                }
+            }.onFailure {
+                // TODO: 删除失败的情况 tips 提示
+                updateUiState {
+                    copy(
+                        effect = UiEffect.UpdateGroupResult(null)
+                    )
+                }
+            }
+    }
+
     private suspend fun newPasswd(
         groupId: Int,
         title: String,
@@ -317,6 +350,48 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 updateUiState {
                     copy(
                         effect = UiEffect.NewGroupResult(null)
+                    )
+                }
+            }
+    }
+
+
+    private suspend fun updatePasswd(
+        updatePasswd: Passwd
+    ) {
+        Log.error("PasswdsViewModel().updatePasswd start")
+        delay(1000)
+        repository.updatePasswd(
+            id = updatePasswd.id,
+            title = updatePasswd.title,
+            usernameStr = updatePasswd.usernameString,
+            passwordStr = updatePasswd.passwordString,
+            link = updatePasswd.link,
+            comment = updatePasswd.comment
+        )
+            .onSuccess { count ->
+                Log.error("PasswdsViewModel().updatePasswd onSuccess, count: $count")
+                updateUiState {
+                    val originPasswd = getGroupPasswd(updatePasswd.id)
+                    originPasswd?.let {
+                        it.title = updatePasswd.title
+                        it.usernameString = updatePasswd.usernameString
+                        it.passwordString = updatePasswd.passwordString
+                        it.link = updatePasswd.link
+                        it.comment = updatePasswd.comment
+                    }
+                    copy(
+                        groupPasswds = groupPasswds,
+                        effect = UiEffect.UpdatePasswdResult(updatePasswd),
+                        selectPasswd = updatePasswd,
+                    )
+                }
+            }.onFailure {
+                Log.error("PasswdsViewModel().updatePasswd onFailure")
+                it.printStackTrace()
+                updateUiState {
+                    copy(
+                        effect = UiEffect.UpdatePasswdResult(null)
                     )
                 }
             }
@@ -375,9 +450,11 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 }
 
                 is UiAction.ShowPasswd -> {
+                    val passwd = getGroupPasswd(passwdId)
+                    Log.error("onAction: ${action.javaClass.simpleName}, passwd: $passwd")
                     updateUiState {
                         copy(
-                            selectPasswd = getGroupPasswd(passwdId)
+                            selectPasswd = passwd
                         )
                     }
                 }
@@ -417,6 +494,17 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     }
                 }
 
+                is UiAction.UpdateGroup -> {
+                    val selectGroupId = translateUiState.selectGroup?.id ?: return
+                    launch(Dispatchers.IO) {
+                        updateGroup(
+                            groupId = selectGroupId,
+                            groupName = groupName,
+                            groupComment = groupComment
+                        )
+                    }
+                }
+
                 is UiAction.ClearEffect -> {
                     updateUiState {
                         copy(
@@ -435,6 +523,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                             link = link,
                             comment = comment,
                         )
+                    }
+                }
+
+                is UiAction.UpdatePasswd -> {
+                    launch(Dispatchers.IO) {
+                        updatePasswd(passwd)
                     }
                 }
 

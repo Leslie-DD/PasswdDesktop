@@ -15,6 +15,8 @@ import network.Api.API_NEW_GROUP
 import network.Api.API_NEW_PASSWD
 import network.Api.API_PASSWDS
 import network.Api.API_REGISTER
+import network.Api.API_UPDATE_GROUP
+import network.Api.API_UPDATE_PASSWD
 import network.entity.KtorResult
 import passwds.entity.Group
 import passwds.entity.LoginResult
@@ -152,6 +154,29 @@ object KtorRequest {
         }.body<KtorResult<Int>>().result()
     }
 
+    /**
+     * @return the group count that updated, always 1 if updated successfully
+     */
+    suspend fun updateGroup(
+        groupId: Int,
+        groupName: String,
+        groupComment: String
+    ): Result<Int> = runCatching {
+        return httpClient.post {
+            url(API_UPDATE_GROUP)
+            setBody(MultiPartFormDataContent(formData {
+                headers {
+                    append("access_token", LocalPref.accessToken)
+                }
+                append("user_id", LocalPref.userId)
+                append("id", groupId)
+                append("group_name", groupName)
+                append("group_comment", groupComment)
+            }))
+            contentType(ContentType.Application.Json)
+        }.body<KtorResult<Int>>().result()
+    }
+
     suspend fun newPasswd(
         groupId: Int,
         title: String,
@@ -173,6 +198,35 @@ object KtorRequest {
                 append("password", password)
                 append("link", link)
                 append("comment", comment)
+                append("secret_key", LocalPref.secretKey)
+            }))
+            contentType(ContentType.Application.Json)
+        }.body<KtorResult<Int>>().result()
+    }
+
+    suspend fun updatePasswd(
+        id: Int,
+        title: String?,
+        usernameStr: String?,
+        passwordStr: String?,
+        link: String?,
+        comment: String?
+    ): Result<Int> = runCatching {
+        return httpClient.post {
+            url(API_UPDATE_PASSWD)
+            setBody(MultiPartFormDataContent(formData {
+                headers {
+                    append("access_token", LocalPref.accessToken)
+                }
+                append("user_id", LocalPref.userId)
+
+                append("id", id)
+                append("title", title ?: "")
+                append("username_string", usernameStr ?: "")
+                append("password_string", passwordStr ?: "")
+                append("link", link ?: "")
+                append("comment", comment ?: "")
+
                 append("secret_key", LocalPref.secretKey)
             }))
             contentType(ContentType.Application.Json)

@@ -1,4 +1,3 @@
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -48,9 +47,7 @@ fun main() = application {
             androidx.compose.material.MaterialTheme(colors = theme.materialColors) {
                 MaterialTheme(colorScheme = theme.materialColorScheme) {
                     Surface(modifier = Modifier.fillMaxSize()) {
-                        Column(Modifier.fillMaxSize()) {
-                            App(viewModel = viewModel, state)
-                        }
+                        App(viewModel = viewModel, state)
                     }
                 }
             }

@@ -6,6 +6,11 @@ import kotlinx.serialization.Serializable
 data class Group(
     val id: Int,
     val userId: Int,
-    val groupName: String?,
-    val groupComment: String?
-)
+    var groupName: String?,
+    var groupComment: String?
+) {
+    companion object {
+        const val GROUP_PARAM_NAME = "group_name"
+        const val GROUP_PARAM_COMMENT = "group_comment"
+    }
+}

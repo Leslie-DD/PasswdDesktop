@@ -4,14 +4,16 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Passwd(
-    val comment: String?,
+    var comment: String?,
     val groupId: Int?,
     val id: Int,
-    val link: String?,
-    val usernameString: String?,
-    val passwordString: String?,
+    var link: String?,
+    var usernameString: String?,
+    var passwordString: String?,
     val username: ByteArray? = null,
     val password: ByteArray? = null,
-    val title: String?,
+    var title: String?,
     val userId: Int?,
-)
+) {
+//    fun copy() = Passwd(comment, groupId, id, link, usernameString, passwordString, username, password, title, userId)
+}

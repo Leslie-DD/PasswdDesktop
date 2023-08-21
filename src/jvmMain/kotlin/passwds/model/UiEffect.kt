@@ -9,7 +9,11 @@ sealed interface UiEffect {
 
     class DeleteGroupResult(val group: Group?) : UiEffect
 
+    class UpdateGroupResult(val group: Group?) : UiEffect
+
     class NewPasswdResult(val passwd: Passwd?) : UiEffect
+
+    class UpdatePasswdResult(val passwd: Passwd?) : UiEffect
 
     class DeletePasswdResult(val passwd: Passwd?) : UiEffect
 

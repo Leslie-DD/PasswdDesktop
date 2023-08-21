@@ -49,6 +49,16 @@ class PasswdRepository {
 
     suspend fun deleteGroup(groupId: Int): Result<Int> = KtorRequest.deleteGroup(groupId)
 
+    suspend fun updateGroup(
+        groupId: Int,
+        groupName: String,
+        groupComment: String
+    ): Result<Int> = KtorRequest.updateGroup(
+        groupId = groupId,
+        groupName = groupName,
+        groupComment = groupComment
+    )
+
     suspend fun newPasswd(
         groupId: Int,
         title: String,
@@ -61,6 +71,22 @@ class PasswdRepository {
         title = title,
         username = username,
         password = password,
+        link = link,
+        comment = comment
+    )
+
+    suspend fun updatePasswd(
+        id: Int,
+        title: String?,
+        usernameStr: String?,
+        passwordStr: String?,
+        link: String?,
+        comment: String?
+    ): Result<Int> = KtorRequest.updatePasswd(
+        id = id,
+        title = title,
+        usernameStr = usernameStr,
+        passwordStr = passwordStr,
         link = link,
         comment = comment
     )
