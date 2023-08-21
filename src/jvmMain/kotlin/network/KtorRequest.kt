@@ -18,6 +18,7 @@ import network.Api.API_REGISTER
 import network.Api.API_UPDATE_GROUP
 import network.Api.API_UPDATE_PASSWD
 import network.entity.KtorResult
+import org.slf4j.Logger
 import passwds.entity.Group
 import passwds.entity.LoginResult
 import passwds.entity.Passwd

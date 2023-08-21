@@ -81,7 +81,7 @@ fun LoginAndRegisterScreen(
     with(effect) {
         when (this) {
             is UiEffect.LoginAndRegisterFailure -> {
-                Log.error("receive LoginAndRegisterFailure Effect, tipsMsg = $tipsMsg")
+//                Log.error("receive LoginAndRegisterFailure Effect, tipsMsg = $tipsMsg")
                 msg.value = tipsMsg
                 isTipsMsgDialogOpen.value = true
             }

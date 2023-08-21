@@ -54,6 +54,10 @@ kotlin {
             commonMainImplementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.3")
 
             commonMainImplementation("com.gitee.liang_dh:KtPref:1.0.0")
+
+            commonMainImplementation("ch.qos.logback:logback-classic:1.4.11")
+
+            commonMainImplementation("org.slf4j:slf4j-log4j12:1.7.36")
         }
     }
 }

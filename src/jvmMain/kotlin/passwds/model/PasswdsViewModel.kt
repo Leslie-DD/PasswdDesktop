@@ -10,7 +10,8 @@ import config.LocalPref
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import model.Setting
-import org.jetbrains.skia.impl.Log
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import passwds.entity.Group
 import passwds.entity.LoginResult
 import passwds.entity.Passwd
@@ -19,6 +20,8 @@ import platform.desktop.Platform
 import platform.desktop.currentPlatform
 
 class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
+
+    val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private val repository: PasswdRepository = PasswdRepository()
 
@@ -56,19 +59,19 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     private suspend fun loginByToken() {
         val username = LocalPref.username
-        Log.error("PasswdsViewModel().loginByToken, username: $username")
+        logger.debug("PasswdsViewModel().loginByToken, username: $username")
         if (username.isBlank()) {
             updateUiState { copy(uiScreen = UiScreen.Login) }
             return
         }
         val token = LocalPref.accessToken
-        Log.error("PasswdsViewModel().loginByToken, token: $token")
+        logger.debug("PasswdsViewModel().loginByToken, token: $token")
         if (token.isBlank()) {
             updateUiState { copy(uiScreen = UiScreen.Login) }
             return
         }
         val secretKey = LocalPref.secretKey
-        Log.error("PasswdsViewModel().loginByToken, secretKey: $secretKey")
+        logger.debug("PasswdsViewModel().loginByToken, secretKey: $secretKey")
         if (secretKey.isBlank()) {
             updateUiState { copy(uiScreen = UiScreen.Login) }
             return
@@ -78,10 +81,10 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             token = token,
             secretKey = secretKey
         ).onSuccess {
-            Log.error("PasswdsViewModel().loginByToken success, result: $it")
+            logger.info("PasswdsViewModel().loginByToken success, result: $it")
             onLoginSuccess(secretKey, it)
         }.onFailure {
-            Log.error("PasswdsViewModel().loginByToken error:${it.message}")
+            logger.error("PasswdsViewModel().loginByToken error:${it.message}")
             it.printStackTrace()
             updateUiState { copy(uiScreen = UiScreen.Login) }
         }
@@ -92,9 +95,9 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         password: String,
         secretKey: String
     ) {
-        Log.error("PasswdsViewModel().loginByPassword start")
+        logger.debug("PasswdsViewModel().loginByPassword start")
         if (username.isBlank() || password.isBlank() || secretKey.isBlank()) {
-            Log.error("PasswdsViewModel().loginByPassword error, $username, $password, $secretKey")
+            logger.error("PasswdsViewModel().loginByPassword error, $username, $password, $secretKey")
             return
         }
         repository.loginByPassword(
@@ -102,10 +105,10 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             password = password,
             secretKey = secretKey
         ).onSuccess {
-            Log.error("PasswdsViewModel().loginByPassword success, result: $it")
+            logger.info("PasswdsViewModel().loginByPassword success, result: $it")
             onLoginSuccess(secretKey, it)
         }.onFailure {
-            Log.error("PasswdsViewModel().loginByPassword error: ${it.message}")
+            logger.error("PasswdsViewModel().loginByPassword error: ${it.message}")
             updateUiState {
                 copy(effect = UiEffect.LoginAndRegisterFailure(it.message))
             }
@@ -139,16 +142,16 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         username: String,
         password: String,
     ) {
-        Log.error("PasswdsViewModel().register start")
+        logger.debug("PasswdsViewModel().register start")
         if (username.isBlank() || password.isBlank()) {
-            Log.error("PasswdsViewModel().register error, $username, $password")
+            logger.error("PasswdsViewModel().register error, $username, $password")
             return
         }
         repository.register(
             username = username,
             password = password,
         ).onSuccess {
-            Log.error("PasswdsViewModel().register success, result: $it")
+            logger.info("PasswdsViewModel().register success, result: $it")
             updateUiState { copy(uiScreen = UiScreen.Passwds) }
             coroutineScope {
                 withContext(Dispatchers.IO) {
@@ -167,7 +170,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 }
             }
         }.onFailure {
-            Log.error("PasswdsViewModel().register error: ${it.message}")
+            logger.error("PasswdsViewModel().register error: ${it.message}")
             updateUiState {
                 copy(effect = UiEffect.LoginAndRegisterFailure(it.message))
             }
@@ -176,49 +179,49 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private suspend fun fetchPasswds() {
-        Log.error("PasswdsViewModel().fetchPasswds start")
+        logger.debug("PasswdsViewModel().fetchPasswds start")
         repository.fetchPasswds()
             .onSuccess {
-                Log.error("PasswdsViewModel().fetchPasswds success, size:${it.size}")
+                logger.info("PasswdsViewModel().fetchPasswds success, size:${it.size}")
                 updateUiState {
                     copy(
                         passwds = it
                     )
                 }
             }.onFailure {
-                Log.error("PasswdsViewModel().fetchPasswds error:${it.message}")
+                logger.error("PasswdsViewModel().fetchPasswds error:${it.message}")
                 it.printStackTrace()
             }
     }
 
     private suspend fun fetchGroups() {
-        Log.error("PasswdsViewModel().fetchGroups start")
+        logger.debug("PasswdsViewModel().fetchGroups start")
         repository.fetchGroups()
             .onSuccess {
-                Log.error("PasswdsViewModel().fetchGroups success, size:${it.size}")
+                logger.info("PasswdsViewModel().fetchGroups success, size:${it.size}")
                 updateUiState {
                     copy(
                         groups = it
                     )
                 }
             }.onFailure {
-                Log.error("PasswdsViewModel().fetchGroups error:${it.message}")
+                logger.error("PasswdsViewModel().fetchGroups error:${it.message}")
                 it.printStackTrace()
             }
     }
 
     private suspend fun fetchGroupPasswds(groupId: Int) = withContext(Dispatchers.IO) {
-        Log.error("PasswdsViewModel().fetchGroupPasswds start")
+        logger.debug("PasswdsViewModel().fetchGroupPasswds start")
         repository.fetchGroupPasswds(groupId)
             .onSuccess {
-                Log.error("PasswdsViewModel().fetchGroupPasswds success, size:${it.size}")
+                logger.info("PasswdsViewModel().fetchGroupPasswds success, size:${it.size}")
                 updateUiState {
                     copy(
                         groupPasswds = it
                     )
                 }
             }.onFailure {
-                Log.error("PasswdsViewModel().fetchGroupPasswds error:${it.message}")
+                logger.error("PasswdsViewModel().fetchGroupPasswds error:${it.message}")
                 updateUiState {
                     copy(
                         groupPasswds = arrayListOf()
@@ -325,7 +328,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         link: String,
         comment: String,
     ) {
-        Log.error("PasswdsViewModel().newPasswd start")
+        logger.debug("PasswdsViewModel().newPasswd start")
         repository.newPasswd(
             groupId = groupId,
             title = title,
@@ -335,7 +338,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             comment = comment,
         )
             .onSuccess {
-                Log.error("PasswdsViewModel().newPasswd onSuccess, id: $it")
+                logger.info("PasswdsViewModel().newPasswd onSuccess, id: $it")
                 val newPasswd = Passwd(
                     id = it,
                     groupId = groupId,
@@ -354,7 +357,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     )
                 }
             }.onFailure {
-                Log.error("PasswdsViewModel().newPasswd onFailure")
+                logger.error("PasswdsViewModel().newPasswd onFailure")
                 it.printStackTrace()
                 updateUiState {
                     copy(
@@ -368,7 +371,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     private suspend fun updatePasswd(
         updatePasswd: Passwd
     ) {
-        Log.error("PasswdsViewModel().updatePasswd start")
+        logger.debug("PasswdsViewModel().updatePasswd start")
         delay(1000)
         repository.updatePasswd(
             id = updatePasswd.id,
@@ -379,7 +382,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             comment = updatePasswd.comment
         )
             .onSuccess { count ->
-                Log.error("PasswdsViewModel().updatePasswd onSuccess, count: $count")
+                logger.info("PasswdsViewModel().updatePasswd onSuccess, count: $count")
                 updateUiState {
                     val originPasswd = getGroupPasswd(updatePasswd.id)
                     originPasswd?.let {
@@ -396,7 +399,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     )
                 }
             }.onFailure {
-                Log.error("PasswdsViewModel().updatePasswd onFailure")
+                logger.error("PasswdsViewModel().updatePasswd onFailure")
                 it.printStackTrace()
                 updateUiState {
                     copy(
@@ -430,6 +433,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     fun onAction(action: UiAction) {
+        logger.debug("onAction: $action")
         with(action) {
             when (this) {
                 is UiAction.GoScreen -> {
@@ -460,7 +464,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
                 is UiAction.ShowPasswd -> {
                     val passwd = getGroupPasswd(passwdId)
-                    Log.error("onAction: ${action.javaClass.simpleName}, passwd: $passwd")
                     updateUiState {
                         copy(
                             selectPasswd = passwd
