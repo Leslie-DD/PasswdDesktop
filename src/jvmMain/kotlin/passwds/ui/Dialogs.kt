@@ -453,3 +453,32 @@ fun PasswdDetailEditDialog(
         }
     }
 }
+
+@Composable
+fun TipsMessage(
+    msg: String?,
+    theme: Theme,
+    onCloseClick: () -> Unit,
+) {
+    Dialog(
+        onCloseRequest = { onCloseClick() },
+        state = rememberDialogState(
+            position = WindowPosition(Alignment.Center),
+            size = DpSize(300.dp, 300.dp)
+        )
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize().background(color = if (theme.isDark) Color.Black else Color.White),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            msg?.let { Text(msg) }
+            Spacer(modifier = Modifier.height(20.dp))
+            Button(
+                onClick = { onCloseClick() }
+            ) {
+                Text(text = "Ok")
+            }
+        }
+    }
+}

@@ -106,6 +106,9 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             onLoginSuccess(secretKey, it)
         }.onFailure {
             Log.error("PasswdsViewModel().loginByPassword error: ${it.message}")
+            updateUiState {
+                copy(effect = UiEffect.LoginAndRegisterFailure(it.message))
+            }
             it.printStackTrace()
         }
     }
@@ -125,6 +128,9 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             }
             launch(Dispatchers.IO) {
                 fetchGroups()
+            }
+            updateUiState {
+                copy(effect = null)
             }
         }
     }
@@ -162,6 +168,9 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             }
         }.onFailure {
             Log.error("PasswdsViewModel().register error: ${it.message}")
+            updateUiState {
+                copy(effect = UiEffect.LoginAndRegisterFailure(it.message))
+            }
             it.printStackTrace()
         }
     }

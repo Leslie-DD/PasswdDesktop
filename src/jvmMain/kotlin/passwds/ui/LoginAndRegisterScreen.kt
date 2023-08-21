@@ -7,17 +7,16 @@ import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.People
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import org.jetbrains.skia.impl.Log
 import passwds.model.PasswdsViewModel
 import passwds.model.UiAction
+import passwds.model.UiEffect
 import passwds.model.UiScreen
 
 @Composable
@@ -63,6 +62,30 @@ fun LoginAndRegisterScreen(
 
                 else -> {}
             }
+        }
+    }
+
+    val isTipsMsgDialogOpen = remember { mutableStateOf(false) }
+    val msg = remember { mutableStateOf<String?>(null) }
+    if (isTipsMsgDialogOpen.value) {
+        val theme by viewModel.theme.collectAsState()
+        TipsMessage(
+            msg = msg.value,
+            theme = theme,
+        ) {
+            isTipsMsgDialogOpen.value = false
+            viewModel.onAction(UiAction.ClearEffect)
+        }
+    }
+    val effect = viewModel.uiState.effect
+    with(effect) {
+        when (this) {
+            is UiEffect.LoginAndRegisterFailure -> {
+                Log.error("receive LoginAndRegisterFailure Effect, tipsMsg = $tipsMsg")
+                msg.value = tipsMsg
+                isTipsMsgDialogOpen.value = true
+            }
+            else -> {}
         }
     }
 }

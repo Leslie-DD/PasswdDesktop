@@ -17,7 +17,9 @@ sealed interface UiEffect {
 
     class DeletePasswdResult(val passwd: Passwd?) : UiEffect
 
-    object PasswdScreen : UiEffect
+    object LoginAndRegisterSuccess : UiEffect
+
+    class LoginAndRegisterFailure(val tipsMsg: String?) : UiEffect
 
 
 }
