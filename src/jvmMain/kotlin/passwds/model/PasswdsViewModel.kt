@@ -21,7 +21,7 @@ import platform.desktop.currentPlatform
 
 class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
-    val logger: Logger = LoggerFactory.getLogger(javaClass)
+    private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private val repository: PasswdRepository = PasswdRepository()
 
@@ -42,6 +42,30 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     init {
         launch(Dispatchers.IO) {
             loginByToken()
+        }
+
+        launch {
+            repository.passwds.collect {
+                updateUiState {
+                    copy(passwds = it)
+                }
+            }
+        }
+
+        launch {
+            repository.groupPasswds.collect {
+                updateUiState {
+                    copy(groupPasswds = it)
+                }
+            }
+        }
+
+        launch {
+            repository.groups.collect {
+                updateUiState {
+                    copy(groups = it)
+                }
+            }
         }
     }
 
@@ -181,54 +205,16 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     private suspend fun fetchPasswds() {
         logger.debug("PasswdsViewModel().fetchPasswds start")
         repository.fetchPasswds()
-            .onSuccess {
-                logger.info("PasswdsViewModel().fetchPasswds success, size:${it.size}")
-                updateUiState {
-                    copy(
-                        passwds = it
-                    )
-                }
-            }.onFailure {
-                logger.error("PasswdsViewModel().fetchPasswds error:${it.message}")
-                it.printStackTrace()
-            }
     }
 
     private suspend fun fetchGroups() {
         logger.debug("PasswdsViewModel().fetchGroups start")
         repository.fetchGroups()
-            .onSuccess {
-                logger.info("PasswdsViewModel().fetchGroups success, size:${it.size}")
-                updateUiState {
-                    copy(
-                        groups = it
-                    )
-                }
-            }.onFailure {
-                logger.error("PasswdsViewModel().fetchGroups error:${it.message}")
-                it.printStackTrace()
-            }
     }
 
     private suspend fun fetchGroupPasswds(groupId: Int) = withContext(Dispatchers.IO) {
         logger.debug("PasswdsViewModel().fetchGroupPasswds start")
         repository.fetchGroupPasswds(groupId)
-            .onSuccess {
-                logger.info("PasswdsViewModel().fetchGroupPasswds success, size:${it.size}")
-                updateUiState {
-                    copy(
-                        groupPasswds = it
-                    )
-                }
-            }.onFailure {
-                logger.error("PasswdsViewModel().fetchGroupPasswds error:${it.message}")
-                updateUiState {
-                    copy(
-                        groupPasswds = arrayListOf()
-                    )
-                }
-                it.printStackTrace()
-            }
     }
 
     private suspend fun newGroup(

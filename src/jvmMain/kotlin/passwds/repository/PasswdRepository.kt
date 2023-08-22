@@ -1,122 +1,111 @@
 package passwds.repository
 
-import network.Api.API_DELETE_GROUP
-import network.Api.API_DELETE_PASSWD
-import network.Api.API_GROUPS
-import network.Api.API_GROUP_PASSWDS
-import network.Api.API_LOGIN_BY_PASSWORD
-import network.Api.API_LOGIN_BY_TOKEN
-import network.Api.API_NEW_GROUP
-import network.Api.API_NEW_PASSWD
-import network.Api.API_PASSWDS
-import network.Api.API_REGISTER
-import network.Api.API_UPDATE_GROUP
-import network.Api.API_UPDATE_PASSWD
-import network.KtorRequest
-import network.Param
+import kotlinx.coroutines.flow.MutableStateFlow
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import passwds.datasource.RemoteDataSource
 import passwds.entity.Group
 import passwds.entity.LoginResult
 import passwds.entity.Passwd
 import passwds.entity.RegisterResult
 
-class PasswdRepository {
+class PasswdRepository(
+    private val remoteDataSource: RemoteDataSource = RemoteDataSource()
+) {
 
-    suspend fun fetchPasswds(): Result<List<Passwd>> = KtorRequest.postRequest(
-        api = API_PASSWDS
-    )
+    private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    suspend fun fetchGroups(): Result<MutableList<Group>> = KtorRequest.postRequest(
-        api = API_GROUPS
-    )
+    val passwds = MutableStateFlow<MutableList<Passwd>>(arrayListOf())
+
+    val groups = MutableStateFlow<MutableList<Group>>(arrayListOf())
+
+    val groupPasswds = MutableStateFlow<MutableList<Passwd>>(arrayListOf())
+
+
+    suspend fun fetchPasswds() {
+        remoteDataSource.fetchPasswds()
+            .onSuccess {
+                passwds.emit(it)
+            }.onFailure {
+                logger.error("$TAG fetchPasswds error, ${it.message}")
+                it.printStackTrace()
+            }
+    }
+
+    suspend fun fetchGroups() {
+        remoteDataSource.fetchGroups()
+            .onSuccess {
+                groups.emit(it)
+            }.onFailure {
+                logger.error("$TAG fetchGroups error, ${it.message}")
+                it.printStackTrace()
+            }
+    }
 
     suspend fun fetchGroupPasswds(
         groupId: Int
-    ): Result<MutableList<Passwd>> = KtorRequest.postRequest(
-        api = API_GROUP_PASSWDS,
-        params = listOf(
-            Param("group_id", groupId),
-        )
-    )
+    ) {
+        remoteDataSource.fetchGroupPasswds(
+            groupId
+        ).onSuccess {
+            groupPasswds.emit(it)
+        }.onFailure {
+            logger.error("$TAG fetchGroupPasswds error, ${it.message}")
+            it.printStackTrace()
+        }
+    }
 
 
     suspend fun loginByToken(
         username: String,
         token: String,
         secretKey: String
-    ): Result<LoginResult> = KtorRequest.postRequest(
-        needToken = false,
-        needUserId = false,
-        needSecretKey = false,
-        api = API_LOGIN_BY_TOKEN,
-        params = listOf(
-            Param("username", username),
-            Param("token", token),
-            Param("secret_key", secretKey)
-        )
+    ): Result<LoginResult> = remoteDataSource.loginByToken(
+        username = username,
+        token = token,
+        secretKey = secretKey
     )
 
     suspend fun loginByPassword(
         username: String,
         password: String,
         secretKey: String
-    ): Result<LoginResult> = KtorRequest.postRequest(
-        needToken = false,
-        needUserId = false,
-        needSecretKey = false,
-        api = API_LOGIN_BY_PASSWORD,
-        params = listOf(
-            Param("username", username),
-            Param("password", password),
-            Param("secret_key", secretKey)
-        )
+    ): Result<LoginResult> = remoteDataSource.loginByPassword(
+        username = username,
+        password = password,
+        secretKey = secretKey
     )
 
     suspend fun register(
         username: String,
         password: String,
-    ): Result<RegisterResult> = KtorRequest.postRequest(
-        needToken = false,
-        needUserId = false,
-        needSecretKey = false,
-        api = API_REGISTER,
-        params = listOf(
-            Param("username", username),
-            Param("password", password),
-        )
+    ): Result<RegisterResult> = remoteDataSource.register(
+        username = username,
+        password = password
     )
 
     suspend fun newGroup(
         groupName: String,
         groupComment: String,
-    ): Result<Int> = KtorRequest.postRequest(
-        needSecretKey = false,
-        api = API_NEW_GROUP,
-        params = listOf(
-            Param("group_name", groupName),
-            Param("group_comment", groupComment)
-        )
+    ): Result<Int> = remoteDataSource.newGroup(
+        groupName = groupName,
+        groupComment = groupComment
     )
 
-    suspend fun deleteGroup(groupId: Int): Result<Int> = KtorRequest.postRequest(
-        api = API_DELETE_GROUP,
-        needSecretKey = false,
-        params = listOf(
-            Param("group_id", groupId)
-        )
+    suspend fun deleteGroup(
+        groupId: Int
+    ): Result<Int> = remoteDataSource.deleteGroup(
+        groupId = groupId
     )
 
     suspend fun updateGroup(
         groupId: Int,
         groupName: String,
         groupComment: String
-    ): Result<Int> = KtorRequest.postRequest(
-        api = API_UPDATE_GROUP,
-        needSecretKey = false,
-        params = listOf(
-            Param("id", groupId),
-            Param("group_name", groupName),
-            Param("group_comment", groupComment)
-        )
+    ): Result<Int> = remoteDataSource.updateGroup(
+        groupId = groupId,
+        groupName = groupName,
+        groupComment = groupComment
     )
 
     suspend fun newPasswd(
@@ -126,16 +115,13 @@ class PasswdRepository {
         password: String,
         link: String,
         comment: String,
-    ): Result<Int> = KtorRequest.postRequest(
-        api = API_NEW_PASSWD,
-        params = listOf(
-            Param("group_id", groupId),
-            Param("title", title),
-            Param("username", username),
-            Param("password", password),
-            Param("link", link),
-            Param("comment", comment)
-        )
+    ): Result<Int> = remoteDataSource.newPasswd(
+        groupId = groupId,
+        title = title,
+        username = username,
+        password = password,
+        link = link,
+        comment = comment
     )
 
     suspend fun updatePasswd(
@@ -145,23 +131,22 @@ class PasswdRepository {
         passwordStr: String?,
         link: String?,
         comment: String?
-    ): Result<Int> = KtorRequest.postRequest(
-        api = API_UPDATE_PASSWD,
-        params = listOf(
-            Param("id", id),
-            Param("title", title ?: ""),
-            Param("username_string", usernameStr ?: ""),
-            Param("password_string", passwordStr ?: ""),
-            Param("link", link ?: ""),
-            Param("comment", comment ?: "")
-        )
+    ): Result<Int> = remoteDataSource.updatePasswd(
+        id = id,
+        title = title,
+        usernameStr = usernameStr,
+        passwordStr = passwordStr,
+        link = link,
+        comment = comment
     )
 
-    suspend fun deletePasswd(id: Int): Result<Int> = KtorRequest.postRequest(
-        api = API_DELETE_PASSWD,
-        needSecretKey = false,
-        params = listOf(
-            Param("id", id)
-        )
+    suspend fun deletePasswd(
+        id: Int
+    ): Result<Int> = remoteDataSource.deletePasswd(
+        id = id
     )
+
+    companion object {
+        private const val TAG = "PasswdRepository"
+    }
 }
