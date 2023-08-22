@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -505,40 +506,25 @@ fun PasswdCard(
     isSelected: Boolean,
     onClick: (Int) -> Unit
 ) {
-    Box(
-        modifier = Modifier.fillMaxWidth().height(70.dp)
-    ) {
-        Row(modifier = Modifier.fillMaxSize()) {
-            AnimatedVisibility(
-                modifier = Modifier.fillMaxSize(),
-                visible = isSelected
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize().background(
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-//                        shape = CutCornerShape(bottomEndPercent = 40, topEndPercent = 60)
-                    )
-                )
+    TextButton(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = { onClick(passwd.id) },
+        colors = ButtonDefaults.textButtonColors(
+            contentColor = if (isSelected) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.outline
             }
-        }
-        TextButton(
-            modifier = Modifier.fillMaxWidth(),
-            interactionSource = remember { NoRippleInteractionSource() },
-            onClick = { onClick(passwd.id) },
-            colors = ButtonDefaults.textButtonColors(
-                contentColor = if (isSelected) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.outline
-                }
-            )
-        ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Spacer(modifier = Modifier.weight(0.1f))
-                Text(text = passwd.title ?: "", fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Spacer(modifier = Modifier.weight(0.1f))
+        ),
+        shape = RectangleShape
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Spacer(modifier = Modifier.weight(0.1f))
+            Text(text = passwd.title ?: "", fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Spacer(modifier = Modifier.weight(0.1f))
+            if (!passwd.usernameString.isNullOrBlank()) {
                 Text(
-                    text = passwd.usernameString ?: "",
+                    text = passwd.usernameString!!,
                     fontSize = 13.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
