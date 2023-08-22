@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import org.jetbrains.skia.impl.Log
 import passwds.model.PasswdsViewModel
 import passwds.model.UiAction
 import passwds.model.UiEffect
@@ -85,6 +84,7 @@ fun LoginAndRegisterScreen(
                 msg.value = tipsMsg
                 isTipsMsgDialogOpen.value = true
             }
+
             else -> {}
         }
     }
