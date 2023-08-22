@@ -1,11 +1,13 @@
 package passwds.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -87,18 +89,28 @@ fun PasswdGroupList(
         modifier = modifier.fillMaxSize()
     ) {
         val selectGroup = viewModel.uiState.selectGroup
-        LazyColumn(
-            modifier = Modifier.weight(1f).padding(10.dp),
-            state = listState
+        Row(
+            modifier = Modifier.weight(1f).padding(4.dp)
         ) {
-            items(groups) { group ->
-                GroupCard(
-                    group = group,
-                    isSelected = group.id == selectGroup?.id
-                ) {
-                    viewModel.onAction(UiAction.ShowGroupPasswds(groupId = it))
+            LazyColumn(
+                modifier = Modifier.weight(1f).padding(10.dp),
+                state = listState
+            ) {
+                items(groups) { group ->
+                    GroupCard(
+                        group = group,
+                        isSelected = group.id == selectGroup?.id
+                    ) {
+                        viewModel.onAction(UiAction.ShowGroupPasswds(groupId = it))
+                    }
                 }
             }
+            VerticalScrollbar(
+                modifier = Modifier.fillMaxHeight(),
+                adapter = rememberScrollbarAdapter(
+                    scrollState = listState
+                )
+            )
         }
         Row(
             modifier = Modifier
@@ -226,22 +238,33 @@ fun PasswdItemsList(
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        val selectGroupId = viewModel.uiState.selectGroup?.id
-        LazyColumn(
-            modifier = modifier
-                .weight(1f)
-                .padding(vertical = 10.dp),
-            state = listState
+
+        Row(
+            modifier = Modifier.weight(1f).padding(4.dp)
         ) {
-            items(groupPasswds) { passwd ->
-                PasswdCard(
-                    passwd = passwd,
-                    isSelected = passwd.id == viewModel.uiState.selectPasswd?.id
-                ) {
-                    viewModel.onAction(UiAction.ShowPasswd(passwdId = it))
+            LazyColumn(
+                modifier = modifier.weight(1f).padding(10.dp),
+                state = listState
+            ) {
+                items(groupPasswds) { passwd ->
+                    PasswdCard(
+                        passwd = passwd,
+                        isSelected = passwd.id == viewModel.uiState.selectPasswd?.id
+                    ) {
+                        viewModel.onAction(UiAction.ShowPasswd(passwdId = it))
+                    }
                 }
             }
+            VerticalScrollbar(
+                modifier = Modifier.fillMaxHeight(),
+                adapter = rememberScrollbarAdapter(
+                    scrollState = listState
+                )
+            )
         }
+
+
+        val selectGroupId = viewModel.uiState.selectGroup?.id
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -498,7 +521,6 @@ fun PasswdCard(
                 )
             }
         }
-
         TextButton(
             modifier = Modifier.fillMaxWidth(),
             interactionSource = remember { NoRippleInteractionSource() },
