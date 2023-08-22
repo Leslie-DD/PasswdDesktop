@@ -11,9 +11,9 @@ import kotlinx.serialization.json.Json
 val httpClient = httpClient {
     install(DefaultRequest) {
         url {
-            protocol = URLProtocol.HTTP  // HTTP协议
-            host = ""      // 本地IP
-            port = 19999                  // 本地端口
+            protocol = URLProtocol.HTTP     // HTTP协议
+            host = ""                       // 本地IP
+            port = 19999                    // 本地端口
         }
     }
     install(Logging) {
