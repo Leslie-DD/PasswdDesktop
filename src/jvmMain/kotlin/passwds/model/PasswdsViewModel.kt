@@ -173,11 +173,14 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             password = password,
         ).onSuccess {
             logger.info("PasswdsViewModel().register success, result: $it")
+            if (it == null) {
+                return@onSuccess
+            }
             updateUiState { copy(uiScreen = UiScreen.Passwds) }
             coroutineScope {
                 withContext(Dispatchers.IO) {
-                    settings.secretKey.emit(it.secret_key)
-                    settings.userId.emit(it.user_id)
+                    settings.secretKey.emit(it.secretKey)
+                    settings.userId.emit(it.userId)
                     settings.username.emit(username)
                     settings.accessToken.emit(it.token)
                     clearData()

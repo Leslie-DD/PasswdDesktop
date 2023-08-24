@@ -107,7 +107,7 @@ class PasswdRepository(
     suspend fun register(
         username: String,
         password: String,
-    ): Result<RegisterResult> {
+    ): Result<RegisterResult?> {
         return remoteDataSource.register(
             username = username,
             password = password

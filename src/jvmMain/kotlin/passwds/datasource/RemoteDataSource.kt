@@ -63,7 +63,7 @@ class RemoteDataSource {
     suspend fun register(
         username: String,
         password: String,
-    ): Result<RegisterResult> = KtorRequest.postRequest(
+    ): Result<RegisterResult?> = KtorRequest.postRequest(
         needToken = false,
         needUserId = false,
         needSecretKey = false,

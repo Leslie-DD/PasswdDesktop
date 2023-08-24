@@ -1,10 +1,13 @@
 package passwds.entity
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class RegisterResult(
-    val user_id: Int,
-    val secret_key: String,
+    @SerialName("user_id")
+    val userId: Int,
+    @SerialName("secret_key")
+    val secretKey: String,
     val token: String,
 )
