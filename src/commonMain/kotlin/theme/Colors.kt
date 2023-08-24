@@ -24,3 +24,5 @@ val Deep_Orange_A700 = Color(0xFFDD2C00)
 val Green_500 = Color(0xFF4CAF50)
 val Green_700 = Color(0xFF388E3C)
 val Green_900 = Color(0xFF1B5E20)
+
+val DARK_GRAY = Color(0xFF2D2F33)

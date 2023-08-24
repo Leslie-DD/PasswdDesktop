@@ -2,27 +2,20 @@ package passwds.ui
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MenuOpen
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -33,6 +26,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import model.Res
+import model.next
 import passwds.model.PasswdsViewModel
 import passwds.model.UiAction
 import passwds.model.UiScreen
@@ -44,65 +38,143 @@ fun SideMenuScreen(
 ) {
 
     val coroutine = rememberCoroutineScope()
-    Column(modifier = modifier.fillMaxSize()) {
+
+    val expand = viewModel.uiState.menuOpen
+    Column(
+        modifier = modifier
+            .width(if (expand) 200.dp else 70.dp)
+            .fillMaxHeight()
+            .padding(top = 20.dp, bottom = 40.dp, start = 10.dp, end = 10.dp),
+        verticalArrangement = Arrangement.SpaceBetween,
+    ) {
+
         val uiScreen = viewModel.uiState.uiScreen
-        LazyColumn(modifier = Modifier.weight(1f)) {
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
             item {
-                AppSymbolBox(
-                    modifier = Modifier.background(
-                        brush = Brush.verticalGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.secondaryContainer,
-                                Color.Transparent,
-                            )
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(start = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (expand) {
+                        Text(text = "Passwd", fontSize = 20.sp, color = Color(0xffa9c8fc))
+                    }
+                    IconButton(
+                        onClick = { viewModel.onAction(UiAction.MenuOpenOrClose(!expand)) }
+                    ) {
+                        Icon(
+                            imageVector = if (expand) Icons.Default.MenuOpen else Icons.Default.Menu,
+                            contentDescription = null
                         )
-                    )
-                )
-            }
-
-            item { Spacer(modifier = Modifier.height(20.dp)) }
-
-            screensListMenu(UiScreen.Screens, uiScreen) {
-                viewModel.onAction(UiAction.GoScreen(it))
-                coroutine.launch {
-                    viewModel.scaffoldState.drawerState.close()
+                    }
                 }
             }
 
-            item { Spacer(modifier = Modifier.height(80.dp)) }
 
+            items(UiScreen.Screens) { screen ->
+                Spacer(modifier = Modifier.height(15.dp))
+
+                val isSelected = screen == uiScreen
+                TextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    interactionSource = remember { NoRippleInteractionSource() },
+                    onClick = {
+                        viewModel.onAction(UiAction.GoScreen(screen))
+                        coroutine.launch {
+                            viewModel.scaffoldState.drawerState.close()
+                        }
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        containerColor = if (isSelected) {
+                            MaterialTheme.colorScheme.secondaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.primaryContainer
+                        },
+                        contentColor = if (isSelected) {
+                            MaterialTheme.colorScheme.onSecondaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        }
+                    )
+                ) {
+                    Icon(imageVector = screen.icon, contentDescription = null)
+                    if (expand) {
+                        Spacer(modifier = Modifier.width(15.dp))
+                        Text(text = screen.name, fontSize = 18.sp)
+                    }
+                }
+            }
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 20.dp),
-            contentAlignment = Alignment.Center
+        Column(
+            modifier = Modifier.fillMaxWidth()
         ) {
+            ThemeChoiceButton(viewModel, expand)
+
+            Spacer(modifier = modifier.height(15.dp))
             TextButton(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.textButtonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ),
                 onClick = {
                     viewModel.onAction(UiAction.GoScreen(UiScreen.Login))
                     coroutine.launch {
                         viewModel.scaffoldState.drawerState.close()
                     }
-                },
-                modifier = Modifier.background(
-                    brush = Brush.horizontalGradient(
-                        listOf(
-                            MaterialTheme.colorScheme.secondaryContainer,
-                            MaterialTheme.colorScheme.secondaryContainer
-                        )
-                    ), alpha = 0.4f, shape = RoundedCornerShape(8.dp)
-                )
+                }
             ) {
-                Spacer(modifier = Modifier.width(16.dp))
                 Icon(imageVector = Icons.Default.ExitToApp, contentDescription = null)
-                Spacer(modifier = Modifier.width(10.dp).height(40.dp))
-                Text(text = "退出登录")
-                Spacer(modifier = Modifier.width(16.dp))
+                if (expand) {
+                    Spacer(modifier = Modifier.width(10.dp).height(40.dp))
+                    Text(text = "退出登录")
+                }
             }
         }
     }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun ThemeChoiceButton(viewModel: PasswdsViewModel, expand: Boolean) {
+    val theme by viewModel.theme.collectAsState()
+
+    TextButton(
+        modifier = Modifier.fillMaxWidth(),
+        interactionSource = remember { NoRippleInteractionSource() },
+        onClick = {
+            viewModel.theme.tryEmit(theme.next())
+        },
+        colors = ButtonDefaults.textButtonColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+    ) {
+        AnimatedContent(
+            modifier = Modifier.fillMaxWidth(),
+            targetState = theme,
+            transitionSpec = {
+                fadeIn() + slideInHorizontally() with fadeOut() + slideOutVertically()
+            }) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.animateContentSize()
+            ) {
+                Icon(
+                    imageVector = theme.iconVector,
+                    contentDescription = null
+                )
+                if (expand) {
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(text = theme.name)
+                }
+            }
+        }
+    }
+
 }
 
 @Composable
@@ -127,56 +199,6 @@ fun AppSymbolBox(modifier: Modifier = Modifier) {
         )
         Spacer(modifier = Modifier.height(10.dp))
         Text(text = "Compose for Multiplatform", fontSize = 12.sp)
-    }
-}
-
-fun LazyListScope.screensListMenu(
-    screens: List<UiScreen>,
-    currentScreen: UiScreen,
-    onChoice: (screen: UiScreen) -> Unit
-) {
-    items(screens) { screen ->
-        val isSelected = screen == currentScreen
-        Box(
-            modifier = Modifier.fillMaxWidth().height(60.dp).padding(end = 10.dp, top = 5.dp, bottom = 5.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            val coroutine = rememberCoroutineScope()
-            Row(modifier = Modifier.fillMaxSize()) {
-                AnimatedVisibility(
-                    modifier = Modifier.fillMaxSize(),
-                    visible = isSelected,
-                    enter = fadeIn() + slideInHorizontally(),
-                    exit = fadeOut() + slideOutHorizontally()
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize().background(
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            shape = RoundedCornerShape(bottomEndPercent = 50, topEndPercent = 50)
-                        )
-                    )
-                }
-            }
-
-            TextButton(
-                modifier = Modifier.fillMaxWidth(),
-                interactionSource = remember { NoRippleInteractionSource() },
-                onClick = { onChoice(screen) },
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = if (isSelected) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.outline
-                    }
-                )
-            ) {
-                Spacer(modifier = Modifier.weight(0.4f))
-                Icon(imageVector = screen.icon, contentDescription = null)
-                Spacer(modifier = Modifier.width(15.dp).fillMaxHeight())
-                Text(text = screen.name, fontSize = 18.sp)
-                Spacer(modifier = Modifier.weight(0.6f))
-            }
-        }
     }
 }
 

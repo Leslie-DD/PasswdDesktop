@@ -1,7 +1,6 @@
 package model
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.Colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShieldMoon
 import androidx.compose.material.icons.filled.WbAuto
@@ -12,16 +11,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import model.Theme.Companion.Themes
 import theme.Material3DarkTheme
 import theme.Material3LightTheme
-import theme.MaterialDarkTheme
-import theme.MaterialLightTheme
 
 sealed interface Theme {
-
-    /**
-     * material主题的颜色配置
-     */
-    val materialColors: Colors
-        @Composable get
 
     /**
      * Material3的主题配置
@@ -37,13 +28,11 @@ sealed interface Theme {
 
     val name: String
 
-    val iconVector: ImageVector?
+    val iconVector: ImageVector
 
     object Dark : Theme {
         override val materialColorScheme
             @Composable get() = Material3DarkTheme
-        override val materialColors
-            @Composable get() = MaterialDarkTheme
         override val isLight
             @Composable get() = false
         override val isDark
@@ -57,8 +46,6 @@ sealed interface Theme {
     object Light : Theme {
         override val materialColorScheme
             @Composable get() = Material3LightTheme
-        override val materialColors
-            @Composable get() = MaterialLightTheme
         override val isLight
             @Composable get() = true
         override val isDark
@@ -72,9 +59,6 @@ sealed interface Theme {
     object Auto : Theme {
         override val materialColorScheme
             @Composable get() = if (isDark) Dark.materialColorScheme else Light.materialColorScheme
-
-        override val materialColors
-            @Composable get() = if (isDark) Dark.materialColors else Light.materialColors
 
         override val isLight
             @Composable get() = !isDark
@@ -93,7 +77,4 @@ sealed interface Theme {
 
 }
 
-fun Theme.next() = Theme.Themes[(Theme.Themes.indexOf(this) + 1) % Theme.Themes.size]
-
-val Theme.index: Int
-    get() = Themes.indexOf(this)
+fun Theme.next() = Themes[(Themes.indexOf(this) + 1) % Themes.size]

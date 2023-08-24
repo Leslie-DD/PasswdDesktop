@@ -53,9 +53,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
 
         launch {
-            logger.info("PasswdsViewModel() collect groups start")
             repository.groups.collect {
-                logger.info("PasswdsViewModel() collect groups update $it")
                 updateUiState {
                     copy(groups = it)
                 }
@@ -536,6 +534,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     }
                 }
 
+                is UiAction.MenuOpenOrClose -> {
+                    updateUiState {
+                        copy(menuOpen = open)
+                    }
+                }
+
                 else -> {}
             }
         }
@@ -551,7 +555,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
      * 更新页面状态
      * 调用时在函数块中用 data class 的 copy函数就行
      */
-    fun updateUiState(update: TranslateUiState.() -> TranslateUiState) {
+    private fun updateUiState(update: TranslateUiState.() -> TranslateUiState) {
         _uiState.update { update(it) }
     }
 

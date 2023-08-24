@@ -1,3 +1,4 @@
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -9,11 +10,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.*
+import androidx.compose.ui.window.Tray
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberWindowState
 import model.Res
 import passwds.model.PasswdsViewModel
 import passwds.model.UiAction
-import passwds.model.UiScreen
 import passwds.ui.App
 import theme.LocalSpacing
 import theme.Spacing
@@ -44,27 +47,25 @@ fun main() = application {
 
         val theme by viewModel.theme.collectAsState()
         CompositionLocalProvider(LocalSpacing provides Spacing()) {
-            androidx.compose.material.MaterialTheme(colors = theme.materialColors) {
-                MaterialTheme(colorScheme = theme.materialColorScheme) {
-                    Surface(modifier = Modifier.fillMaxSize()) {
-                        App(viewModel = viewModel, state)
-                    }
+            MaterialTheme(colorScheme = theme.materialColorScheme) {
+                Surface(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary)) {
+                    App(viewModel = viewModel)
                 }
             }
         }
 
-        MenuBar {
-            Menu("File") {
-                Item("New window", onClick = { })
-                Menu("File") {
-                    Item("New window", onClick = { })
-                    Item("Exit", onClick = { })
-                }
-                Item("设置", onClick = {
-                    viewModel.onAction(UiAction.GoScreen(UiScreen.Settings))
-                }, icon = painterResource(Res.Drawable.APP_ICON_ROUND_CORNER))
-            }
-        }
+//        MenuBar {
+//            Menu("File") {
+//                Item("New window", onClick = { })
+//                Menu("File") {
+//                    Item("New window", onClick = { })
+//                    Item("Exit", onClick = { })
+//                }
+//                Item("设置", onClick = {
+//                    viewModel.onAction(UiAction.GoScreen(UiScreen.Settings))
+//                }, icon = painterResource(Res.Drawable.APP_ICON_ROUND_CORNER))
+//            }
+//        }
     }
 }
 

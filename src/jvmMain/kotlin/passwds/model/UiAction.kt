@@ -54,4 +54,6 @@ sealed class UiAction {
 
     object DeletePasswd : UiAction()
 
+    class MenuOpenOrClose(val open: Boolean) : UiAction()
+
 }

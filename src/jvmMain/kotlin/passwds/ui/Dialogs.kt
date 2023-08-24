@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -26,8 +27,6 @@ import androidx.compose.ui.window.rememberDialogState
 import model.Theme
 import passwds.entity.Passwd
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPasswdDialog(
     theme: Theme,
@@ -55,51 +54,35 @@ fun AddPasswdDialog(
             Column(
                 modifier = Modifier.fillMaxSize().padding(16.dp)
             ) {
-                TextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("title", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Default.Title, contentDescription = null)
-                    },
+                CustomTextField(
+                    label = "title",
+                    imageVector = Icons.Default.Title,
                     value = title.value,
-                    maxLines = 1,
                     onValueChange = { title.value = it },
                 )
-                TextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("username", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Default.People, contentDescription = null)
-                    },
+                CustomTextField(
+                    label = "username",
+                    imageVector = Icons.Default.People,
                     value = username.value,
-                    maxLines = 1,
                     onValueChange = { username.value = it }
                 )
-                TextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("password", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Default.Lock, contentDescription = null)
-                    },
+                CustomTextField(
+                    label = "password",
+                    imageVector = Icons.Default.Lock,
                     value = password.value,
-                    maxLines = 1,
                     onValueChange = { password.value = it }
                 )
-                TextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("link", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Default.Link, contentDescription = null)
-                    },
+                CustomTextField(
+                    label = "link",
+                    imageVector = Icons.Default.Link,
                     value = link.value,
-                    maxLines = 1,
                     onValueChange = { link.value = it }
                 )
-                OutlinedTextField(
+                OutlinedEditTextBox(
                     modifier = Modifier.weight(1f).fillMaxWidth().align(Alignment.Start),
-                    label = { Text("comment", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    labelValue = "comment",
                     value = comment.value,
-                    onValueChange = { comment.value = it }
+                    onInputChanged = { comment.value = it }
                 )
 
                 Button(
@@ -109,12 +92,50 @@ fun AddPasswdDialog(
                         onAddClick(title.value, username.value, password.value, link.value, comment.value)
                     }
                 ) {
-                    Text("Add")
+                    Text("Add", color = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
             }
         }
 
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CustomTextField(
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier.fillMaxWidth(),
+    colors: TextFieldColors = TextFieldDefaults.textFieldColors(
+        unfocusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        focusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        cursorColor = MaterialTheme.colorScheme.onPrimaryContainer
+    ),
+    imageVector: ImageVector,
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit
+) {
+    TextField(
+        enabled = enabled,
+        colors = colors,
+        modifier = modifier,
+        label = {
+            Text(
+                text = label,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = imageVector,
+                contentDescription = null
+            )
+        },
+        value = value,
+        maxLines = 1,
+        onValueChange = { onValueChange(it) },
+    )
 }
 
 @Composable
@@ -154,7 +175,7 @@ fun DeletePasswdConfirmDialog(
                         onDeleteConfirmOrCancelClick(true)
                     }
                 ) {
-                    Text(text = "Confirm")
+                    Text(text = "Confirm", color = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
                 Spacer(modifier = Modifier.width(20.dp))
                 Button(
@@ -164,7 +185,7 @@ fun DeletePasswdConfirmDialog(
                         onDeleteConfirmOrCancelClick(false)
                     }
                 ) {
-                    Text(text = "Cancel")
+                    Text(text = "Cancel", color = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
             }
         }
@@ -192,7 +213,7 @@ fun AddGroupDialog(
             Text(text = "Add a Group")
             Spacer(modifier = Modifier.height(30.dp))
 
-            EditTextBox(
+            OutlinedEditTextBox(
                 value = groupName.value,
                 labelValue = "Group Name",
                 imageVector = Icons.Outlined.Group
@@ -201,7 +222,7 @@ fun AddGroupDialog(
             }
             Spacer(modifier = Modifier.height(10.dp))
 
-            EditTextBox(
+            OutlinedEditTextBox(
                 value = commentName.value,
                 labelValue = "Group Comment",
                 imageVector = Icons.Outlined.Comment
@@ -216,7 +237,7 @@ fun AddGroupDialog(
                     onAddClick(groupName.value, commentName.value)
                 }
             ) {
-                Text("Add")
+                Text("Add", color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
         }
     }
@@ -246,7 +267,7 @@ fun UpdateGroupDialog(
             Text(text = "Update the Group")
             Spacer(modifier = Modifier.height(30.dp))
 
-            EditTextBox(
+            OutlinedEditTextBox(
                 value = groupNameState.value,
                 labelValue = "Group Name",
                 imageVector = Icons.Outlined.Group
@@ -255,7 +276,7 @@ fun UpdateGroupDialog(
             }
             Spacer(modifier = Modifier.height(10.dp))
 
-            EditTextBox(
+            OutlinedEditTextBox(
                 value = groupCommentState.value,
                 labelValue = "Group Comment",
                 imageVector = Icons.Outlined.Comment
@@ -270,7 +291,7 @@ fun UpdateGroupDialog(
                     onUpdateClick(groupNameState.value, groupCommentState.value)
                 }
             ) {
-                Text("Update")
+                Text("Update", color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
         }
     }
@@ -314,7 +335,7 @@ fun DeleteGroupConfirmDialog(
                         onDeleteConfirmOrCancelClick(true)
                     }
                 ) {
-                    Text(text = "Confirm")
+                    Text(text = "Confirm", color = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
                 Spacer(modifier = Modifier.width(20.dp))
                 Button(
@@ -324,14 +345,13 @@ fun DeleteGroupConfirmDialog(
                         onDeleteConfirmOrCancelClick(false)
                     }
                 ) {
-                    Text(text = "Cancel")
+                    Text(text = "Cancel", color = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PasswdDetailEditDialog(
     theme: Theme,
@@ -361,56 +381,43 @@ fun PasswdDetailEditDialog(
             Column(
                 modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(horizontal = 100.dp),
             ) {
-                TextField(
+                CustomTextField(
                     enabled = textFieldEditEnable.value,
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("title", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Default.Title, contentDescription = null)
-                    },
+                    label = "title",
+                    imageVector = Icons.Default.Title,
                     value = title.value,
-                    maxLines = 1,
                     onValueChange = { newValue -> title.value = newValue },
                 )
-                TextField(
+                CustomTextField(
                     enabled = textFieldEditEnable.value,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("username", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Default.People, contentDescription = null)
-                    },
+                    label = "username",
+                    imageVector = Icons.Default.People,
                     value = username.value,
-                    maxLines = 1,
                     onValueChange = { username.value = it },
                 )
-                TextField(
+                CustomTextField(
                     enabled = textFieldEditEnable.value,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("password", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Default.Lock, contentDescription = null)
-                    },
+                    label = "password",
+                    imageVector = Icons.Default.Lock,
                     value = password.value,
-                    maxLines = 1,
                     onValueChange = { password.value = it },
                 )
-                TextField(
+                CustomTextField(
                     enabled = textFieldEditEnable.value,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("link", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Default.Link, contentDescription = null)
-                    },
+                    label = "link",
+                    imageVector = Icons.Default.Link,
                     value = link.value,
-                    maxLines = 1,
                     onValueChange = { link.value = it },
                 )
-                OutlinedTextField(
+                OutlinedEditTextBox(
                     enabled = textFieldEditEnable.value,
                     modifier = Modifier.wrapContentHeight().fillMaxWidth().align(Alignment.Start),
-                    label = { Text("comment", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    labelValue = "comment",
                     value = comment.value,
-                    onValueChange = { comment.value = it },
+                    onInputChanged = { comment.value = it },
                 )
 
                 val enable = remember { mutableStateOf(true) }
@@ -435,7 +442,7 @@ fun PasswdDetailEditDialog(
                             )
                         }
                     ) {
-                        Text(text = "Confirm")
+                        Text(text = "Confirm", color = MaterialTheme.colorScheme.onPrimaryContainer)
                     }
                     Spacer(modifier = Modifier.width(20.dp))
                     Button(
@@ -446,7 +453,7 @@ fun PasswdDetailEditDialog(
                             onCloseClick()
                         }
                     ) {
-                        Text(text = "Cancel")
+                        Text(text = "Cancel", color = MaterialTheme.colorScheme.onPrimaryContainer)
                     }
                 }
             }
@@ -477,7 +484,7 @@ fun TipsMessage(
             Button(
                 onClick = { onCloseClick() }
             ) {
-                Text(text = "Ok")
+                Text(text = "Ok", color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
         }
     }

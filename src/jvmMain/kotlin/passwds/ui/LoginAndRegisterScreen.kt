@@ -1,7 +1,9 @@
 package passwds.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.Lock
@@ -48,7 +50,6 @@ private fun IntroductionBox() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AppSymbolBox(modifier = Modifier.wrapContentHeight())
-//        Spacer(modifier = Modifier.fillMaxWidth().height(20.dp))
         Text(
             modifier = Modifier.padding(16.dp),
             maxLines = 8,
@@ -73,36 +74,37 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        val uiScreen = viewModel.uiState.uiScreen
+        val isLogin = remember { mutableStateOf(true) }
         LazyRow(modifier = Modifier.wrapContentSize()) {
-            screensListMenu(UiScreen.LoginAndRegister, uiScreen) {
-                viewModel.onAction(UiAction.GoScreen(it))
+            screensListMenu(
+                screens = UiScreen.LoginAndRegister,
+                currentScreen = if (isLogin.value) UiScreen.Login else UiScreen.Register
+            ) {
+                isLogin.value = it is UiScreen.Login
             }
         }
 
-        InfoBox(uiScreen, username, password, secretKey) {
-            when (uiScreen) {
-                is UiScreen.Login -> {
-                    viewModel.onAction(
-                        UiAction.Login(
-                            username = username.value,
-                            password = password.value,
-                            secretKey = secretKey.value
-                        )
+        InfoBox(
+            currentScreen = if (isLogin.value) UiScreen.Login else UiScreen.Register,
+            username = username,
+            password = password,
+            secretKey = secretKey
+        ) {
+            viewModel.onAction(
+                if (isLogin.value) {
+                    UiAction.Login(
+                        username = username.value,
+                        password = password.value,
+                        secretKey = secretKey.value
+                    )
+                } else {
+                    UiAction.Register(
+                        username = username.value,
+                        password = password.value,
                     )
                 }
+            )
 
-                is UiScreen.Register -> {
-                    viewModel.onAction(
-                        UiAction.Register(
-                            username = username.value,
-                            password = password.value,
-                        )
-                    )
-                }
-
-                else -> {}
-            }
         }
     }
 
@@ -133,7 +135,7 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
 
 @Composable
 private fun InfoBox(
-    uiScreen: UiScreen,
+    currentScreen: UiScreen,
     username: MutableState<String>,
     password: MutableState<String>,
     secretKey: MutableState<String>,
@@ -144,7 +146,7 @@ private fun InfoBox(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        EditTextBox(
+        OutlinedEditTextBox(
             value = username.value,
             labelValue = "Username",
             imageVector = Icons.Outlined.People
@@ -153,7 +155,7 @@ private fun InfoBox(
         }
         Spacer(modifier = Modifier.height(10.dp))
 
-        EditTextBox(
+        OutlinedEditTextBox(
             value = password.value,
             labelValue = "Password",
             imageVector = Icons.Outlined.Lock
@@ -162,8 +164,8 @@ private fun InfoBox(
         }
         Spacer(modifier = Modifier.height(10.dp))
 
-        if (uiScreen is UiScreen.Login) {
-            EditTextBox(
+        if (currentScreen is UiScreen.Login) {
+            OutlinedEditTextBox(
                 value = secretKey.value,
                 labelValue = "SecretKey",
                 imageVector = Icons.Outlined.Key
@@ -174,10 +176,14 @@ private fun InfoBox(
         }
 
         Button(
+            colors = ButtonDefaults.buttonColors(
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ),
             onClick = { onSubmitClick() }
         ) {
             Text(
-                text = uiScreen.name
+                text = currentScreen.name
             )
         }
     }
@@ -185,19 +191,23 @@ private fun InfoBox(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditTextBox(
+fun OutlinedEditTextBox(
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier.width(300.dp),
     value: String,
     labelValue: String,
-    imageVector: ImageVector,
+    imageVector: ImageVector? = null,
     onInputChanged: (String) -> Unit
 ) {
     val text = remember { mutableStateOf(value) }
     OutlinedTextField(
-        modifier = Modifier.width(300.dp),
-        enabled = true,
+        modifier = modifier,
+        enabled = enabled,
         label = { Text(labelValue, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         leadingIcon = {
-            Icon(imageVector = imageVector, contentDescription = null)
+            imageVector?.let {
+                Icon(imageVector = imageVector, contentDescription = null)
+            }
         },
         value = text.value,
         maxLines = 1,
@@ -206,5 +216,40 @@ fun EditTextBox(
             text.value = it
             onInputChanged(it)
         },
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            focusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            cursorColor = MaterialTheme.colorScheme.onPrimaryContainer
+        )
     )
+}
+
+fun LazyListScope.screensListMenu(
+    screens: List<UiScreen>,
+    currentScreen: UiScreen,
+    onChoice: (screen: UiScreen) -> Unit
+) {
+    items(screens) { screen ->
+        val isSelected = screen == currentScreen
+        TextButton(
+            interactionSource = remember { NoRippleInteractionSource() },
+            onClick = { onChoice(screen) },
+            colors = ButtonDefaults.textButtonColors(
+                containerColor = if (isSelected) {
+                    MaterialTheme.colorScheme.secondaryContainer
+                } else {
+                    MaterialTheme.colorScheme.primaryContainer
+                },
+                contentColor = if (isSelected) {
+                    MaterialTheme.colorScheme.onSecondaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                }
+            )
+        ) {
+            Icon(imageVector = screen.icon, contentDescription = null)
+            Spacer(modifier = Modifier.width(15.dp))
+            Text(text = screen.name, fontSize = 18.sp)
+        }
+    }
 }

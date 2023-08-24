@@ -22,6 +22,7 @@ data class TranslateUiState(
     val selectPasswd: Passwd? = null,
 
     val effect: UiEffect? = null,
+    val menuOpen: Boolean = true,
 ) {
     companion object {
         val Default = TranslateUiState(

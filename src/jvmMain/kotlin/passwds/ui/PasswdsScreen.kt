@@ -8,13 +8,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,14 +35,9 @@ import passwds.model.UiEffect
 fun PasswdsScreen(
     viewModel: PasswdsViewModel
 ) {
-    Row(modifier = Modifier.fillMaxSize()) {
+    Row(modifier = Modifier.fillMaxSize().padding(end = 10.dp, top = 10.dp, bottom = 10.dp)) {
         PasswdGroupList(viewModel = viewModel, modifier = Modifier.width(250.dp))
-        Divider(
-            modifier = Modifier
-                .padding(0.dp, 10.dp)
-                .fillMaxHeight()
-                .width(1.dp)
-        )
+        Spacer(modifier = Modifier.fillMaxHeight().width(10.dp))
         PasswdItemsContent(viewModel = viewModel)
     }
 }
@@ -87,7 +85,10 @@ fun PasswdGroupList(
     }
 
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize().background(
+            color = MaterialTheme.colorScheme.primaryContainer,
+            shape = RoundedCornerShape(10.dp)
+        )
     ) {
         val selectGroup = viewModel.uiState.selectGroup
         Row(
@@ -193,12 +194,7 @@ fun PasswdItemsContent(
     ) {
         Row {
             PasswdItemsList(viewModel = viewModel, modifier = Modifier.width(250.dp))
-            Divider(
-                modifier = Modifier
-                    .padding(0.dp, 10.dp)
-                    .fillMaxHeight()
-                    .width(1.dp)
-            )
+            Spacer(modifier = Modifier.fillMaxHeight().width(10.dp))
             PasswdDetailScreen(viewModel = viewModel)
         }
     }
@@ -239,82 +235,92 @@ fun PasswdItemsList(
     Column(
         modifier = modifier.fillMaxSize()
     ) {
+        SearchBox()
+        Spacer(modifier = Modifier.fillMaxWidth().height(10.dp))
 
-        Row(
-            modifier = Modifier.weight(1f).padding(4.dp)
-        ) {
-            LazyColumn(
-                modifier = modifier.weight(1f).padding(10.dp),
-                state = listState
-            ) {
-                items(groupPasswds) { passwd ->
-                    PasswdCard(
-                        passwd = passwd,
-                        isSelected = passwd.id == viewModel.uiState.selectPasswd?.id
-                    ) {
-                        viewModel.onAction(UiAction.ShowPasswd(passwdId = it))
-                    }
-                }
-            }
-            VerticalScrollbar(
-                modifier = Modifier.fillMaxHeight(),
-                adapter = rememberScrollbarAdapter(
-                    scrollState = listState
-                )
+        Column(
+            modifier = Modifier.weight(1f).background(
+                color = MaterialTheme.colorScheme.primaryContainer,
+                shape = RoundedCornerShape(10.dp)
             )
-        }
-
-
-        val selectGroupId = viewModel.uiState.selectGroup?.id
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-
-            val isNewPasswdIconButtonEnabled = viewModel.uiState.selectGroup != null
-            IconButton(
-                enabled = isNewPasswdIconButtonEnabled,
-                onClick = {
-                    isNewPasswdDialogOpened.value = true
-                }
+            Row(
+                modifier = Modifier.weight(1f)
             ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = null)
-            }
-
-            if (isNewPasswdDialogOpened.value) {
-                val theme by viewModel.theme.collectAsState()
-                AddPasswdDialog(
-                    theme = theme,
-                    onCloseClick = {
-                        isNewPasswdDialogOpened.value = false
-                    },
-                    onAddClick = { title, username, password, link, comment ->
-                        selectGroupId?.let {
-                            viewModel.onAction(
-                                UiAction.NewPasswd(
-                                    groupId = it,
-                                    title = title,
-                                    usernameString = username,
-                                    passwordString = password,
-                                    link = link,
-                                    comment = comment
-                                )
-                            )
+                LazyColumn(
+                    modifier = modifier.weight(1f).padding(10.dp),
+                    state = listState
+                ) {
+                    items(groupPasswds) { passwd ->
+                        PasswdCard(
+                            passwd = passwd,
+                            isSelected = passwd.id == viewModel.uiState.selectPasswd?.id
+                        ) {
+                            viewModel.onAction(UiAction.ShowPasswd(passwdId = it))
                         }
                     }
+                }
+                VerticalScrollbar(
+                    modifier = Modifier.fillMaxHeight(),
+                    adapter = rememberScrollbarAdapter(
+                        scrollState = listState
+                    )
                 )
             }
 
-            val isDeletePasswdIconButtonEnabled = viewModel.uiState.selectPasswd != null
-            IconButton(
-                enabled = isDeletePasswdIconButtonEnabled,
-                onClick = {
-                    isDeletePasswdConfirmDialogOpened.value = true
-                }
+
+            val selectGroupId = viewModel.uiState.selectGroup?.id
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+
+                val isNewPasswdIconButtonEnabled = viewModel.uiState.selectGroup != null
+                IconButton(
+                    enabled = isNewPasswdIconButtonEnabled,
+                    onClick = {
+                        isNewPasswdDialogOpened.value = true
+                    }
+                ) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                }
+
+                if (isNewPasswdDialogOpened.value) {
+                    val theme by viewModel.theme.collectAsState()
+                    AddPasswdDialog(
+                        theme = theme,
+                        onCloseClick = {
+                            isNewPasswdDialogOpened.value = false
+                        },
+                        onAddClick = { title, username, password, link, comment ->
+                            selectGroupId?.let {
+                                viewModel.onAction(
+                                    UiAction.NewPasswd(
+                                        groupId = it,
+                                        title = title,
+                                        usernameString = username,
+                                        passwordString = password,
+                                        link = link,
+                                        comment = comment
+                                    )
+                                )
+                            }
+                        }
+                    )
+                }
+
+                val isDeletePasswdIconButtonEnabled = viewModel.uiState.selectPasswd != null
+                IconButton(
+                    enabled = isDeletePasswdIconButtonEnabled,
+                    onClick = {
+                        isDeletePasswdConfirmDialogOpened.value = true
+                    }
+                ) {
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = null)
+                }
+
             }
 
             if (isDeletePasswdConfirmDialogOpened.value) {
@@ -339,8 +345,12 @@ fun PasswdDetailScreen(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
-
-    Box(modifier.fillMaxSize().padding(top = 16.dp, start = 16.dp, end = 16.dp)) {
+    Box(
+        modifier.fillMaxSize().background(
+            color = MaterialTheme.colorScheme.primaryContainer,
+            shape = RoundedCornerShape(10.dp)
+        )
+    ) {
         viewModel.translateUiState.selectPasswd?.let {
             val isEditDialogOpen = remember { mutableStateOf(false) }
             Column(
@@ -475,7 +485,6 @@ fun GroupCard(
                 Box(
                     modifier = Modifier.fillMaxSize().background(
                         color = MaterialTheme.colorScheme.secondaryContainer,
-//                        shape = CutCornerShape(bottomEndPercent = 40, topEndPercent = 60)
                     )
                 )
             }
@@ -494,7 +503,12 @@ fun GroupCard(
             )
         ) {
             Spacer(modifier = Modifier.width(15.dp).fillMaxHeight())
-            Text(text = group.groupName ?: "", fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                text = group.groupName ?: "",
+                fontSize = 14.sp, maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
             Spacer(modifier = Modifier.weight(0.6f))
         }
     }
@@ -508,29 +522,80 @@ fun PasswdCard(
 ) {
     TextButton(
         modifier = Modifier.fillMaxWidth(),
+        interactionSource = remember { NoRippleInteractionSource() },
         onClick = { onClick(passwd.id) },
         colors = ButtonDefaults.textButtonColors(
-            contentColor = if (isSelected) {
-                MaterialTheme.colorScheme.primary
+            containerColor = if (isSelected) {
+                MaterialTheme.colorScheme.secondaryContainer
             } else {
-                MaterialTheme.colorScheme.outline
+                MaterialTheme.colorScheme.primaryContainer
+            },
+            contentColor = if (isSelected) {
+                MaterialTheme.colorScheme.onSecondaryContainer
+            } else {
+                MaterialTheme.colorScheme.onPrimaryContainer
             }
         ),
         shape = RectangleShape
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Spacer(modifier = Modifier.weight(0.1f))
-            Text(text = passwd.title ?: "", fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                text = passwd.title ?: "",
+                fontSize = 16.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
             Spacer(modifier = Modifier.weight(0.1f))
             if (!passwd.usernameString.isNullOrBlank()) {
                 Text(
                     text = passwd.usernameString!!,
                     fontSize = 13.sp,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Spacer(modifier = Modifier.weight(0.1f))
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SearchBox() {
+    Box(modifier = Modifier.fillMaxWidth()) {
+        val text = remember { mutableStateOf("") }
+        TextField(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(50),
+            maxLines = 1,
+            placeholder = {
+                Text(
+                    text = "Search",
+                    fontWeight = FontWeight.Light,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null
+                )
+            },
+            value = text.value,
+            onValueChange = {
+                text.value = it
+            },
+            colors = TextFieldDefaults.textFieldColors(
+                cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent
+            ),
+        )
     }
 }

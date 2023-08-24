@@ -1,29 +1,19 @@
 package theme
 
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
 val Material3LightTheme = lightColorScheme(
-    primary = Light_Blue_400,
-    secondary = Color(0xFFF9DEDC),
-
-    surface = Blue_Surface,
+    primary = Color(0xFFF7F4E7),
+    onPrimary = Color(0xFF2F2525),
+    primaryContainer = Color(0xFFE1E9D8),
+    onPrimaryContainer = Color(0xFF2F2525),
 )
 
 val Material3DarkTheme = darkColorScheme(
-    primary = Blue_700,
-    secondary = Color(0xFFF9DEDC),
-
-    surface = Color.Black,
-)
-
-val MaterialLightTheme = lightColors(
-//    primary = Light_Blue_500
-)
-
-val MaterialDarkTheme = darkColors(
-//    primary = Light_Blue_700
+    primary = Color(0xFF353940),
+    onPrimary = Color(0xFF373737),
+    primaryContainer = Color(0xFF2D2F31),
+    onPrimaryContainer = Color(0xFFBBBEBC),
 )
