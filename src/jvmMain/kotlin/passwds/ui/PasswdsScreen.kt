@@ -296,8 +296,8 @@ fun PasswdItemsList(
                                 UiAction.NewPasswd(
                                     groupId = it,
                                     title = title,
-                                    username = username,
-                                    password = password,
+                                    usernameString = username,
+                                    passwordString = password,
                                     link = link,
                                     comment = comment
                                 )

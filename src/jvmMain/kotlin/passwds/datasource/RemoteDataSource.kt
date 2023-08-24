@@ -111,8 +111,8 @@ class RemoteDataSource {
     suspend fun newPasswd(
         groupId: Int,
         title: String,
-        username: String,
-        password: String,
+        usernameString: String,
+        passwordString: String,
         link: String,
         comment: String,
     ): Result<Int> = KtorRequest.postRequest(
@@ -120,8 +120,8 @@ class RemoteDataSource {
         params = listOf(
             Param("group_id", groupId),
             Param("title", title),
-            Param("username", username),
-            Param("password", password),
+            Param("username_string", usernameString),
+            Param("username_string", passwordString),
             Param("link", link),
             Param("comment", comment)
         )

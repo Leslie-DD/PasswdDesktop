@@ -44,8 +44,8 @@ sealed class UiAction {
     class NewPasswd(
         val groupId: Int,
         val title: String,
-        val username: String,
-        val password: String,
+        val usernameString: String,
+        val passwordString: String,
         val link: String,
         val comment: String
     ) : UiAction()

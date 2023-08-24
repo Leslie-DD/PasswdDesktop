@@ -6,6 +6,6 @@ import kotlinx.serialization.Serializable
 data class LoginResult(
     val user_id: Int,
     val username: String,
-    val passwds: List<Passwd>?,
+    val passwds: MutableList<Passwd>,
     val token: String
 )

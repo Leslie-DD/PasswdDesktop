@@ -53,17 +53,19 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
 
         launch {
-            repository.groupPasswds.collect {
+            logger.info("PasswdsViewModel() collect groups start")
+            repository.groups.collect {
+                logger.info("PasswdsViewModel() collect groups update $it")
                 updateUiState {
-                    copy(groupPasswds = it)
+                    copy(groups = it)
                 }
             }
         }
 
         launch {
-            repository.groups.collect {
+            repository.groupPasswds.collect {
                 updateUiState {
-                    copy(groups = it)
+                    copy(groupPasswds = it)
                 }
             }
         }
@@ -72,9 +74,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     private fun clearData() {
         updateUiState {
             copy(
-                passwds = emptyList(),
-                groups = arrayListOf(),
-                groupPasswds = arrayListOf(),
                 selectGroup = null,
                 selectPasswd = null
             )
@@ -309,8 +308,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     private suspend fun newPasswd(
         groupId: Int,
         title: String,
-        username: String,
-        password: String,
+        usernameString: String,
+        passwordString: String,
         link: String,
         comment: String,
     ) {
@@ -318,8 +317,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         repository.newPasswd(
             groupId = groupId,
             title = title,
-            username = username,
-            password = password,
+            usernameString = usernameString,
+            passwordString = passwordString,
             link = link,
             comment = comment,
         )
@@ -329,8 +328,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     id = it,
                     groupId = groupId,
                     title = title,
-                    usernameString = username,
-                    passwordString = password,
+                    usernameString = usernameString,
+                    passwordString = passwordString,
                     link = link,
                     comment = comment,
                     userId = settings.userId.value
@@ -516,8 +515,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                         newPasswd(
                             groupId = groupId,
                             title = title,
-                            username = username,
-                            password = password,
+                            usernameString = usernameString,
+                            passwordString = passwordString,
                             link = link,
                             comment = comment,
                         )

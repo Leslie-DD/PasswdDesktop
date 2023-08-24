@@ -11,7 +11,7 @@ data class Passwd(
     var usernameString: String?,
     var passwordString: String?,
     val username: ByteArray? = null,
-    val password: ByteArray? = null,
+    var password: ByteArray? = null,
     var title: String?,
     val userId: Int?,
 ) {

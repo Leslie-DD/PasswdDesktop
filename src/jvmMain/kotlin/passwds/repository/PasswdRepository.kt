@@ -1,5 +1,6 @@
 package passwds.repository
 
+import config.LocalPref
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -8,6 +9,8 @@ import passwds.entity.Group
 import passwds.entity.LoginResult
 import passwds.entity.Passwd
 import passwds.entity.RegisterResult
+import utils.AESUtil
+import java.util.*
 
 class PasswdRepository(
     private val remoteDataSource: RemoteDataSource = RemoteDataSource()
@@ -28,6 +31,7 @@ class PasswdRepository(
                 passwds.emit(it)
             }.onFailure {
                 logger.error("$TAG fetchPasswds error, ${it.message}")
+                passwds.emit(arrayListOf())
                 it.printStackTrace()
             }
     }
@@ -38,6 +42,7 @@ class PasswdRepository(
                 groups.emit(it)
             }.onFailure {
                 logger.error("$TAG fetchGroups error, ${it.message}")
+                groups.emit(arrayListOf())
                 it.printStackTrace()
             }
     }
@@ -48,9 +53,14 @@ class PasswdRepository(
         remoteDataSource.fetchGroupPasswds(
             groupId
         ).onSuccess {
+            val secretKeyBytes = Base64.getDecoder().decode(LocalPref.secretKey)
+            it.forEach { passwd ->
+                decodePasswd(passwd, secretKeyBytes)
+            }
             groupPasswds.emit(it)
         }.onFailure {
             logger.error("$TAG fetchGroupPasswds error, ${it.message}")
+            groupPasswds.emit(arrayListOf())
             it.printStackTrace()
         }
     }
@@ -60,29 +70,56 @@ class PasswdRepository(
         username: String,
         token: String,
         secretKey: String
-    ): Result<LoginResult> = remoteDataSource.loginByToken(
-        username = username,
-        token = token,
-        secretKey = secretKey
-    )
+    ): Result<LoginResult> {
+        return remoteDataSource.loginByToken(
+            username = username,
+            token = token,
+            secretKey = secretKey
+        ).onSuccess { loginResult ->
+            passwds.emit(loginResult.passwds)
+            groups.emit(arrayListOf())
+            groupPasswds.emit(arrayListOf())
+            Result.success(loginResult)
+        }.onFailure {
+            Result.failure<LoginResult>(it)
+        }
+    }
 
     suspend fun loginByPassword(
         username: String,
         password: String,
         secretKey: String
-    ): Result<LoginResult> = remoteDataSource.loginByPassword(
-        username = username,
-        password = password,
-        secretKey = secretKey
-    )
+    ): Result<LoginResult> {
+        return remoteDataSource.loginByPassword(
+            username = username,
+            password = password,
+            secretKey = secretKey
+        ).onSuccess { loginResult ->
+            passwds.emit(loginResult.passwds)
+            groups.emit(arrayListOf())
+            groupPasswds.emit(arrayListOf())
+            Result.success(loginResult)
+        }.onFailure {
+            Result.failure<LoginResult>(it)
+        }
+    }
 
     suspend fun register(
         username: String,
         password: String,
-    ): Result<RegisterResult> = remoteDataSource.register(
-        username = username,
-        password = password
-    )
+    ): Result<RegisterResult> {
+        return remoteDataSource.register(
+            username = username,
+            password = password
+        ).onSuccess { loginResult ->
+            passwds.emit(arrayListOf())
+            groups.emit(arrayListOf())
+            groupPasswds.emit(arrayListOf())
+            Result.success(loginResult)
+        }.onFailure {
+            Result.failure<LoginResult>(it)
+        }
+    }
 
     suspend fun newGroup(
         groupName: String,
@@ -111,18 +148,21 @@ class PasswdRepository(
     suspend fun newPasswd(
         groupId: Int,
         title: String,
-        username: String,
-        password: String,
+        usernameString: String,
+        passwordString: String,
         link: String,
         comment: String,
-    ): Result<Int> = remoteDataSource.newPasswd(
-        groupId = groupId,
-        title = title,
-        username = username,
-        password = password,
-        link = link,
-        comment = comment
-    )
+    ): Result<Int> {
+        val secretKey = LocalPref.secretKey
+        return remoteDataSource.newPasswd(
+            groupId = groupId,
+            title = title,
+            usernameString = encode(secretKey, usernameString),
+            passwordString = encode(secretKey, passwordString),
+            link = link,
+            comment = comment
+        )
+    }
 
     suspend fun updatePasswd(
         id: Int,
@@ -131,20 +171,61 @@ class PasswdRepository(
         passwordStr: String?,
         link: String?,
         comment: String?
-    ): Result<Int> = remoteDataSource.updatePasswd(
-        id = id,
-        title = title,
-        usernameStr = usernameStr,
-        passwordStr = passwordStr,
-        link = link,
-        comment = comment
-    )
+    ): Result<Int> {
+        val secretKey = LocalPref.secretKey
+        return remoteDataSource.updatePasswd(
+            id = id,
+            title = title,
+            usernameStr = encode(secretKey, usernameStr ?: ""),
+            passwordStr = encode(secretKey, passwordStr ?: ""),
+            link = link,
+            comment = comment
+        )
+    }
 
     suspend fun deletePasswd(
         id: Int
     ): Result<Int> = remoteDataSource.deletePasswd(
         id = id
     )
+
+    private fun decodePasswd(passwd: Passwd, secretKeyBytes: ByteArray?): Passwd {
+        logger.debug("fetchGroupPasswd decode before: passwd: {}", passwd)
+        try {
+            passwd.usernameString?.let {
+                passwd.usernameString = decode(it, secretKeyBytes)
+            }
+            passwd.passwordString?.let {
+                passwd.passwordString = decode(it, secretKeyBytes)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        logger.debug("fetchGroupPasswd decode after: passwd: {}", passwd)
+        return passwd
+    }
+
+    private fun decode(value: String, secretKeyBytes: ByteArray?): String {
+        return if (value.isBlank()) {
+            value
+        } else {
+            val decodePasswordResult =
+                AESUtil.decrypt(secretKeyBytes, Base64.getDecoder().decode(value))
+            if (decodePasswordResult != null) {
+                String(decodePasswordResult)
+            } else {
+                value
+            }
+        }
+    }
+
+    private fun encode(secretKey: String, value: String): String {
+        return if (value.isBlank()) {
+            value
+        } else {
+            Base64.getEncoder().encodeToString(AESUtil.encrypt(secretKey, value))
+        }
+    }
 
     companion object {
         private const val TAG = "PasswdRepository"
