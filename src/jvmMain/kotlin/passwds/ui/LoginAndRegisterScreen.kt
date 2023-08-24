@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import passwds.model.PasswdsViewModel
 import passwds.model.UiAction
 import passwds.model.UiEffect
@@ -22,6 +23,47 @@ import passwds.model.UiScreen
 fun LoginAndRegisterScreen(
     viewModel: PasswdsViewModel
 ) {
+    Row(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Card(
+            modifier = Modifier.weight(0.4f).fillMaxHeight(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
+        ) {
+            IntroductionBox()
+        }
+        Box(
+            modifier = Modifier.weight(0.6f).fillMaxHeight()
+        ) {
+            LoginAndRegisterBox(viewModel)
+        }
+    }
+}
+
+@Composable
+private fun IntroductionBox() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        AppSymbolBox(modifier = Modifier.wrapContentHeight())
+//        Spacer(modifier = Modifier.fillMaxWidth().height(20.dp))
+        Text(
+            modifier = Modifier.padding(16.dp),
+            maxLines = 8,
+            overflow = TextOverflow.Ellipsis,
+            fontSize = 14.sp,
+            text = "Glad you are here! Passwd is a password management which encrypt by AES algorithm both in client and " +
+                    "server. It means it's safe even there's no HTTPS since the data transferred between client and server is " +
+                    "ciphertext and the server will always don't know your plaintext. But DO REMEMBER that WRITE your SECRET KEY " +
+                    "on the notebook cause if you forget that, passwords you stored will decrypted incorrectly!"
+        )
+    }
+}
+
+@Composable
+private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
     val username = remember { mutableStateOf("lucas") }
     val password = remember { mutableStateOf("lucas_password") }
     val secretKey = remember { mutableStateOf("SkGk5x4IqWs0HC5w9b5Fcak8NX0lgBmMrvVRFxg3nAQ=") }
@@ -80,7 +122,6 @@ fun LoginAndRegisterScreen(
     with(effect) {
         when (this) {
             is UiEffect.LoginAndRegisterFailure -> {
-//                Log.error("receive LoginAndRegisterFailure Effect, tipsMsg = $tipsMsg")
                 msg.value = tipsMsg
                 isTipsMsgDialogOpen.value = true
             }
@@ -103,9 +144,6 @@ private fun InfoBox(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AppSymbolBox()
-        Spacer(modifier = Modifier.height(30.dp))
-
         EditTextBox(
             value = username.value,
             labelValue = "Username",
@@ -142,7 +180,6 @@ private fun InfoBox(
                 text = uiScreen.name
             )
         }
-        Spacer(modifier = Modifier.height(130.dp))
     }
 }
 

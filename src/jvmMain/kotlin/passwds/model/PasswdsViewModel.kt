@@ -144,7 +144,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         coroutineScope {
             withContext(Dispatchers.IO) {
                 settings.secretKey.emit(secretKey)
-                settings.userId.emit(loginResult.user_id)
+                settings.userId.emit(loginResult.userId)
                 settings.username.emit(loginResult.username)
                 settings.accessToken.emit(loginResult.token)
                 clearData()
