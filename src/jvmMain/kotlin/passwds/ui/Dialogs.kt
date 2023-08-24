@@ -49,7 +49,7 @@ fun AddPasswdDialog(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(color = if (theme.isDark) Color.Black else Color.White)
+                .background(MaterialTheme.colorScheme.primary)
         ) {
             Column(
                 modifier = Modifier.fillMaxSize().padding(16.dp)
@@ -86,6 +86,10 @@ fun AddPasswdDialog(
                 )
 
                 Button(
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = theme.materialColorScheme.onPrimaryContainer,
+                        containerColor = theme.materialColorScheme.primaryContainer
+                    ),
                     enabled = enable.value,
                     onClick = {
                         enable.value = false
@@ -149,7 +153,9 @@ fun DeletePasswdConfirmDialog(
     ) {
         val enable = remember { mutableStateOf(true) }
         Column(
-            modifier = Modifier.fillMaxSize().background(color = if (theme.isDark) Color.Black else Color.White),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -169,6 +175,10 @@ fun DeletePasswdConfirmDialog(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Button(
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = theme.materialColorScheme.onPrimaryContainer,
+                        containerColor = theme.materialColorScheme.primaryContainer
+                    ),
                     enabled = enable.value,
                     onClick = {
                         enable.value = false
@@ -179,13 +189,17 @@ fun DeletePasswdConfirmDialog(
                 }
                 Spacer(modifier = Modifier.width(20.dp))
                 Button(
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = theme.materialColorScheme.onPrimaryContainer,
+                        containerColor = theme.materialColorScheme.primaryContainer
+                    ),
                     enabled = enable.value,
                     onClick = {
                         enable.value = false
                         onDeleteConfirmOrCancelClick(false)
                     }
                 ) {
-                    Text(text = "Cancel", color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Text(text = "Cancel")
                 }
             }
         }
@@ -206,7 +220,9 @@ fun AddGroupDialog(
         state = rememberDialogState(position = WindowPosition(Alignment.Center))
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().background(color = if (theme.isDark) Color.Black else Color.White),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -231,13 +247,17 @@ fun AddGroupDialog(
             }
 
             Button(
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = theme.materialColorScheme.onPrimaryContainer,
+                    containerColor = theme.materialColorScheme.primaryContainer
+                ),
                 enabled = enable.value,
                 onClick = {
                     enable.value = false
                     onAddClick(groupName.value, commentName.value)
                 }
             ) {
-                Text("Add", color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text("Add")
             }
         }
     }
@@ -260,7 +280,9 @@ fun UpdateGroupDialog(
         state = rememberDialogState(position = WindowPosition(Alignment.Center))
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().background(color = if (theme.isDark) Color.Black else Color.White),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -285,13 +307,17 @@ fun UpdateGroupDialog(
             }
 
             Button(
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = theme.materialColorScheme.onPrimaryContainer,
+                    containerColor = theme.materialColorScheme.primaryContainer
+                ),
                 enabled = enable.value,
                 onClick = {
                     enable.value = false
                     onUpdateClick(groupNameState.value, groupCommentState.value)
                 }
             ) {
-                Text("Update", color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text("Update")
             }
         }
     }
@@ -309,7 +335,9 @@ fun DeleteGroupConfirmDialog(
     ) {
         val enable = remember { mutableStateOf(true) }
         Column(
-            modifier = Modifier.fillMaxSize().background(color = if (theme.isDark) Color.Black else Color.White),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -329,23 +357,31 @@ fun DeleteGroupConfirmDialog(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Button(
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = theme.materialColorScheme.onPrimaryContainer,
+                        containerColor = theme.materialColorScheme.primaryContainer
+                    ),
                     enabled = enable.value,
                     onClick = {
                         enable.value = false
                         onDeleteConfirmOrCancelClick(true)
                     }
                 ) {
-                    Text(text = "Confirm", color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Text(text = "Confirm")
                 }
                 Spacer(modifier = Modifier.width(20.dp))
                 Button(
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = theme.materialColorScheme.onPrimaryContainer,
+                        containerColor = theme.materialColorScheme.primaryContainer
+                    ),
                     enabled = enable.value,
                     onClick = {
                         enable.value = false
                         onDeleteConfirmOrCancelClick(false)
                     }
                 ) {
-                    Text(text = "Cancel", color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Text(text = "Cancel")
                 }
             }
         }
@@ -375,7 +411,9 @@ fun PasswdDetailEditDialog(
         )
     ) {
         Box(
-            modifier = Modifier.fillMaxSize().background(color = if (theme.isDark) Color.Black else Color.White),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -427,6 +465,10 @@ fun PasswdDetailEditDialog(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Button(
+                        colors = ButtonDefaults.buttonColors(
+                            contentColor = theme.materialColorScheme.onPrimaryContainer,
+                            containerColor = theme.materialColorScheme.primaryContainer
+                        ),
                         enabled = enable.value,
                         onClick = {
                             enable.value = false
@@ -442,10 +484,14 @@ fun PasswdDetailEditDialog(
                             )
                         }
                     ) {
-                        Text(text = "Confirm", color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Text(text = "Confirm")
                     }
                     Spacer(modifier = Modifier.width(20.dp))
                     Button(
+                        colors = ButtonDefaults.buttonColors(
+                            contentColor = theme.materialColorScheme.onPrimaryContainer,
+                            containerColor = theme.materialColorScheme.primaryContainer
+                        ),
                         enabled = enable.value,
                         onClick = {
                             enable.value = false
@@ -453,7 +499,7 @@ fun PasswdDetailEditDialog(
                             onCloseClick()
                         }
                     ) {
-                        Text(text = "Cancel", color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Text(text = "Cancel")
                     }
                 }
             }
@@ -475,16 +521,22 @@ fun TipsMessage(
         )
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().background(color = if (theme.isDark) Color.Black else Color.White),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             msg?.let { Text(msg) }
             Spacer(modifier = Modifier.height(20.dp))
             Button(
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = theme.materialColorScheme.onPrimaryContainer,
+                    containerColor = theme.materialColorScheme.primaryContainer
+                ),
                 onClick = { onCloseClick() }
             ) {
-                Text(text = "Ok", color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(text = "Ok")
             }
         }
     }
