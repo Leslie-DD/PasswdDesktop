@@ -52,12 +52,17 @@ fun SideMenuScreen(
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             item {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(start = 10.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (expand) {
-                        Text(text = "Passwd", fontSize = 20.sp, color = Color(0xffa9c8fc))
+                        Text(
+                            modifier = Modifier.padding(start = 10.dp),
+                            text = "Passwd",
+                            fontSize = 20.sp,
+                            color = Color(0xffa9c8fc)
+                        )
                     }
                     IconButton(
                         onClick = { viewModel.onAction(UiAction.MenuOpenOrClose(!expand)) }
