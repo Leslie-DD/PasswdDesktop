@@ -1,7 +1,5 @@
 package passwds.model
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import config.LocalPref
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -11,6 +9,10 @@ import org.slf4j.LoggerFactory
 import passwds.entity.Group
 import passwds.entity.LoginResult
 import passwds.entity.Passwd
+import passwds.model.uistate.DialogUiState
+import passwds.model.uistate.GroupUiState
+import passwds.model.uistate.PasswdUiState
+import passwds.model.uistate.WindowUiState
 import passwds.repository.PasswdRepository
 import platform.desktop.Platform
 import platform.desktop.currentPlatform
@@ -23,13 +25,28 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     val shouldBeLandscape = MutableStateFlow(currentPlatform == Platform.Desktop)
 
-    private val _uiState = MutableStateFlow(UiState.Default)
-    val uiState get() = _uiState.value
-    val uiStateComposable: UiState @Composable get() = _uiState.collectAsState().value
+    private val _windowUiState = MutableStateFlow(WindowUiState.Default)
+    val windowUiState: StateFlow<WindowUiState> = _windowUiState
 
-//    private val _uiState: MutableStateFlow<S> by lazy { MutableStateFlow(initialState) }
-//
-//    val uiState: StateFlow<S> by lazy { _uiState }
+    private val _groupUiState: MutableStateFlow<GroupUiState> by lazy {
+        MutableStateFlow(GroupUiState.defaultGroupUiState())
+    }
+    val groupUiState: StateFlow<GroupUiState> by lazy {
+        _groupUiState
+    }
+
+    private val _passwdUiState: MutableStateFlow<PasswdUiState> by lazy {
+        MutableStateFlow(PasswdUiState.defaultPasswdUiState())
+    }
+    val passwdUiState: StateFlow<PasswdUiState> by lazy {
+        _passwdUiState
+    }
+    private val _dialogUiState: MutableStateFlow<DialogUiState> by lazy {
+        MutableStateFlow(DialogUiState.defaultDialogUiState())
+    }
+    val dialogUiState: StateFlow<DialogUiState> by lazy {
+        _dialogUiState
+    }
 
     val exitApp = MutableStateFlow(false)
 
@@ -44,7 +61,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
         launch {
             repository.passwds.collect {
-                updateUiState {
+                updatePasswdUiState {
                     copy(passwds = it)
                 }
             }
@@ -52,7 +69,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
         launch {
             repository.groups.collect {
-                updateUiState {
+                updateGroupUiState {
                     copy(groups = it)
                 }
             }
@@ -60,7 +77,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
         launch {
             repository.groupPasswds.collect {
-                updateUiState {
+                updatePasswdUiState {
                     copy(groupPasswds = it)
                 }
             }
@@ -68,11 +85,11 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private fun clearData() {
-        updateUiState {
-            copy(
-                selectGroup = null,
-                selectPasswd = null
-            )
+        updatePasswdUiState {
+            copy(selectPasswd = null)
+        }
+        updateGroupUiState {
+            copy(selectGroup = null)
         }
     }
 
@@ -80,19 +97,19 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         val username = LocalPref.username
         logger.debug("PasswdsViewModel().loginByToken, username: $username")
         if (username.isBlank()) {
-            updateUiState { copy(uiScreen = UiScreen.Login) }
+            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
             return
         }
         val token = LocalPref.accessToken
         logger.debug("PasswdsViewModel().loginByToken, token: $token")
         if (token.isBlank()) {
-            updateUiState { copy(uiScreen = UiScreen.Login) }
+            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
             return
         }
         val secretKey = LocalPref.secretKey
         logger.debug("PasswdsViewModel().loginByToken, secretKey: $secretKey")
         if (secretKey.isBlank()) {
-            updateUiState { copy(uiScreen = UiScreen.Login) }
+            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
             return
         }
         repository.loginByToken(
@@ -105,7 +122,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }.onFailure {
             logger.error("PasswdsViewModel().loginByToken error:${it.message}")
             it.printStackTrace()
-            updateUiState { copy(uiScreen = UiScreen.Login) }
+            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
         }
     }
 
@@ -128,15 +145,15 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             onLoginSuccess(secretKey, it)
         }.onFailure {
             logger.error("PasswdsViewModel().loginByPassword error: ${it.message}")
-            updateUiState {
-                copy(effect = UiEffect.LoginAndRegisterFailure(it.message))
+            updateDialogUiState {
+                copy(effect = DialogUiEffect.LoginAndRegisterFailure(it.message))
             }
             it.printStackTrace()
         }
     }
 
     private suspend fun onLoginSuccess(secretKey: String, loginResult: LoginResult) {
-        updateUiState { copy(uiScreen = UiScreen.Passwds) }
+        updateWindowUiState { copy(uiScreen = UiScreen.Passwds) }
         coroutineScope {
             withContext(Dispatchers.IO) {
                 settings.secretKey.emit(secretKey)
@@ -151,7 +168,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             launch(Dispatchers.IO) {
                 fetchGroups()
             }
-            updateUiState {
+            updateDialogUiState {
                 copy(effect = null)
             }
         }
@@ -174,7 +191,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             if (it == null) {
                 return@onSuccess
             }
-            updateUiState { copy(uiScreen = UiScreen.Passwds) }
+            updateWindowUiState { copy(uiScreen = UiScreen.Passwds) }
             coroutineScope {
                 withContext(Dispatchers.IO) {
                     settings.secretKey.emit(it.secretKey)
@@ -193,8 +210,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             }
         }.onFailure {
             logger.error("PasswdsViewModel().register error: ${it.message}")
-            updateUiState {
-                copy(effect = UiEffect.LoginAndRegisterFailure(it.message))
+            updateDialogUiState {
+                copy(effect = DialogUiEffect.LoginAndRegisterFailure(it.message))
             }
             it.printStackTrace()
         }
@@ -231,19 +248,24 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     groupName = groupName,
                     groupComment = groupComment
                 )
-                updateUiState {
+                updateDialogUiState {
+                    copy(effect = DialogUiEffect.NewGroupResult(newGroup))
+                }
+                updateGroupUiState {
                     copy(
                         groups = groups.apply { add(newGroup) },
-                        effect = UiEffect.NewGroupResult(newGroup),
                         selectGroup = newGroup,
-                        groupPasswds = arrayListOf()
+                    )
+                }
+                updatePasswdUiState {
+                    copy(
+                        groupPasswds = arrayListOf(),
+                        selectPasswd = null
                     )
                 }
             }.onFailure {
-                updateUiState {
-                    copy(
-                        effect = UiEffect.NewGroupResult(null)
-                    )
+                updateDialogUiState {
+                    copy(effect = DialogUiEffect.NewGroupResult(null))
                 }
             }
     }
@@ -252,22 +274,24 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         repository.deleteGroup(groupId)
             .onSuccess {
                 val deleteGroup = getGroup(groupId)
-                updateUiState {
+                updateGroupUiState {
                     copy(
                         groups = groups.apply {
                             remove(deleteGroup)
                         },
-                        groupPasswds = arrayListOf(),
                         selectGroup = null,
-                        effect = UiEffect.DeleteGroupResult(deleteGroup)
                     )
+                }
+                updateDialogUiState {
+                    copy(effect = DialogUiEffect.DeleteGroupResult(deleteGroup))
+                }
+                updatePasswdUiState {
+                    copy(groupPasswds = arrayListOf())
                 }
             }.onFailure {
                 // TODO: 删除失败的情况 tips 提示
-                updateUiState {
-                    copy(
-                        effect = UiEffect.DeleteGroupResult(null)
-                    )
+                updateDialogUiState {
+                    copy(effect = DialogUiEffect.DeleteGroupResult(null))
                 }
             }
     }
@@ -288,18 +312,18 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     it.groupName = groupName
                     it.groupComment = groupComment
                 }
-                updateUiState {
+                updateGroupUiState {
                     copy(
                         groups = groups,
-                        effect = UiEffect.UpdateGroupResult(updateGroup)
                     )
+                }
+                updateDialogUiState {
+                    copy(effect = DialogUiEffect.UpdateGroupResult(updateGroup))
                 }
             }.onFailure {
                 // TODO: 删除失败的情况 tips 提示
-                updateUiState {
-                    copy(
-                        effect = UiEffect.UpdateGroupResult(null)
-                    )
+                updateDialogUiState {
+                    copy(effect = DialogUiEffect.UpdateGroupResult(null))
                 }
             }
     }
@@ -333,20 +357,20 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     comment = comment,
                     userId = settings.userId.value
                 )
-                updateUiState {
+                updateDialogUiState {
+                    copy(effect = DialogUiEffect.NewPasswdResult(newPasswd))
+                }
+                updatePasswdUiState {
                     copy(
                         groupPasswds = groupPasswds.apply { add(newPasswd) },
-                        effect = UiEffect.NewPasswdResult(newPasswd),
-                        selectPasswd = newPasswd,
+                        selectPasswd = newPasswd
                     )
                 }
             }.onFailure {
                 logger.error("PasswdsViewModel().newPasswd onFailure")
                 it.printStackTrace()
-                updateUiState {
-                    copy(
-                        effect = UiEffect.NewGroupResult(null)
-                    )
+                updateDialogUiState {
+                    copy(effect = DialogUiEffect.NewGroupResult(null))
                 }
             }
     }
@@ -367,7 +391,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         )
             .onSuccess { count ->
                 logger.info("PasswdsViewModel().updatePasswd onSuccess, count: $count")
-                updateUiState {
+                updateDialogUiState {
                     val originPasswd = getGroupPasswd(updatePasswd.id)
                     originPasswd?.let {
                         it.title = updatePasswd.title
@@ -376,19 +400,19 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                         it.link = updatePasswd.link
                         it.comment = updatePasswd.comment
                     }
+                    copy(effect = DialogUiEffect.UpdatePasswdResult(updatePasswd))
+                }
+                updatePasswdUiState {
                     copy(
                         groupPasswds = groupPasswds,
-                        effect = UiEffect.UpdatePasswdResult(updatePasswd),
-                        selectPasswd = updatePasswd,
+                        selectPasswd = updatePasswd
                     )
                 }
             }.onFailure {
                 logger.error("PasswdsViewModel().updatePasswd onFailure")
                 it.printStackTrace()
-                updateUiState {
-                    copy(
-                        effect = UiEffect.UpdatePasswdResult(null)
-                    )
+                updateDialogUiState {
+                    copy(effect = DialogUiEffect.UpdatePasswdResult(null))
                 }
             }
     }
@@ -397,21 +421,21 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         repository.deletePasswd(passwdId)
             .onSuccess {
                 val deletePasswd = getGroupPasswd(passwdId)
-                updateUiState {
+                updateDialogUiState {
+                    copy(effect = DialogUiEffect.DeletePasswdResult(deletePasswd))
+                }
+                updatePasswdUiState {
                     copy(
                         groupPasswds = groupPasswds.apply {
                             remove(deletePasswd)
                         },
-                        selectPasswd = null,
-                        effect = UiEffect.DeletePasswdResult(deletePasswd)
+                        selectPasswd = null
                     )
                 }
             }.onFailure {
                 // TODO: 删除失败的情况 tips 提示
-                updateUiState {
-                    copy(
-                        effect = UiEffect.DeletePasswdResult(null)
-                    )
+                updateDialogUiState {
+                    copy(effect = DialogUiEffect.DeletePasswdResult(null))
                 }
             }
     }
@@ -421,7 +445,9 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         with(action) {
             when (this) {
                 is UiAction.GoScreen -> {
-                    updateUiState { copy(uiScreen = screen) }
+                    updateWindowUiState {
+                        copy(uiScreen = screen)
+                    }
                 }
 
                 is UiAction.ExitApp -> {
@@ -429,17 +455,17 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 }
 
                 is UiAction.WindowVisible -> {
-                    updateUiState {
+                    updateWindowUiState {
                         copy(windowVisible = visible)
                     }
                 }
 
                 is UiAction.ShowGroupPasswds -> {
-                    updateUiState {
-                        copy(
-                            selectGroup = getGroup(groupId),
-                            selectPasswd = null
-                        )
+                    updatePasswdUiState {
+                        copy(selectPasswd = null)
+                    }
+                    updateGroupUiState {
+                        copy(selectGroup = getGroup(groupId))
                     }
                     launch(Dispatchers.IO) {
                         fetchGroupPasswds(groupId)
@@ -448,10 +474,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
                 is UiAction.ShowPasswd -> {
                     val passwd = getGroupPasswd(passwdId)
-                    updateUiState {
-                        copy(
-                            selectPasswd = passwd
-                        )
+                    updatePasswdUiState {
+                        copy(selectPasswd = passwd)
                     }
                 }
 
@@ -484,14 +508,14 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 }
 
                 is UiAction.DeleteGroup -> {
-                    val selectGroupId = uiState.selectGroup?.id ?: return
+                    val selectGroupId = groupUiState.value.selectGroup?.id ?: return
                     launch(Dispatchers.IO) {
                         deleteGroup(selectGroupId)
                     }
                 }
 
                 is UiAction.UpdateGroup -> {
-                    val selectGroupId = uiState.selectGroup?.id ?: return
+                    val selectGroupId = groupUiState.value.selectGroup?.id ?: return
                     launch(Dispatchers.IO) {
                         updateGroup(
                             groupId = selectGroupId,
@@ -502,10 +526,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 }
 
                 is UiAction.ClearEffect -> {
-                    updateUiState {
-                        copy(
-                            effect = null
-                        )
+                    updateDialogUiState {
+                        copy(effect = null)
                     }
                 }
 
@@ -529,14 +551,14 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 }
 
                 is UiAction.DeletePasswd -> {
-                    val selectGroupId = uiState.selectPasswd?.id ?: return
+                    val selectGroupId = passwdUiState.value.selectPasswd?.id ?: return
                     launch(Dispatchers.IO) {
                         deletePasswd(selectGroupId)
                     }
                 }
 
                 is UiAction.MenuOpenOrClose -> {
-                    updateUiState {
+                    updateWindowUiState {
                         copy(menuOpen = open)
                     }
                 }
@@ -547,24 +569,37 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private fun getGroupPasswd(passwdId: Int): Passwd? =
-        uiState.groupPasswds.find { passwd: Passwd -> passwd.id == passwdId }
+        passwdUiState.value.groupPasswds.find { passwd: Passwd -> passwd.id == passwdId }
 
-    private fun getGroup(groupId: Int): Group? = uiState.groups.find { group: Group -> group.id == groupId }
+    private fun getGroup(groupId: Int): Group? =
+        groupUiState.value.groups.find { group: Group -> group.id == groupId }
 
 
     /**
      * 更新页面状态
      * 调用时在函数块中用 data class 的 copy函数就行
      */
-    private fun updateUiState(update: UiState.() -> UiState) {
-        _uiState.update { update(it) }
+    private fun updateWindowUiState(update: WindowUiState.() -> WindowUiState) {
+        _windowUiState.update { update(it) }
+    }
+
+    private fun updateGroupUiState(update: GroupUiState.() -> GroupUiState) {
+        _groupUiState.update { update(it) }
+    }
+
+    private fun updatePasswdUiState(update: PasswdUiState.() -> PasswdUiState) {
+        _passwdUiState.update { update(it) }
+    }
+
+    private fun updateDialogUiState(update: DialogUiState.() -> DialogUiState) {
+        _dialogUiState.update { update(it) }
     }
 
     init {
         launch {
-            shouldBeLandscape.stateIn(this, SharingStarted.WhileSubscribed(), UiState.Default.isLandscape)
+            shouldBeLandscape.stateIn(this, SharingStarted.WhileSubscribed(), WindowUiState.Default.isLandscape)
                 .collectLatest {
-                    updateUiState { copy(isLandscape = it) }
+                    updateWindowUiState { copy(isLandscape = it) }
                 }
         }
     }

@@ -20,9 +20,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import model.Res
+import passwds.model.DialogUiEffect
 import passwds.model.PasswdsViewModel
 import passwds.model.UiAction
-import passwds.model.UiEffect
 import passwds.model.UiScreen
 
 @Composable
@@ -150,10 +150,10 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
             viewModel.onAction(UiAction.ClearEffect)
         }
     }
-    val effect = viewModel.uiStateComposable.effect
-    with(effect) {
+    val dialogUiState = viewModel.dialogUiState.collectAsState().value
+    with(dialogUiState.effect) {
         when (this) {
-            is UiEffect.LoginAndRegisterFailure -> {
+            is DialogUiEffect.LoginAndRegisterFailure -> {
                 msg.value = tipsMsg
                 isTipsMsgDialogOpen.value = true
             }

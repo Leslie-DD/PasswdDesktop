@@ -34,7 +34,8 @@ fun SideMenuScreen(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
-    val expand = viewModel.uiStateComposable.menuOpen
+    val windowUiState = viewModel.windowUiState.collectAsState().value
+    val expand = windowUiState.menuOpen
     Column(
         modifier = modifier
             .width(if (expand) 200.dp else 70.dp)
@@ -73,7 +74,8 @@ fun SideMenuScreen(
 
             items(UiScreen.Screens) { screen ->
                 Spacer(modifier = Modifier.height(15.dp))
-                val isSelected = screen == viewModel.uiStateComposable.uiScreen
+                val windowUiState = viewModel.windowUiState.collectAsState().value
+                val isSelected = screen == windowUiState.uiScreen
                 TextButton(
                     modifier = Modifier.fillMaxWidth(),
                     interactionSource = remember { NoRippleInteractionSource() },

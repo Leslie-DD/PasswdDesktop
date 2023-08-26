@@ -24,9 +24,9 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import passwds.entity.Group
 import passwds.entity.Passwd
+import passwds.model.DialogUiEffect
 import passwds.model.PasswdsViewModel
 import passwds.model.UiAction
-import passwds.model.UiEffect
 
 /**
  * 密码界面主要内容的显示区域
@@ -36,7 +36,6 @@ fun PasswdsScreen(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
-    viewModel.logger.info("PasswdsScreen refresh")
     Row(modifier = modifier.padding(end = 10.dp, top = 10.dp, bottom = 10.dp)) {
         PasswdGroupList(viewModel = viewModel, modifier = Modifier.width(250.dp))
         Spacer(modifier = Modifier.fillMaxHeight().width(10.dp))
@@ -53,18 +52,19 @@ fun PasswdGroupList(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val effect = viewModel.uiStateComposable.effect
+    val dialogUiState = viewModel.dialogUiState.collectAsState().value
 
     val listState = rememberLazyListState()
-    val groups = viewModel.uiState.groups
+    val groupState = viewModel.groupUiState.collectAsState().value
+    val groups = groupState.groups
 
     val isNewGroupDialogOpen = remember { mutableStateOf(false) }
     val isUpdateGroupDialogOpen = remember { mutableStateOf(false) }
     val isDeleteGroupConfirmDialogOpen = remember { mutableStateOf(false) }
 
 
-    when (effect) {
-        is UiEffect.NewGroupResult -> {
+    when (dialogUiState.effect) {
+        is DialogUiEffect.NewGroupResult -> {
             isNewGroupDialogOpen.value = false
             viewModel.onAction(UiAction.ClearEffect)
 
@@ -73,12 +73,12 @@ fun PasswdGroupList(
             }
         }
 
-        is UiEffect.UpdateGroupResult -> {
+        is DialogUiEffect.UpdateGroupResult -> {
             isUpdateGroupDialogOpen.value = false
             viewModel.onAction(UiAction.ClearEffect)
         }
 
-        is UiEffect.DeleteGroupResult -> {
+        is DialogUiEffect.DeleteGroupResult -> {
             isDeleteGroupConfirmDialogOpen.value = false
             viewModel.onAction(UiAction.ClearEffect)
         }
@@ -92,7 +92,8 @@ fun PasswdGroupList(
             shape = RoundedCornerShape(10.dp)
         )
     ) {
-        val selectGroup = viewModel.uiStateComposable.selectGroup
+        val groupUiState = viewModel.groupUiState.collectAsState().value
+        val selectGroup = groupUiState.selectGroup
         Row(
             modifier = Modifier.weight(1f).padding(4.dp)
         ) {
@@ -212,22 +213,21 @@ fun PasswdItemsList(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val listState = rememberLazyListState()
-    val groupPasswds = viewModel.uiState.groupPasswds
-    val effect = viewModel.uiStateComposable.effect
+    val dialogUiState = viewModel.dialogUiState.collectAsState().value
 
     val isNewPasswdDialogOpened = remember { mutableStateOf(false) }
     val isDeletePasswdConfirmDialogOpened = remember { mutableStateOf(false) }
-    when (effect) {
-        is UiEffect.NewPasswdResult -> {
+    when (dialogUiState.effect) {
+        is DialogUiEffect.NewPasswdResult -> {
             isNewPasswdDialogOpened.value = false
             viewModel.onAction(UiAction.ClearEffect)
 
             coroutineScope.launch {
-                listState.animateScrollToItem(index = groupPasswds.size - 1)
+                listState.animateScrollToItem(index = viewModel.passwdUiState.value.groupPasswds.size - 1)
             }
         }
 
-        is UiEffect.DeletePasswdResult -> {
+        is DialogUiEffect.DeletePasswdResult -> {
             isDeletePasswdConfirmDialogOpened.value = false
             viewModel.onAction(UiAction.ClearEffect)
         }
@@ -246,6 +246,7 @@ fun PasswdItemsList(
                 shape = RoundedCornerShape(10.dp)
             )
         ) {
+            val passwdUiState = viewModel.passwdUiState.collectAsState().value
             Row(
                 modifier = Modifier.weight(1f)
             ) {
@@ -253,10 +254,10 @@ fun PasswdItemsList(
                     modifier = modifier.weight(1f).padding(10.dp),
                     state = listState
                 ) {
-                    items(groupPasswds) { passwd ->
+                    items(passwdUiState.groupPasswds) { passwd ->
                         PasswdCard(
                             passwd = passwd,
-                            isSelected = passwd.id == viewModel.uiStateComposable.selectPasswd?.id
+                            isSelected = passwd.id == passwdUiState.selectPasswd?.id
                         ) {
                             viewModel.onAction(UiAction.ShowPasswd(passwdId = it))
                         }
@@ -271,7 +272,6 @@ fun PasswdItemsList(
             }
 
 
-            val selectGroupId = viewModel.uiStateComposable.selectGroup?.id
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -279,9 +279,9 @@ fun PasswdItemsList(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
 
-                val isNewPasswdIconButtonEnabled = viewModel.uiStateComposable.selectGroup != null
+                val groupUiState = viewModel.groupUiState.collectAsState().value
                 IconButton(
-                    enabled = isNewPasswdIconButtonEnabled,
+                    enabled = groupUiState.selectGroup != null,
                     onClick = {
                         isNewPasswdDialogOpened.value = true
                     }
@@ -290,6 +290,7 @@ fun PasswdItemsList(
                 }
 
                 if (isNewPasswdDialogOpened.value) {
+                    val selectGroupId = groupUiState.selectGroup?.id
                     val theme by viewModel.theme.collectAsState()
                     AddPasswdDialog(
                         theme = theme,
@@ -313,9 +314,8 @@ fun PasswdItemsList(
                     )
                 }
 
-                val isDeletePasswdIconButtonEnabled = viewModel.uiStateComposable.selectPasswd != null
                 IconButton(
-                    enabled = isDeletePasswdIconButtonEnabled,
+                    enabled = passwdUiState.selectPasswd != null,
                     onClick = {
                         isDeletePasswdConfirmDialogOpened.value = true
                     }
@@ -353,7 +353,8 @@ fun PasswdDetailScreen(
             shape = RoundedCornerShape(10.dp)
         )
     ) {
-        viewModel.uiState.selectPasswd?.let {
+        val passwdUiState = viewModel.passwdUiState.collectAsState().value
+        passwdUiState.selectPasswd?.let {
             val isEditDialogOpen = remember { mutableStateOf(false) }
             Column(
                 modifier = modifier.fillMaxSize()
@@ -380,9 +381,9 @@ fun PasswdDetailScreen(
             }
 
 
-            val effect = viewModel.uiStateComposable.effect
-            when (effect) {
-                is UiEffect.UpdatePasswdResult -> {
+            val dialogUiState = viewModel.dialogUiState.collectAsState().value
+            when (dialogUiState.effect) {
+                is DialogUiEffect.UpdatePasswdResult -> {
                     isEditDialogOpen.value = false
                     viewModel.onAction(UiAction.ClearEffect)
                 }

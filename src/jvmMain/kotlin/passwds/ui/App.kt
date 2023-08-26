@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import passwds.model.PasswdsViewModel
 import passwds.model.UiScreen
@@ -17,8 +18,8 @@ fun App(
     Row(
         modifier = Modifier.fillMaxSize()
     ) {
-        val uiScreen = viewModel.uiStateComposable.uiScreen
-        when (uiScreen) {
+        val windowUiState = viewModel.windowUiState.collectAsState().value
+        when (windowUiState.uiScreen) {
             UiScreen.Passwds, UiScreen.Settings -> {
                 SideMenuScreen(viewModel)
             }
@@ -31,10 +32,8 @@ fun App(
             .background(color = MaterialTheme.colorScheme.primary)
         Crossfade(
             modifier = Modifier.fillMaxSize(),
-            targetState = uiScreen,
+            targetState = windowUiState.uiScreen,
             content = {
-
-                viewModel.logger.info("Crossfade ${it.name}")
                 when (it) {
                     UiScreen.Passwds -> PasswdsScreen(viewModel, modifier)
                     UiScreen.Settings -> SettingsScreen(viewModel, modifier)

@@ -124,10 +124,17 @@ class PasswdRepository(
     suspend fun newGroup(
         groupName: String,
         groupComment: String,
-    ): Result<Int> = remoteDataSource.newGroup(
-        groupName = groupName,
-        groupComment = groupComment
-    )
+    ): Result<Int> {
+        return remoteDataSource.newGroup(
+            groupName = groupName,
+            groupComment = groupComment
+        ).onSuccess {
+            groupPasswds.emit(arrayListOf())
+            Result.success(it)
+        }.onFailure {
+            Result.failure<Int>(it)
+        }
+    }
 
     suspend fun deleteGroup(
         groupId: Int
