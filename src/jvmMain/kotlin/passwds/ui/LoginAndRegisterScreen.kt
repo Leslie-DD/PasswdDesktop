@@ -1,5 +1,6 @@
 package passwds.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
@@ -13,9 +14,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import model.Res
 import passwds.model.PasswdsViewModel
 import passwds.model.UiAction
 import passwds.model.UiEffect
@@ -23,10 +27,11 @@ import passwds.model.UiScreen
 
 @Composable
 fun LoginAndRegisterScreen(
-    viewModel: PasswdsViewModel
+    viewModel: PasswdsViewModel,
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier
     ) {
         Card(
             modifier = Modifier.weight(0.4f).fillMaxHeight(),
@@ -60,6 +65,31 @@ private fun IntroductionBox() {
                     "ciphertext and the server will always don't know your plaintext. But DO REMEMBER that WRITE your SECRET KEY " +
                     "on the notebook cause if you forget that, passwords you stored will decrypted incorrectly!"
         )
+    }
+}
+
+@Composable
+fun AppSymbolBox(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(20.dp))
+        Image(
+            painter = painterResource(Res.Drawable.APP_ICON_ROUND_CORNER),
+            contentDescription = null,
+            modifier = Modifier.size(45.dp)
+        )
+        Spacer(modifier = Modifier.height(30.dp))
+        Text(
+            text = "Passwd",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(text = "Compose for Multiplatform", fontSize = 12.sp)
     }
 }
 
@@ -120,7 +150,7 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
             viewModel.onAction(UiAction.ClearEffect)
         }
     }
-    val effect = viewModel.uiState.effect
+    val effect = viewModel.uiStateComposable.effect
     with(effect) {
         when (this) {
             is UiEffect.LoginAndRegisterFailure -> {

@@ -1,7 +1,7 @@
 package passwds.ui
 
 import androidx.compose.animation.*
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -13,19 +13,17 @@ import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MenuOpen
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.launch
-import model.Res
 import model.next
 import passwds.model.PasswdsViewModel
 import passwds.model.UiAction
@@ -36,19 +34,17 @@ fun SideMenuScreen(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
-
-    val coroutine = rememberCoroutineScope()
-
-    val expand = viewModel.uiState.menuOpen
+    val expand = viewModel.uiStateComposable.menuOpen
     Column(
         modifier = modifier
             .width(if (expand) 200.dp else 70.dp)
             .fillMaxHeight()
+            .background(
+                color = MaterialTheme.colorScheme.primary
+            )
             .padding(top = 20.dp, bottom = 40.dp, start = 10.dp, end = 10.dp),
         verticalArrangement = Arrangement.SpaceBetween,
     ) {
-
-        val uiScreen = viewModel.uiState.uiScreen
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             item {
                 Row(
@@ -75,19 +71,14 @@ fun SideMenuScreen(
                 }
             }
 
-
             items(UiScreen.Screens) { screen ->
                 Spacer(modifier = Modifier.height(15.dp))
-
-                val isSelected = screen == uiScreen
+                val isSelected = screen == viewModel.uiStateComposable.uiScreen
                 TextButton(
                     modifier = Modifier.fillMaxWidth(),
                     interactionSource = remember { NoRippleInteractionSource() },
                     onClick = {
                         viewModel.onAction(UiAction.GoScreen(screen))
-                        coroutine.launch {
-                            viewModel.scaffoldState.drawerState.close()
-                        }
                     },
                     colors = ButtonDefaults.textButtonColors(
                         containerColor = if (isSelected) {
@@ -115,7 +106,6 @@ fun SideMenuScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             ThemeChoiceButton(viewModel, expand)
-
             Spacer(modifier = modifier.height(15.dp))
             TextButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -126,9 +116,6 @@ fun SideMenuScreen(
                 ),
                 onClick = {
                     viewModel.onAction(UiAction.GoScreen(UiScreen.Login))
-                    coroutine.launch {
-                        viewModel.scaffoldState.drawerState.close()
-                    }
                 }
             ) {
                 Icon(imageVector = Icons.Default.ExitToApp, contentDescription = null)
@@ -180,31 +167,6 @@ fun ThemeChoiceButton(viewModel: PasswdsViewModel, expand: Boolean) {
         }
     }
 
-}
-
-@Composable
-fun AppSymbolBox(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.height(20.dp))
-        Image(
-            painter = painterResource(Res.Drawable.APP_ICON_ROUND_CORNER),
-            contentDescription = null,
-            modifier = Modifier.size(45.dp)
-        )
-        Spacer(modifier = Modifier.height(30.dp))
-        Text(
-            text = "Passwd",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        Text(text = "Compose for Multiplatform", fontSize = 12.sp)
-    }
 }
 
 /**

@@ -5,7 +5,7 @@ import passwds.entity.Passwd
 import platform.desktop.Platform
 import platform.desktop.currentPlatform
 
-data class TranslateUiState(
+data class UiState(
     val swapLangButtonState: Boolean,
     val menu1Open: Boolean,
     val menu2Open: Boolean,
@@ -25,7 +25,7 @@ data class TranslateUiState(
     val menuOpen: Boolean = true,
 ) {
     companion object {
-        val Default = TranslateUiState(
+        val Default = UiState(
             swapLangButtonState = true,
             menu1Open = false,
             menu2Open = false,

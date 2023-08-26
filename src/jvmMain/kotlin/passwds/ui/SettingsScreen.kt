@@ -20,9 +20,12 @@ import androidx.compose.ui.unit.dp
 import passwds.model.PasswdsViewModel
 
 @Composable
-fun SettingsScreen(viewModel: PasswdsViewModel) {
+fun SettingsScreen(
+    viewModel: PasswdsViewModel,
+    modifier: Modifier = Modifier
+) {
     Box(
-        modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter
+        modifier = modifier, contentAlignment = Alignment.TopCenter
     ) {
         Column(
             modifier = Modifier.wrapContentSize(), horizontalAlignment = Alignment.Start

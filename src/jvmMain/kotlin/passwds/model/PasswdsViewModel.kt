@@ -1,9 +1,5 @@
 package passwds.model
 
-import androidx.compose.material.DrawerState
-import androidx.compose.material.DrawerValue
-import androidx.compose.material.ScaffoldState
-import androidx.compose.material.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import config.LocalPref
@@ -21,17 +17,19 @@ import platform.desktop.currentPlatform
 
 class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
-    private val logger: Logger = LoggerFactory.getLogger(javaClass)
+    val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private val repository: PasswdRepository = PasswdRepository()
 
-    val scaffoldState = ScaffoldState(DrawerState(DrawerValue.Closed), SnackbarHostState())
-
     val shouldBeLandscape = MutableStateFlow(currentPlatform == Platform.Desktop)
 
-    private val _uiState = MutableStateFlow(TranslateUiState.Default)
-    val translateUiState get() = _uiState.value
-    val uiState: TranslateUiState @Composable get() = _uiState.collectAsState().value
+    private val _uiState = MutableStateFlow(UiState.Default)
+    val uiState get() = _uiState.value
+    val uiStateComposable: UiState @Composable get() = _uiState.collectAsState().value
+
+//    private val _uiState: MutableStateFlow<S> by lazy { MutableStateFlow(initialState) }
+//
+//    val uiState: StateFlow<S> by lazy { _uiState }
 
     val exitApp = MutableStateFlow(false)
 
@@ -486,14 +484,14 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 }
 
                 is UiAction.DeleteGroup -> {
-                    val selectGroupId = translateUiState.selectGroup?.id ?: return
+                    val selectGroupId = uiState.selectGroup?.id ?: return
                     launch(Dispatchers.IO) {
                         deleteGroup(selectGroupId)
                     }
                 }
 
                 is UiAction.UpdateGroup -> {
-                    val selectGroupId = translateUiState.selectGroup?.id ?: return
+                    val selectGroupId = uiState.selectGroup?.id ?: return
                     launch(Dispatchers.IO) {
                         updateGroup(
                             groupId = selectGroupId,
@@ -531,7 +529,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 }
 
                 is UiAction.DeletePasswd -> {
-                    val selectGroupId = translateUiState.selectPasswd?.id ?: return
+                    val selectGroupId = uiState.selectPasswd?.id ?: return
                     launch(Dispatchers.IO) {
                         deletePasswd(selectGroupId)
                     }
@@ -549,22 +547,22 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private fun getGroupPasswd(passwdId: Int): Passwd? =
-        translateUiState.groupPasswds.find { passwd: Passwd -> passwd.id == passwdId }
+        uiState.groupPasswds.find { passwd: Passwd -> passwd.id == passwdId }
 
-    private fun getGroup(groupId: Int): Group? = translateUiState.groups.find { group: Group -> group.id == groupId }
+    private fun getGroup(groupId: Int): Group? = uiState.groups.find { group: Group -> group.id == groupId }
 
 
     /**
      * 更新页面状态
      * 调用时在函数块中用 data class 的 copy函数就行
      */
-    private fun updateUiState(update: TranslateUiState.() -> TranslateUiState) {
+    private fun updateUiState(update: UiState.() -> UiState) {
         _uiState.update { update(it) }
     }
 
     init {
         launch {
-            shouldBeLandscape.stateIn(this, SharingStarted.WhileSubscribed(), TranslateUiState.Default.isLandscape)
+            shouldBeLandscape.stateIn(this, SharingStarted.WhileSubscribed(), UiState.Default.isLandscape)
                 .collectLatest {
                     updateUiState { copy(isLandscape = it) }
                 }

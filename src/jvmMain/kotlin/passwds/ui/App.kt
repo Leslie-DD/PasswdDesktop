@@ -2,7 +2,6 @@ package passwds.ui
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -15,42 +14,36 @@ import passwds.model.UiScreen
 fun App(
     viewModel: PasswdsViewModel,
 ) {
-    Crossfade(
-        modifier = Modifier.fillMaxSize(),
-        targetState = viewModel.uiState.uiScreen,
-        content = {
-            MainScreen(viewModel, it)
-        }
-    )
-}
-
-@Composable
-fun MainScreen(
-    viewModel: PasswdsViewModel,
-    uiScreen: UiScreen
-) {
-    Box(
-        modifier = Modifier.fillMaxSize().background(color = MaterialTheme.colorScheme.primary)
+    Row(
+        modifier = Modifier.fillMaxSize()
     ) {
-        Row(modifier = Modifier.fillMaxSize()) {
-            when (uiScreen) {
-                UiScreen.Passwds -> {
-                    SideMenuScreen(viewModel)
-                    PasswdsScreen(viewModel)
-                }
-
-                UiScreen.Settings -> {
-                    SideMenuScreen(viewModel)
-                    SettingsScreen(viewModel)
-                }
-
-                UiScreen.Loading -> LoadingScreen()
-
-                in UiScreen.LoginAndRegister -> LoginAndRegisterScreen(viewModel)
-
-                else -> {}
+        val uiScreen = viewModel.uiStateComposable.uiScreen
+        when (uiScreen) {
+            UiScreen.Passwds, UiScreen.Settings -> {
+                SideMenuScreen(viewModel)
             }
+
+            else -> {}
         }
+
+        val modifier = Modifier
+            .fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.primary)
+        Crossfade(
+            modifier = Modifier.fillMaxSize(),
+            targetState = uiScreen,
+            content = {
+
+                viewModel.logger.info("Crossfade ${it.name}")
+                when (it) {
+                    UiScreen.Passwds -> PasswdsScreen(viewModel, modifier)
+                    UiScreen.Settings -> SettingsScreen(viewModel, modifier)
+                    UiScreen.Loading -> LoadingScreen(modifier)
+                    in UiScreen.LoginAndRegister -> LoginAndRegisterScreen(viewModel, modifier)
+
+                    else -> {}
+                }
+            }
+        )
     }
 }
-

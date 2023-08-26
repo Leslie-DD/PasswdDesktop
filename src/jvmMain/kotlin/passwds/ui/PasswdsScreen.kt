@@ -33,9 +33,11 @@ import passwds.model.UiEffect
  */
 @Composable
 fun PasswdsScreen(
-    viewModel: PasswdsViewModel
+    viewModel: PasswdsViewModel,
+    modifier: Modifier = Modifier
 ) {
-    Row(modifier = Modifier.fillMaxSize().padding(end = 10.dp, top = 10.dp, bottom = 10.dp)) {
+    viewModel.logger.info("PasswdsScreen refresh")
+    Row(modifier = modifier.padding(end = 10.dp, top = 10.dp, bottom = 10.dp)) {
         PasswdGroupList(viewModel = viewModel, modifier = Modifier.width(250.dp))
         Spacer(modifier = Modifier.fillMaxHeight().width(10.dp))
         PasswdItemsContent(viewModel = viewModel)
@@ -51,10 +53,10 @@ fun PasswdGroupList(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val effect = viewModel.uiState.effect
+    val effect = viewModel.uiStateComposable.effect
 
     val listState = rememberLazyListState()
-    val groups = viewModel.translateUiState.groups
+    val groups = viewModel.uiState.groups
 
     val isNewGroupDialogOpen = remember { mutableStateOf(false) }
     val isUpdateGroupDialogOpen = remember { mutableStateOf(false) }
@@ -90,7 +92,7 @@ fun PasswdGroupList(
             shape = RoundedCornerShape(10.dp)
         )
     ) {
-        val selectGroup = viewModel.uiState.selectGroup
+        val selectGroup = viewModel.uiStateComposable.selectGroup
         Row(
             modifier = Modifier.weight(1f).padding(4.dp)
         ) {
@@ -210,8 +212,8 @@ fun PasswdItemsList(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val listState = rememberLazyListState()
-    val groupPasswds = viewModel.translateUiState.groupPasswds
-    val effect = viewModel.uiState.effect
+    val groupPasswds = viewModel.uiState.groupPasswds
+    val effect = viewModel.uiStateComposable.effect
 
     val isNewPasswdDialogOpened = remember { mutableStateOf(false) }
     val isDeletePasswdConfirmDialogOpened = remember { mutableStateOf(false) }
@@ -254,7 +256,7 @@ fun PasswdItemsList(
                     items(groupPasswds) { passwd ->
                         PasswdCard(
                             passwd = passwd,
-                            isSelected = passwd.id == viewModel.uiState.selectPasswd?.id
+                            isSelected = passwd.id == viewModel.uiStateComposable.selectPasswd?.id
                         ) {
                             viewModel.onAction(UiAction.ShowPasswd(passwdId = it))
                         }
@@ -269,7 +271,7 @@ fun PasswdItemsList(
             }
 
 
-            val selectGroupId = viewModel.uiState.selectGroup?.id
+            val selectGroupId = viewModel.uiStateComposable.selectGroup?.id
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -277,7 +279,7 @@ fun PasswdItemsList(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
 
-                val isNewPasswdIconButtonEnabled = viewModel.uiState.selectGroup != null
+                val isNewPasswdIconButtonEnabled = viewModel.uiStateComposable.selectGroup != null
                 IconButton(
                     enabled = isNewPasswdIconButtonEnabled,
                     onClick = {
@@ -311,7 +313,7 @@ fun PasswdItemsList(
                     )
                 }
 
-                val isDeletePasswdIconButtonEnabled = viewModel.uiState.selectPasswd != null
+                val isDeletePasswdIconButtonEnabled = viewModel.uiStateComposable.selectPasswd != null
                 IconButton(
                     enabled = isDeletePasswdIconButtonEnabled,
                     onClick = {
@@ -351,7 +353,7 @@ fun PasswdDetailScreen(
             shape = RoundedCornerShape(10.dp)
         )
     ) {
-        viewModel.translateUiState.selectPasswd?.let {
+        viewModel.uiState.selectPasswd?.let {
             val isEditDialogOpen = remember { mutableStateOf(false) }
             Column(
                 modifier = modifier.fillMaxSize()
@@ -378,7 +380,7 @@ fun PasswdDetailScreen(
             }
 
 
-            val effect = viewModel.uiState.effect
+            val effect = viewModel.uiStateComposable.effect
             when (effect) {
                 is UiEffect.UpdatePasswdResult -> {
                     isEditDialogOpen.value = false

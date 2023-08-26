@@ -40,7 +40,7 @@ fun main() = application {
     }
     Window(
         onCloseRequest = { viewModel.onAction(UiAction.WindowVisible(false)) },
-        visible = viewModel.uiState.windowVisible,
+        visible = viewModel.uiStateComposable.windowVisible,
         title = "Passwd",
         state = state,
     ) {
