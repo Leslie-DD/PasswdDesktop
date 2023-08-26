@@ -17,11 +17,12 @@ import passwds.repository.PasswdRepository
 import platform.desktop.Platform
 import platform.desktop.currentPlatform
 
+@OptIn(FlowPreview::class)
 class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    private val remoteRepository: PasswdRepository = PasswdRepository()
+    private val repository: PasswdRepository = PasswdRepository()
 
     val shouldBeLandscape = MutableStateFlow(currentPlatform == Platform.Desktop)
 
@@ -48,6 +49,13 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         _dialogUiState
     }
 
+    private val _searchFlow: MutableStateFlow<String> by lazy {
+        MutableStateFlow("")
+    }
+    private val searchFlow: StateFlow<String> by lazy {
+        _searchFlow
+    }
+
     val exitApp = MutableStateFlow(false)
 
     val theme = MutableStateFlow(LocalPref.theme)
@@ -58,7 +66,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
 
         launch {
-            remoteRepository.groups.collect {
+            repository.groups.collect {
                 updateGroupUiState {
                     copy(groups = it)
                 }
@@ -66,9 +74,36 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
 
         launch {
-            remoteRepository.groupPasswds.collect {
+            repository.groupPasswds.collect {
                 updatePasswdUiState {
                     copy(groupPasswds = it)
+                }
+            }
+        }
+
+        launch {
+            searchFlow.debounce(500).collectLatest {
+                if (it.isNotBlank()) {
+                    val passwds = repository.getAllPasswds(it)
+                    updatePasswdUiState {
+                        copy(
+                            groupPasswds = passwds,
+                            selectPasswd = null
+                        )
+                    }
+                    updateGroupUiState {
+                        copy(selectGroup = null)
+                    }
+                } else {
+                    updatePasswdUiState {
+                        copy(
+                            groupPasswds = mutableListOf(),
+                            selectPasswd = null
+                        )
+                    }
+                    updateGroupUiState {
+                        copy(selectGroup = null)
+                    }
                 }
             }
         }
@@ -103,7 +138,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             return
         }
         logger.debug(".loginByToken, username: $username, token: $token, secretKey: $secretKey")
-        remoteRepository.loginByToken(
+        repository.loginByToken(
             username = username,
             token = token,
             secretKey = secretKey
@@ -125,7 +160,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             logger.error("PasswdsViewModel().loginByPassword error, $username, $password, $secretKey")
             return
         }
-        remoteRepository.loginByPassword(
+        repository.loginByPassword(
             username = username,
             password = password,
             secretKey = secretKey
@@ -167,7 +202,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             logger.warn("register username and password can not be empty")
             return
         }
-        remoteRepository.register(
+        repository.register(
             username = username,
             password = password,
         ).onSuccess {
@@ -193,11 +228,11 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private suspend fun fetchGroups() {
-        remoteRepository.fetchGroups()
+        repository.fetchGroups()
     }
 
     private suspend fun fetchGroupPasswds(groupId: Int) {
-        remoteRepository.fetchGroupPasswds(groupId)
+        repository.fetchGroupPasswds(groupId)
     }
 
     private suspend fun newGroup(
@@ -208,7 +243,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             // TODO: tips 提示 groupName 不能为空
             return
         }
-        remoteRepository.newGroup(groupName, groupComment)
+        repository.newGroup(groupName, groupComment)
             .onSuccess {
                 updateDialogUiState {
                     copy(effect = DialogUiEffect.NewGroupResult(it))
@@ -227,7 +262,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private suspend fun deleteGroup(groupId: Int) {
-        remoteRepository.deleteGroup(groupId)
+        repository.deleteGroup(groupId)
             .onSuccess {
                 updateGroupUiState {
                     copy(selectGroup = null)
@@ -248,7 +283,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         groupName: String,
         groupComment: String
     ) {
-        remoteRepository.updateGroup(
+        repository.updateGroup(
             groupId = groupId,
             groupName = groupName,
             groupComment = groupComment
@@ -272,7 +307,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         link: String,
         comment: String,
     ) {
-        remoteRepository.newPasswd(
+        repository.newPasswd(
             groupId = groupId,
             title = title,
             usernameString = usernameString,
@@ -298,7 +333,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     private suspend fun updatePasswd(
         updatePasswd: Passwd
     ) {
-        remoteRepository.updatePasswd(
+        repository.updatePasswd(
             id = updatePasswd.id,
             title = updatePasswd.title,
             usernameStrValue = updatePasswd.usernameString,
@@ -321,7 +356,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private suspend fun deletePasswd(passwdId: Int) {
-        remoteRepository.deletePasswd(passwdId)
+        repository.deletePasswd(passwdId)
             .onSuccess {
                 updateDialogUiState {
                     copy(effect = DialogUiEffect.DeletePasswdResult(it))
@@ -458,6 +493,10 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     updateWindowUiState {
                         copy(menuOpen = open)
                     }
+                }
+
+                is UiAction.SearchPasswds -> {
+                    _searchFlow.tryEmit(content)
                 }
 
                 else -> {}

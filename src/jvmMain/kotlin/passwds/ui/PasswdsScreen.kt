@@ -15,6 +15,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
@@ -243,7 +246,9 @@ fun PasswdItemsList(
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        SearchBox()
+        SearchBox {
+            viewModel.onAction(UiAction.SearchPasswds(it))
+        }
         Spacer(modifier = Modifier.fillMaxWidth().height(10.dp))
 
         Column(
@@ -573,9 +578,20 @@ fun PasswdCard(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SearchBox() {
-    Box(modifier = Modifier.fillMaxWidth()) {
-        val text = remember { mutableStateOf("") }
+private fun SearchBox(
+    onSearch: (String) -> Unit
+) {
+    val text = remember { mutableStateOf("") }
+    val focusRequester = remember { FocusRequester() }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequester)
+            .onFocusChanged {
+                text.value = ""
+//                onSearch(text.value)
+            }
+    ) {
         TextField(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(50),
@@ -598,6 +614,7 @@ private fun SearchBox() {
             value = text.value,
             onValueChange = {
                 text.value = it
+                onSearch(text.value)
             },
             colors = TextFieldDefaults.textFieldColors(
                 cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,

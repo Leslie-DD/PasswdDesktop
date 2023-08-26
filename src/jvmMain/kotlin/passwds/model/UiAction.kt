@@ -44,4 +44,6 @@ sealed class UiAction {
 
     class MenuOpenOrClose(val open: Boolean) : UiAction()
 
+    class SearchPasswds(val content: String) : UiAction()
+
 }

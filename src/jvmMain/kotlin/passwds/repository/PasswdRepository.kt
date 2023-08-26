@@ -282,6 +282,19 @@ class PasswdRepository(
         return result
     }
 
+    fun getAllPasswds(value: String): MutableList<Passwd> {
+        val pattern = Regex(PATTERN_PREFIX + value + PATTERN_SUFFIX)
+        val result = arrayListOf<Passwd>()
+        localDataSource.passwdsMap
+            .flatMap { it.value }
+            .forEach { passwd ->
+                if (passwd.title?.matches(pattern) == true || passwd.usernameString?.matches(pattern) == true) {
+                    result.add(passwd)
+                }
+            }
+        return result
+    }
+
     private fun decodePasswd(passwd: Passwd, secretKeyBytes: ByteArray?): Passwd {
         logger.debug("fetchGroupPasswd decode before: passwd: {}", passwd)
         try {
@@ -331,5 +344,7 @@ class PasswdRepository(
 
     companion object {
         private const val TAG = "PasswdRepository"
+        private const val PATTERN_PREFIX = "^.*(?i)"
+        private const val PATTERN_SUFFIX = ".*"
     }
 }
