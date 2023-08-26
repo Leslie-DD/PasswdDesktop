@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class Setting {
+object Setting {
 
     val screenOrientation = MutableStateFlow(LocalPref.screenOrientation)
 
@@ -18,10 +18,6 @@ class Setting {
     val userId = MutableStateFlow(LocalPref.userId)
 
     val username = MutableStateFlow(LocalPref.username)
-
-    companion object {
-
-    }
 
     init {
         CoroutineScope(Dispatchers.IO).apply {

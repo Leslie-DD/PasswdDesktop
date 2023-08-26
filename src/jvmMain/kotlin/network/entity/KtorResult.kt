@@ -1,6 +1,8 @@
 package network.entity
 
 import kotlinx.serialization.Serializable
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 @Serializable
 data class KtorResult<T>(
@@ -10,10 +12,18 @@ data class KtorResult<T>(
     val data: T,
     val timestamp: Long
 ) {
+    var api: String? = null
+
+    companion object {
+        private val logger: Logger = LoggerFactory.getLogger(javaClass)
+    }
+
     fun result(): Result<T> {
         return if (success) {
+            logger.info("($api) success $this")
             Result.success(data)
         } else {
+            logger.error("($api) failure $this")
             Result.failure(Throwable(msg))
         }
     }

@@ -1,7 +1,7 @@
 package passwds.repository
 
-import config.LocalPref
 import kotlinx.coroutines.flow.MutableStateFlow
+import model.Setting
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import passwds.datasource.LocalDataSource
@@ -24,7 +24,7 @@ class PasswdRepository(
     val groupPasswds = MutableStateFlow<MutableList<Passwd>>(arrayListOf())
 
     private fun MutableList<Passwd>.mapToPasswdsMap(
-        secretKeyBytes: ByteArray = Base64.getDecoder().decode(LocalPref.secretKey)
+        secretKeyBytes: ByteArray = Base64.getDecoder().decode(Setting.secretKey.value)
     ): MutableMap<Int, MutableList<Passwd>> {
         val passwdsMapResult: MutableMap<Int, MutableList<Passwd>> = hashMapOf()
         this.forEach { passwd ->
@@ -37,21 +37,20 @@ class PasswdRepository(
         return passwdsMapResult
     }
 
-    suspend fun fetchPasswds() {
-        remoteDataSource.fetchPasswds()
-            .onSuccess {
-                val passwdsMapResult = it.mapToPasswdsMap()
-                logger.info("$TAG fetchPasswds success, passwdsMap: ${passwdsMapResult.size}, $passwdsMapResult")
-                localDataSource.passwdsMap = passwdsMapResult
-            }.onFailure {
-                it.printStackTrace()
-            }
-    }
+//    suspend fun fetchPasswds() {
+//        remoteDataSource.fetchPasswds()
+//            .onSuccess {
+//                val passwdsMapResult = it.mapToPasswdsMap()
+//                logger.info("$TAG fetchPasswds success, passwdsMap: ${passwdsMapResult.size}, $passwdsMapResult")
+//                localDataSource.passwdsMap = passwdsMapResult
+//            }.onFailure {
+//                it.printStackTrace()
+//            }
+//    }
 
     suspend fun fetchGroups() {
         remoteDataSource.fetchGroups()
             .onSuccess {
-                logger.info("$TAG fetchGroups success, groups: ${it.size}, $it")
                 localDataSource.groups = it
                 groups.emit(it)
             }.onFailure {
@@ -60,11 +59,8 @@ class PasswdRepository(
             }
     }
 
-    suspend fun fetchGroupPasswds(
-        groupId: Int
-    ) {
-        val localGroupPasswds = localDataSource.getGroupPasswds(groupId)
-        groupPasswds.emit(localGroupPasswds)
+    suspend fun fetchGroupPasswds(groupId: Int) {
+        groupPasswds.emit(localDataSource.getGroupPasswds(groupId))
     }
 
 
@@ -78,6 +74,8 @@ class PasswdRepository(
             token = token,
             secretKey = secretKey
         ).onSuccess { loginResult ->
+            localDataSource.passwdsMap = loginResult.passwds.mapToPasswdsMap()
+            localDataSource.groups = mutableListOf()
             groups.emit(arrayListOf())
             groupPasswds.emit(arrayListOf())
             Result.success(loginResult)
@@ -97,6 +95,7 @@ class PasswdRepository(
             secretKey = secretKey
         ).onSuccess { loginResult ->
             localDataSource.passwdsMap = loginResult.passwds.mapToPasswdsMap()
+            localDataSource.groups = mutableListOf()
             groups.emit(arrayListOf())
             groupPasswds.emit(arrayListOf())
             Result.success(loginResult)
@@ -114,6 +113,7 @@ class PasswdRepository(
             password = password
         ).onSuccess { loginResult ->
             localDataSource.passwdsMap = mutableMapOf()
+            localDataSource.groups = mutableListOf()
             groups.emit(arrayListOf())
             groupPasswds.emit(arrayListOf())
             Result.success(loginResult)
@@ -133,7 +133,7 @@ class PasswdRepository(
         ).onSuccess {
             val newGroup = Group(
                 id = it,
-                userId = LocalPref.userId,
+                userId = Setting.userId.value,
                 groupName = groupName,
                 groupComment = groupComment
             )
@@ -155,7 +155,7 @@ class PasswdRepository(
             groupId = groupId
         ).onSuccess {
             localDataSource.passwdsMap.remove(groupId)
-            localDataSource.groups.find { group: Group -> group.id == groupId } ?.let {
+            localDataSource.groups.find { group: Group -> group.id == groupId }?.let {
                 localDataSource.groups.remove(it)
                 result = Result.success(it)
             }
@@ -178,7 +178,7 @@ class PasswdRepository(
             groupName = groupName,
             groupComment = groupComment
         ).onSuccess {
-            localDataSource.groups.find { group: Group -> group.id == groupId } ?.let {
+            localDataSource.groups.find { group: Group -> group.id == groupId }?.let {
                 it.groupName = groupName
                 it.groupComment = groupComment
             }
@@ -197,7 +197,7 @@ class PasswdRepository(
         link: String,
         comment: String,
     ): Result<Passwd> {
-        val secretKey = LocalPref.secretKey
+        val secretKey = Setting.secretKey.value
         var result = Result.failure<Passwd>(Throwable())
         remoteDataSource.newPasswd(
             groupId = groupId,
@@ -211,7 +211,7 @@ class PasswdRepository(
                 id = it,
                 groupId = groupId,
                 title = title,
-                userId = LocalPref.userId,
+                userId = Setting.userId.value,
                 link = link,
                 comment = comment,
                 usernameString = usernameString,
@@ -236,7 +236,7 @@ class PasswdRepository(
         link: String?,
         comment: String?
     ): Result<Passwd> {
-        val secretKey = LocalPref.secretKey
+        val secretKey = Setting.secretKey.value
         var result = Result.failure<Passwd>(Throwable())
         remoteDataSource.updatePasswd(
             id = id,
@@ -265,16 +265,21 @@ class PasswdRepository(
         return result
     }
 
-    suspend fun deletePasswd(id: Int): Result<Int> {
-        return remoteDataSource.deletePasswd(id = id)
+    suspend fun deletePasswd(id: Int): Result<Passwd> {
+        var result = Result.failure<Passwd>(Throwable())
+        remoteDataSource.deletePasswd(id = id)
             .onSuccess {
-                getPasswdById(id) ?.let {passwd ->
+                getPasswdById(id)?.let { passwd ->
                     getGroupPasswdsByGroupId(passwd.groupId)?.let { groupPasswdsss ->
                         groupPasswdsss.remove(passwd)
                         groupPasswds.emit(groupPasswdsss)
+                        result = Result.success(passwd)
                     }
                 }
+            }.onFailure {
+                result = Result.failure(it)
             }
+        return result
     }
 
     private fun decodePasswd(passwd: Passwd, secretKeyBytes: ByteArray?): Passwd {

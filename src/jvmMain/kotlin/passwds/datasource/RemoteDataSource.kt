@@ -14,10 +14,6 @@ class RemoteDataSource {
         api = Api.API_PASSWDS
     )
 
-    suspend fun fetchGroups(): Result<MutableList<Group>> = KtorRequest.postRequest(
-        api = Api.API_GROUPS
-    )
-
     suspend fun fetchGroupPasswds(
         groupId: Int
     ): Result<MutableList<Passwd>> = KtorRequest.postRequest(
@@ -27,6 +23,9 @@ class RemoteDataSource {
         )
     )
 
+    suspend fun fetchGroups(): Result<MutableList<Group>> = KtorRequest.postRequest(
+        api = Api.API_GROUPS
+    )
 
     suspend fun loginByToken(
         username: String,

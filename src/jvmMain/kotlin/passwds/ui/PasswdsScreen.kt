@@ -69,7 +69,10 @@ fun PasswdGroupList(
             viewModel.onAction(UiAction.ClearEffect)
 
             coroutineScope.launch {
-                listState.animateScrollToItem(index = groups.size - 1)
+                val size = groups.size
+                if (size > 0) {
+                    listState.animateScrollToItem(index = size - 1)
+                }
             }
         }
 
@@ -225,7 +228,7 @@ fun PasswdItemsList(
             coroutineScope.launch {
                 val size = viewModel.passwdUiState.value.groupPasswds.size
                 if (size > 0) {
-                    listState.animateScrollToItem(index = viewModel.passwdUiState.value.groupPasswds.size - 1)
+                    listState.animateScrollToItem(index = size - 1)
                 }
             }
         }

@@ -1,14 +1,18 @@
 package network
 
-import config.LocalPref
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.util.*
+import model.Setting
 import network.entity.KtorResult
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 object KtorRequest {
+
+    val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     @OptIn(InternalAPI::class)
     suspend inline fun <reified T> postRequest(
@@ -18,19 +22,20 @@ object KtorRequest {
         api: String,
         params: List<Param<Any>>? = null
     ): Result<T> = runCatching {
+        logger.info("postRequest ($api)")
         return httpClient.post {
             url(api)
             setBody(MultiPartFormDataContent(formData {
                 if (needToken) {
                     headers {
-                        append("access_token", LocalPref.accessToken)
+                        append("access_token", Setting.accessToken.value)
                     }
                 }
                 if (needUserId) {
-                    append("user_id", LocalPref.userId)
+                    append("user_id", Setting.userId.value)
                 }
                 if (needSecretKey) {
-                    append("secret_key", LocalPref.secretKey)
+                    append("secret_key", Setting.secretKey.value)
                 }
                 params?.let {
                     it.forEach { param ->
@@ -39,7 +44,9 @@ object KtorRequest {
                 }
             }))
             contentType(ContentType.Application.Json)
-        }.body<KtorResult<T>>().result()
+        }.body<KtorResult<T>>()
+            .apply { this.api = api }
+            .result()
     }
 
 }

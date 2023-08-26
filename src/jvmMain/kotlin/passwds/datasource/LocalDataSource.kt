@@ -9,6 +9,4 @@ class LocalDataSource {
     var groups: MutableList<Group> = mutableListOf()
 
     fun getGroupPasswds(groupId: Int): MutableList<Passwd> = passwdsMap[groupId] ?: arrayListOf()
-
-
 }
