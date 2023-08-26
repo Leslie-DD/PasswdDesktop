@@ -16,8 +16,11 @@ val httpClient = httpClient {
             port = 19999                    // 本地端口
         }
     }
+    install(HttpTimeout) {
+        requestTimeoutMillis = 3000
+    }
     install(Logging) {
-        level = LogLevel.ALL
+        level = LogLevel.BODY
     }
     install(HttpCookies) {
         storage = AcceptAllCookiesStorage()

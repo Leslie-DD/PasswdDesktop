@@ -121,7 +121,7 @@ class RemoteDataSource {
             Param("group_id", groupId),
             Param("title", title),
             Param("username_string", usernameString),
-            Param("username_string", passwordString),
+            Param("password_string", passwordString),
             Param("link", link),
             Param("comment", comment)
         )

@@ -223,7 +223,10 @@ fun PasswdItemsList(
             viewModel.onAction(UiAction.ClearEffect)
 
             coroutineScope.launch {
-                listState.animateScrollToItem(index = viewModel.passwdUiState.value.groupPasswds.size - 1)
+                val size = viewModel.passwdUiState.value.groupPasswds.size
+                if (size > 0) {
+                    listState.animateScrollToItem(index = viewModel.passwdUiState.value.groupPasswds.size - 1)
+                }
             }
         }
 

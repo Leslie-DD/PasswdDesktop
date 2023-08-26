@@ -38,9 +38,10 @@ fun main() = application {
         Separator()
         Item("Exit App", onClick = ::exitApplication)
     }
+    val windowUiState = viewModel.windowUiState.collectAsState().value
     Window(
         onCloseRequest = { viewModel.onAction(UiAction.WindowVisible(false)) },
-        visible = viewModel.windowUiState.value.windowVisible,
+        visible = windowUiState.windowVisible,
         title = "Passwd",
         state = state,
     ) {
