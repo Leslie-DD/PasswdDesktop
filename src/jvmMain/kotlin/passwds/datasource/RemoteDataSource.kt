@@ -29,8 +29,7 @@ class RemoteDataSource {
 
     suspend fun loginByToken(
         username: String,
-        token: String,
-        secretKey: String
+        token: String
     ): Result<LoginResult> = KtorRequest.postRequest(
         needToken = false,
         needUserId = false,
@@ -38,14 +37,12 @@ class RemoteDataSource {
         params = listOf(
             Param("username", username),
             Param("token", token),
-            Param("secret_key", secretKey)
         )
     )
 
     suspend fun loginByPassword(
         username: String,
         password: String,
-        secretKey: String
     ): Result<LoginResult> = KtorRequest.postRequest(
         needToken = false,
         needUserId = false,
@@ -53,7 +50,6 @@ class RemoteDataSource {
         params = listOf(
             Param("username", username),
             Param("password", password),
-            Param("secret_key", secretKey)
         )
     )
 
@@ -104,8 +100,8 @@ class RemoteDataSource {
     suspend fun newPasswd(
         groupId: Int,
         title: String,
-        usernameString: String,
-        passwordString: String,
+        usernameString: String?,
+        passwordString: String?,
         link: String,
         comment: String,
     ): Result<Int> = KtorRequest.postRequest(
@@ -113,8 +109,8 @@ class RemoteDataSource {
         params = listOf(
             Param("group_id", groupId),
             Param("title", title),
-            Param("username_string", usernameString),
-            Param("password_string", passwordString),
+            Param("username_string", usernameString ?: ""),
+            Param("password_string", passwordString ?: ""),
             Param("link", link),
             Param("comment", comment)
         )
@@ -123,8 +119,8 @@ class RemoteDataSource {
     suspend fun updatePasswd(
         id: Int,
         title: String?,
-        usernameStr: String?,
-        passwordStr: String?,
+        usernameString: String?,
+        passwordString: String?,
         link: String?,
         comment: String?
     ): Result<Int> = KtorRequest.postRequest(
@@ -132,8 +128,8 @@ class RemoteDataSource {
         params = listOf(
             Param("id", id),
             Param("title", title ?: ""),
-            Param("username_string", usernameStr ?: ""),
-            Param("password_string", passwordStr ?: ""),
+            Param("username_string", usernameString ?: ""),
+            Param("password_string", passwordString ?: ""),
             Param("link", link ?: ""),
             Param("comment", comment ?: "")
         )

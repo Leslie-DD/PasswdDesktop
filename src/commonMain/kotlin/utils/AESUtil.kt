@@ -1,5 +1,10 @@
 package utils
 
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import model.Setting
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
 import java.security.GeneralSecurityException
@@ -7,10 +12,12 @@ import java.security.NoSuchAlgorithmException
 import java.security.SecureRandom
 import java.util.*
 import java.util.Base64.getDecoder
+import java.util.Base64.getEncoder
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
+@OptIn(DelicateCoroutinesApi::class)
 object AESUtil {
 
     private const val TRANSFORMATION_CBC = "AES/CBC/PKCS5Padding"
@@ -22,38 +29,48 @@ object AESUtil {
     private val cipher: Cipher = Cipher.getInstance(TRANSFORMATION_CBC)
     private val secureRandom: SecureRandom = SecureRandom.getInstance(ALGORITHM_SECURE_RANDOM)
 
-    /**
-     * 加密
-     *
-     * @param secretKey 秘钥
-     * @param plainText 明文
-     * @return 密文
-     */
-    @Throws(GeneralSecurityException::class)
-    fun encrypt(secretKey: String, plainText: String?): ByteArray? {
-        if (plainText.isNullOrEmpty()) {
-            return null
+    private var secretKeyByteArray: ByteArray? = null
+
+    init {
+        GlobalScope.launch {
+            Setting.secretKey.collectLatest {
+                secretKeyByteArray = getDecoder().decode(it)
+            }
         }
-        return encrypt(getDecoder().decode(secretKey), plainText.toByteArray(StandardCharsets.UTF_8))
     }
 
     /**
      * 加密
      *
-     * @param secretKey 秘钥
+     * @param secretKeyBytes 秘钥
      * @param plainText 明文
      * @return 密文
      */
+    @Throws(GeneralSecurityException::class)
+    fun encrypt(
+        secretKeyBytes: ByteArray? = secretKeyByteArray,
+        plainText: String?
+    ): String? {
+        if (plainText.isNullOrEmpty()) {
+            return null
+        }
+        val encryptByteArray = encrypt(secretKeyBytes, plainText.toByteArray(StandardCharsets.UTF_8))
+        return if (encryptByteArray != null) getEncoder().encodeToString(encryptByteArray) else null
+    }
+
     @Synchronized
     @Throws(GeneralSecurityException::class)
-    private fun encrypt(secretKey: ByteArray, plainText: ByteArray): ByteArray? {
+    private fun encrypt(
+        secretKeyBytes: ByteArray? = secretKeyByteArray,
+        plainText: ByteArray
+    ): ByteArray? {
         // CBC模式需要生成一个16 bytes的initialization vector:
         val startTime = System.currentTimeMillis()
         val iv = getSecureKey(16) ?: return null
         cipher.apply {
             init(
                 Cipher.ENCRYPT_MODE,
-                SecretKeySpec(secretKey, ALGORITHM_AES),
+                SecretKeySpec(secretKeyBytes, ALGORITHM_AES),
                 IvParameterSpec(iv)
             )
         }
@@ -65,11 +82,25 @@ object AESUtil {
     /**
      * 解密
      *
-     * @param secretKey  秘钥
+     * @param secretKeyBytes  秘钥
      * @param cipherText 密文
      * @return 明文
      */
-    fun decrypt(secretKey: ByteArray?, cipherText: ByteArray): ByteArray? {
+    fun decrypt(
+        secretKeyBytes: ByteArray? = secretKeyByteArray,
+        cipherText: String?
+    ): String? {
+        if (cipherText.isNullOrBlank()) {
+            return null
+        }
+        val decryptByteArray = decrypt(secretKeyBytes, getDecoder().decode(cipherText))
+        return if (decryptByteArray != null) String(decryptByteArray) else cipherText
+    }
+
+    private fun decrypt(
+        secretKeyBytes: ByteArray? = secretKeyByteArray,
+        cipherText: ByteArray
+    ): ByteArray? {
         return try {
             // 把input分割成IV和密文:
             val iv = ByteArray(16)
@@ -80,7 +111,7 @@ object AESUtil {
             Cipher.getInstance(TRANSFORMATION_CBC).apply {
                 init(
                     Cipher.DECRYPT_MODE,
-                    SecretKeySpec(secretKey, ALGORITHM_AES),
+                    SecretKeySpec(secretKeyBytes, ALGORITHM_AES),
                     IvParameterSpec(iv)
                 )
             }.doFinal(data)
@@ -96,7 +127,7 @@ object AESUtil {
         return r
     }
 
-    fun getSecureKey(numBytes: Int): ByteArray? {
+    private fun getSecureKey(numBytes: Int): ByteArray? {
         return try {
             secureRandom.generateSeed(numBytes)
         } catch (e: NoSuchAlgorithmException) {

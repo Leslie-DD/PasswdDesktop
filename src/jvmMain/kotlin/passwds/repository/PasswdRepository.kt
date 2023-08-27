@@ -24,12 +24,12 @@ class PasswdRepository(
     val groupPasswds = MutableStateFlow<MutableList<Passwd>>(arrayListOf())
 
     private fun MutableList<Passwd>.mapToPasswdsMap(
-        secretKey: String
+        secretKey: String = Setting.secretKey.value
     ): MutableMap<Int, MutableList<Passwd>> {
-        val secretKeyBytes: ByteArray = Base64.getDecoder().decode(secretKey)
+        val secretKeyByteArray = Base64.getDecoder().decode(secretKey)
         val passwdsMapResult: MutableMap<Int, MutableList<Passwd>> = hashMapOf()
         this.forEach { passwd ->
-            decodePasswd(passwd, secretKeyBytes)
+            decodePasswd(secretKeyByteArray, passwd)
             if (passwdsMapResult[passwd.groupId].isNullOrEmpty()) {
                 passwdsMapResult[passwd.groupId] = arrayListOf()
             }
@@ -68,15 +68,13 @@ class PasswdRepository(
     suspend fun loginByToken(
         username: String,
         token: String,
-        secretKey: String
     ): Result<LoginResult> {
         return remoteDataSource.loginByToken(
             username = username,
             token = token,
-            secretKey = secretKey
         ).onSuccess { loginResult ->
-            logger.info("loginByToken -> mapToPasswdsMap username: $username, secretKey: $secretKey")
-            localDataSource.passwdsMap = loginResult.passwds.mapToPasswdsMap(secretKey)
+            logger.info("loginByToken -> mapToPasswdsMap username: $username")
+            localDataSource.passwdsMap = loginResult.passwds.mapToPasswdsMap()
             localDataSource.groups = mutableListOf()
             groups.emit(arrayListOf())
             groupPasswds.emit(arrayListOf())
@@ -94,7 +92,6 @@ class PasswdRepository(
         return remoteDataSource.loginByPassword(
             username = username,
             password = password,
-            secretKey = secretKey
         ).onSuccess { loginResult ->
             logger.info("loginByPassword -> mapToPasswdsMap username: $username, secretKey: $secretKey")
             localDataSource.passwdsMap = loginResult.passwds.mapToPasswdsMap(secretKey)
@@ -200,13 +197,13 @@ class PasswdRepository(
         link: String,
         comment: String,
     ): Result<Passwd> {
-        val secretKey = Setting.secretKey.value
+        val secretKeyByteArray = Base64.getDecoder().decode(Setting.secretKey.value)
         var result = Result.failure<Passwd>(Throwable())
         remoteDataSource.newPasswd(
             groupId = groupId,
             title = title,
-            usernameString = encode(secretKey, usernameString),
-            passwordString = encode(secretKey, passwordString),
+            usernameString = AESUtil.encrypt(secretKeyByteArray, usernameString),
+            passwordString = AESUtil.encrypt(secretKeyByteArray, passwordString),
             link = link,
             comment = comment
         ).onSuccess {
@@ -234,26 +231,26 @@ class PasswdRepository(
     suspend fun updatePasswd(
         id: Int,
         title: String?,
-        usernameStrValue: String?,
-        passwordStrValue: String?,
+        usernameString: String?,
+        passwordString: String?,
         link: String?,
         comment: String?
     ): Result<Passwd> {
-        val secretKey = Setting.secretKey.value
+        val secretKeyByteArray = Base64.getDecoder().decode(Setting.secretKey.value)
         var result = Result.failure<Passwd>(Throwable())
         remoteDataSource.updatePasswd(
             id = id,
             title = title,
-            usernameStr = encode(secretKey, usernameStrValue ?: ""),
-            passwordStr = encode(secretKey, passwordStrValue ?: ""),
+            usernameString = AESUtil.encrypt(secretKeyByteArray, usernameString),
+            passwordString = AESUtil.encrypt(secretKeyByteArray, passwordString),
             link = link,
             comment = comment
         ).onSuccess {
             getPasswdById(id)?.let { originPasswd ->
                 originPasswd.apply {
                     this.title = title
-                    this.usernameString = usernameStrValue
-                    this.passwordString = passwordStrValue
+                    this.usernameString = usernameString
+                    this.passwordString = passwordString
                     this.link = link
                     this.comment = comment
                 }
@@ -298,44 +295,20 @@ class PasswdRepository(
         return result
     }
 
-    private fun decodePasswd(passwd: Passwd, secretKeyBytes: ByteArray?): Passwd {
+    private fun decodePasswd(
+        secretKeyBytes: ByteArray? = null,
+        passwd: Passwd
+    ): Passwd {
         logger.debug("fetchGroupPasswd decode before: passwd: {}", passwd)
         try {
-            passwd.usernameString?.let {
-                passwd.usernameString = decode(it, secretKeyBytes)
-            }
-            passwd.passwordString?.let {
-                passwd.passwordString = decode(it, secretKeyBytes)
-            }
+            passwd.usernameString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.usernameString)
+            passwd.passwordString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.passwordString)
         } catch (e: Exception) {
             e.printStackTrace()
         }
         logger.debug("fetchGroupPasswd decode after: passwd: {}", passwd)
         return passwd
     }
-
-    private fun decode(value: String, secretKeyBytes: ByteArray?): String {
-        return if (value.isBlank()) {
-            value
-        } else {
-            val decodePasswordResult =
-                AESUtil.decrypt(secretKeyBytes, Base64.getDecoder().decode(value))
-            if (decodePasswordResult != null) {
-                String(decodePasswordResult)
-            } else {
-                value
-            }
-        }
-    }
-
-    private fun encode(secretKey: String, value: String): String {
-        return if (value.isBlank()) {
-            value
-        } else {
-            Base64.getEncoder().encodeToString(AESUtil.encrypt(secretKey, value))
-        }
-    }
-
 
     private fun getPasswdById(id: Int): Passwd? {
         return localDataSource.passwdsMap.flatMap { it.value }.find { passwd -> passwd.id == id }

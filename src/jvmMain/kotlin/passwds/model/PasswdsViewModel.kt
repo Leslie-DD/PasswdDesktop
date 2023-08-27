@@ -141,7 +141,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         repository.loginByToken(
             username = username,
             token = token,
-            secretKey = secretKey
         ).onSuccess {
             onLoginSuccess(secretKey, it)
         }.onFailure {
@@ -338,8 +337,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         repository.updatePasswd(
             id = updatePasswd.id,
             title = updatePasswd.title,
-            usernameStrValue = updatePasswd.usernameString,
-            passwordStrValue = updatePasswd.passwordString,
+            usernameString = updatePasswd.usernameString,
+            passwordString = updatePasswd.passwordString,
             link = updatePasswd.link,
             comment = updatePasswd.comment
         ).onSuccess { passwd ->

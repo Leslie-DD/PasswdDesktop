@@ -182,7 +182,8 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
             is DialogUiEffect.RegisterResult -> {
                 tipsDialogTitle.value = "Successfully Registered!"
                 tipsDialogInfo.value = "SecretKey: ${this.secretKey}"
-                tipsDialogWarn.value = "Please make sure write down your secret key, or there will be severe problem while encrypting/decrypting passwords."
+                tipsDialogWarn.value =
+                    "Please make sure write down your secret key, or there will be severe problem while encrypting/decrypting passwords."
                 isImportantTipsDialogOpen.value = true
             }
 
