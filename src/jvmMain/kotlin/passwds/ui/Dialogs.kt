@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -510,7 +511,7 @@ fun PasswdDetailEditDialog(
 }
 
 @Composable
-fun TipsMessage(
+fun CommonTipsDialog(
     msg: String?,
     theme: Theme,
     onCloseClick: () -> Unit,
@@ -538,7 +539,68 @@ fun TipsMessage(
                 ),
                 onClick = { onCloseClick() }
             ) {
-                Text(text = "Ok")
+                Text(text = "OK")
+            }
+        }
+    }
+}
+
+@Composable
+fun ImportantTipsDialog(
+    title: String? = null,
+    info: String? = null,
+    warn: String? = null,
+    buttonValue: String = "Got it",
+    theme: Theme,
+    onCloseClick: () -> Unit,
+) {
+    Dialog(
+        onCloseRequest = { onCloseClick() },
+        state = rememberDialogState(
+            size = DpSize(600.dp, 400.dp)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primary)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            title?.let {
+                Text(
+                    text = title,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+            info?.let {
+                Text(
+                    text = info,
+                    fontSize = 16.sp,
+                    color = Color.Green
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+            warn?.let {
+                Text(
+                    text = warn,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            Button(
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = theme.materialColorScheme.onPrimaryContainer,
+                    containerColor = theme.materialColorScheme.primaryContainer
+                ),
+                onClick = { onCloseClick() }
+            ) {
+                Text(text = buttonValue)
             }
         }
     }

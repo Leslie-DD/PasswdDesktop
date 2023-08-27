@@ -24,8 +24,9 @@ class PasswdRepository(
     val groupPasswds = MutableStateFlow<MutableList<Passwd>>(arrayListOf())
 
     private fun MutableList<Passwd>.mapToPasswdsMap(
-        secretKeyBytes: ByteArray = Base64.getDecoder().decode(Setting.secretKey.value)
+        secretKey: String
     ): MutableMap<Int, MutableList<Passwd>> {
+        val secretKeyBytes: ByteArray = Base64.getDecoder().decode(secretKey)
         val passwdsMapResult: MutableMap<Int, MutableList<Passwd>> = hashMapOf()
         this.forEach { passwd ->
             decodePasswd(passwd, secretKeyBytes)
@@ -74,7 +75,8 @@ class PasswdRepository(
             token = token,
             secretKey = secretKey
         ).onSuccess { loginResult ->
-            localDataSource.passwdsMap = loginResult.passwds.mapToPasswdsMap()
+            logger.info("loginByToken -> mapToPasswdsMap username: $username, secretKey: $secretKey")
+            localDataSource.passwdsMap = loginResult.passwds.mapToPasswdsMap(secretKey)
             localDataSource.groups = mutableListOf()
             groups.emit(arrayListOf())
             groupPasswds.emit(arrayListOf())
@@ -94,7 +96,8 @@ class PasswdRepository(
             password = password,
             secretKey = secretKey
         ).onSuccess { loginResult ->
-            localDataSource.passwdsMap = loginResult.passwds.mapToPasswdsMap()
+            logger.info("loginByPassword -> mapToPasswdsMap username: $username, secretKey: $secretKey")
+            localDataSource.passwdsMap = loginResult.passwds.mapToPasswdsMap(secretKey)
             localDataSource.groups = mutableListOf()
             groups.emit(arrayListOf())
             groupPasswds.emit(arrayListOf())

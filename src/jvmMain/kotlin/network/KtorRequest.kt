@@ -18,11 +18,10 @@ object KtorRequest {
     suspend inline fun <reified T> postRequest(
         needToken: Boolean = true,
         needUserId: Boolean = true,
-        needSecretKey: Boolean = true,
         api: String,
         params: List<Param<Any>>? = null
     ): Result<T> = runCatching {
-        logger.info("postRequest ($api)")
+        logger.info("postRequest ($api) params: $params")
         return httpClient.post {
             url(api)
             setBody(MultiPartFormDataContent(formData {
@@ -33,9 +32,6 @@ object KtorRequest {
                 }
                 if (needUserId) {
                     append("user_id", Setting.userId.value)
-                }
-                if (needSecretKey) {
-                    append("secret_key", Setting.secretKey.value)
                 }
                 params?.let {
                     it.forEach { param ->

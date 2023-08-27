@@ -19,5 +19,6 @@ sealed interface DialogUiEffect {
 
     class LoginAndRegisterFailure(val tipsMsg: String?) : DialogUiEffect
 
+    class RegisterResult(val secretKey: String) : DialogUiEffect
 
 }

@@ -209,7 +209,9 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             if (it == null) {
                 return@onSuccess
             }
-            updateWindowUiState { copy(uiScreen = UiScreen.Passwds) }
+            updateDialogUiState {
+                copy(effect = DialogUiEffect.RegisterResult(it.secretKey))
+            }
             coroutineScope {
                 withContext(Dispatchers.IO) {
                     Setting.secretKey.emit(it.secretKey)

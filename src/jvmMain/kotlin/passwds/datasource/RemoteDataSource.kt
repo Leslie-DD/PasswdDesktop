@@ -34,7 +34,6 @@ class RemoteDataSource {
     ): Result<LoginResult> = KtorRequest.postRequest(
         needToken = false,
         needUserId = false,
-        needSecretKey = false,
         api = Api.API_LOGIN_BY_TOKEN,
         params = listOf(
             Param("username", username),
@@ -50,7 +49,6 @@ class RemoteDataSource {
     ): Result<LoginResult> = KtorRequest.postRequest(
         needToken = false,
         needUserId = false,
-        needSecretKey = false,
         api = Api.API_LOGIN_BY_PASSWORD,
         params = listOf(
             Param("username", username),
@@ -65,7 +63,6 @@ class RemoteDataSource {
     ): Result<RegisterResult?> = KtorRequest.postRequest(
         needToken = false,
         needUserId = false,
-        needSecretKey = false,
         api = Api.API_REGISTER,
         params = listOf(
             Param("username", username),
@@ -77,7 +74,6 @@ class RemoteDataSource {
         groupName: String,
         groupComment: String,
     ): Result<Int> = KtorRequest.postRequest(
-        needSecretKey = false,
         api = Api.API_NEW_GROUP,
         params = listOf(
             Param("group_name", groupName),
@@ -87,7 +83,6 @@ class RemoteDataSource {
 
     suspend fun deleteGroup(groupId: Int): Result<Int> = KtorRequest.postRequest(
         api = Api.API_DELETE_GROUP,
-        needSecretKey = false,
         params = listOf(
             Param("group_id", groupId)
         )
@@ -99,7 +94,6 @@ class RemoteDataSource {
         groupComment: String
     ): Result<Int> = KtorRequest.postRequest(
         api = Api.API_UPDATE_GROUP,
-        needSecretKey = false,
         params = listOf(
             Param("id", groupId),
             Param("group_name", groupName),
@@ -149,7 +143,6 @@ class RemoteDataSource {
         id: Int
     ): Result<Int> = KtorRequest.postRequest(
         api = Api.API_DELETE_PASSWD,
-        needSecretKey = false,
         params = listOf(
             Param("id", id)
         )

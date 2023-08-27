@@ -140,24 +140,50 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
         }
     }
 
-    val isTipsMsgDialogOpen = remember { mutableStateOf(false) }
-    val msg = remember { mutableStateOf<String?>(null) }
-    if (isTipsMsgDialogOpen.value) {
+    val isCommonTipsDialogOpen = remember { mutableStateOf(false) }
+    val commonTipsMsg = remember { mutableStateOf<String?>(null) }
+    if (isCommonTipsDialogOpen.value) {
         val theme by viewModel.theme.collectAsState()
-        TipsMessage(
-            msg = msg.value,
+        CommonTipsDialog(
+            msg = commonTipsMsg.value,
             theme = theme,
         ) {
-            isTipsMsgDialogOpen.value = false
+            isCommonTipsDialogOpen.value = false
             viewModel.onAction(UiAction.ClearEffect)
+        }
+    }
+
+    val isImportantTipsDialogOpen = remember { mutableStateOf(false) }
+    val tipsDialogTitle = remember { mutableStateOf<String?>(null) }
+    val tipsDialogInfo = remember { mutableStateOf<String?>(null) }
+    val tipsDialogWarn = remember { mutableStateOf<String?>(null) }
+    if (isImportantTipsDialogOpen.value) {
+        val theme by viewModel.theme.collectAsState()
+        ImportantTipsDialog(
+            title = tipsDialogTitle.value,
+            info = tipsDialogInfo.value,
+            warn = tipsDialogWarn.value,
+            theme = theme,
+            buttonValue = "Got it, I've written it down!"
+        ) {
+            isImportantTipsDialogOpen.value = false
+            viewModel.onAction(UiAction.ClearEffect)
+            viewModel.onAction(UiAction.GoScreen(UiScreen.Passwds))
         }
     }
     val dialogUiState = viewModel.dialogUiState.collectAsState().value
     with(dialogUiState.effect) {
         when (this) {
             is DialogUiEffect.LoginAndRegisterFailure -> {
-                msg.value = tipsMsg
-                isTipsMsgDialogOpen.value = true
+                commonTipsMsg.value = this.tipsMsg
+                isCommonTipsDialogOpen.value = true
+            }
+
+            is DialogUiEffect.RegisterResult -> {
+                tipsDialogTitle.value = "Successfully Registered!"
+                tipsDialogInfo.value = "SecretKey: ${this.secretKey}"
+                tipsDialogWarn.value = "Please make sure write down your secret key, or there will be severe problem while encrypting/decrypting passwords."
+                isImportantTipsDialogOpen.value = true
             }
 
             else -> {}
