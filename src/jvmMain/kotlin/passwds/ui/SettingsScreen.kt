@@ -88,7 +88,8 @@ fun SecretKeyView(viewModel: PasswdsViewModel) {
             mutableStateOf("")
         }
         var enableEdit by remember { mutableStateOf(false) }
-        OutlinedTextField(modifier = Modifier.width(300.dp),
+        OutlinedTextField(
+            modifier = Modifier.width(300.dp),
             enabled = enableEdit,
             label = {
                 Text(
@@ -121,7 +122,8 @@ fun SecretKeyView(viewModel: PasswdsViewModel) {
                         )
                     }
                 }
-            })
+            }
+        )
         IconButton(onClick = {
             enableEdit = !enableEdit
         }) {

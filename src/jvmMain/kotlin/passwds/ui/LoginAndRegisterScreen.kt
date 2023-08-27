@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.Lock
@@ -13,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -227,6 +229,12 @@ fun OutlinedEditTextBox(
     value: String,
     labelValue: String,
     imageVector: ImageVector? = null,
+    colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
+        focusedBorderColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        focusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        selectionColors = TextSelectionColors(handleColor = Color.White, backgroundColor = Color.Blue)
+    ),
     onInputChanged: (String) -> Unit
 ) {
     val text = remember { mutableStateOf(value) }
@@ -246,11 +254,7 @@ fun OutlinedEditTextBox(
             text.value = it
             onInputChanged(it)
         },
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            focusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            cursorColor = MaterialTheme.colorScheme.onPrimaryContainer
-        )
+        colors = colors
     )
 }
 

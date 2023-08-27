@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -20,7 +21,11 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -424,61 +429,85 @@ private fun PasswdDetailBox(
     passwd: Passwd,
     editEnable: Boolean = false
 ) {
+    var passwordVisible by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        TextField(
-            enabled = editEnable,
+        DetailTextField(
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("title", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-            leadingIcon = {
-                Icon(imageVector = Icons.Default.Title, contentDescription = null)
-            },
-            value = passwd.title ?: "",
-            maxLines = 1,
-            onValueChange = { },
+            label = "title",
+            leadingIcon = Icons.Default.Title,
+            value = passwd.title ?: ""
         )
-        TextField(
-            enabled = editEnable,
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("username", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-            leadingIcon = {
-                Icon(imageVector = Icons.Default.People, contentDescription = null)
-            },
-            value = passwd.usernameString ?: "",
-            maxLines = 1,
-            onValueChange = { }
+        DetailTextField(
+            label = "username",
+            leadingIcon = Icons.Default.People,
+            value = passwd.usernameString ?: ""
         )
-        TextField(
-            enabled = editEnable,
+        DetailTextField(
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("password", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-            leadingIcon = {
-                Icon(imageVector = Icons.Default.Lock, contentDescription = null)
-            },
+            label = "password",
+            leadingIcon = Icons.Default.Lock,
             value = passwd.passwordString ?: "",
-            maxLines = 1,
-            onValueChange = { }
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            trailingIcon = {
+                Box(modifier = Modifier.wrapContentSize().padding(end = 10.dp)) {
+                    IconButton(
+                        onClick = {
+                            passwordVisible = !passwordVisible
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                        )
+                    }
+                }
+            }
         )
-        TextField(
-            enabled = editEnable,
+
+        DetailTextField(
             modifier = Modifier.fillMaxWidth(),
-            label = { Text("link", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-            leadingIcon = {
-                Icon(imageVector = Icons.Default.Link, contentDescription = null)
-            },
-            value = passwd.link ?: "",
-            maxLines = 1,
-            onValueChange = { }
+            label = "link",
+            leadingIcon = Icons.Default.Link,
+            value = passwd.link ?: ""
         )
         OutlinedTextField(
-            enabled = editEnable,
             modifier = Modifier.fillMaxSize().align(Alignment.Start),
             label = { Text("comment", maxLines = 1, overflow = TextOverflow.Ellipsis) },
             value = passwd.comment ?: "",
             onValueChange = { }
         )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DetailTextField(
+    enabled: Boolean = false,
+    modifier: Modifier = Modifier.fillMaxWidth(),
+    label: String,
+    leadingIcon: ImageVector,
+    value: String,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    trailingIcon: @Composable (() -> Unit)? = null
+) {
+    TextField(
+        enabled = enabled,
+        modifier = modifier,
+        label = { Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        leadingIcon = {
+            Icon(imageVector = leadingIcon, contentDescription = null)
+        },
+        value = value,
+        maxLines = 1,
+        onValueChange = { },
+        visualTransformation = visualTransformation,
+        keyboardOptions = keyboardOptions,
+        trailingIcon = trailingIcon
+    )
 }
 
 @Composable

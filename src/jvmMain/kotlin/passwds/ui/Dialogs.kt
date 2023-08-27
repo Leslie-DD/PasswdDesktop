@@ -2,6 +2,7 @@ package passwds.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Lock
@@ -15,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
@@ -111,7 +113,8 @@ fun CustomTextField(
     colors: TextFieldColors = TextFieldDefaults.textFieldColors(
         unfocusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
         focusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        cursorColor = MaterialTheme.colorScheme.onPrimaryContainer
+        cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        selectionColors = TextSelectionColors(handleColor = Color.White, backgroundColor = Color.Blue)
     ),
     imageVector: ImageVector,
     label: String,
