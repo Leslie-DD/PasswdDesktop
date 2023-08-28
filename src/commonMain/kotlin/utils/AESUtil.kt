@@ -34,6 +34,7 @@ object AESUtil {
     init {
         GlobalScope.launch {
             Setting.secretKey.collectLatest {
+                log.info("secretKey update: $it")
                 secretKeyByteArray = getDecoder().decode(it)
             }
         }

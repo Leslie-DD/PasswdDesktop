@@ -26,6 +26,7 @@ class PasswdRepository(
     private fun MutableList<Passwd>.mapToPasswdsMap(
         secretKey: String = Setting.secretKey.value
     ): MutableMap<Int, MutableList<Passwd>> {
+        logger.debug("mapToPasswdsMap secretKey: $secretKey")
         val secretKeyByteArray = Base64.getDecoder().decode(secretKey)
         val passwdsMapResult: MutableMap<Int, MutableList<Passwd>> = hashMapOf()
         this.forEach { passwd ->
@@ -201,7 +202,7 @@ class PasswdRepository(
         var result = Result.failure<Passwd>(Throwable())
         remoteDataSource.newPasswd(
             groupId = groupId,
-            title = title,
+            title = AESUtil.encrypt(secretKeyByteArray, title) ?: title,
             usernameString = AESUtil.encrypt(secretKeyByteArray, usernameString),
             passwordString = AESUtil.encrypt(secretKeyByteArray, passwordString),
             link = link,
@@ -240,7 +241,7 @@ class PasswdRepository(
         var result = Result.failure<Passwd>(Throwable())
         remoteDataSource.updatePasswd(
             id = id,
-            title = title,
+            title = AESUtil.encrypt(secretKeyByteArray, title),
             usernameString = AESUtil.encrypt(secretKeyByteArray, usernameString),
             passwordString = AESUtil.encrypt(secretKeyByteArray, passwordString),
             link = link,
@@ -301,6 +302,7 @@ class PasswdRepository(
     ): Passwd {
         logger.debug("fetchGroupPasswd decode before: passwd: {}", passwd)
         try {
+            passwd.title = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.title)
             passwd.usernameString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.usernameString)
             passwd.passwordString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.passwordString)
         } catch (e: Exception) {

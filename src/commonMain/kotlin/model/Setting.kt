@@ -6,8 +6,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.slf4j.LoggerFactory
 
 object Setting {
+    private val log = LoggerFactory.getLogger(this.javaClass)
 
     val screenOrientation = MutableStateFlow(LocalPref.screenOrientation)
 
@@ -36,6 +38,7 @@ object Setting {
 
             launch {
                 secretKey.collectLatest {
+                    log.info("secretKey update: $it")
                     LocalPref.secretKey = it
                 }
             }

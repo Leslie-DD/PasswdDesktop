@@ -45,16 +45,17 @@ fun AddPasswdDialog(
         onCloseRequest = { onCloseClick() },
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
-            size = DpSize(400.dp, 800.dp)
+            size = DpSize(600.dp, 600.dp)
         )
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.primary)
+                .background(MaterialTheme.colorScheme.primary),
+            contentAlignment = Alignment.Center
         ) {
             Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp)
+                modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(horizontal = 100.dp),
             ) {
                 CustomTextField(
                     label = "title",
@@ -81,10 +82,11 @@ fun AddPasswdDialog(
                     onValueChange = { link.value = it }
                 )
                 OutlinedEditTextBox(
-                    modifier = Modifier.weight(1f).fillMaxWidth().align(Alignment.Start),
+                    modifier = Modifier.wrapContentHeight().fillMaxWidth().align(Alignment.Start),
                     labelValue = "comment",
                     value = comment.value,
-                    onInputChanged = { comment.value = it }
+                    onInputChanged = { comment.value = it },
+                    maxLines = 10
                 )
 
                 Button(
@@ -391,6 +393,7 @@ fun DeleteGroupConfirmDialog(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PasswdDetailEditDialog(
     theme: Theme,
@@ -457,6 +460,7 @@ fun PasswdDetailEditDialog(
                     enabled = textFieldEditEnable.value,
                     modifier = Modifier.wrapContentHeight().fillMaxWidth().align(Alignment.Start),
                     labelValue = "comment",
+                    maxLines = 10,
                     value = comment.value,
                     onInputChanged = { comment.value = it },
                 )

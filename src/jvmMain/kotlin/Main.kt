@@ -22,7 +22,7 @@ import theme.LocalSpacing
 import theme.Spacing
 
 fun main() = application {
-    val state = rememberWindowState(width = 1000.dp)
+    val state = rememberWindowState(width = 1200.dp, height = 800.dp)
     val viewModel = remember { PasswdsViewModel() }
     if (viewModel.exitApp.collectAsState().value) {
         exitApplication()

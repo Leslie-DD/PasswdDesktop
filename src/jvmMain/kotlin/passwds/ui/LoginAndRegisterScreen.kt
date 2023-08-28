@@ -64,8 +64,8 @@ private fun IntroductionBox() {
             fontSize = 14.sp,
             text = "Glad you are here! Passwd is a password management which encrypt by AES algorithm both in client and " +
                     "server. It means it's safe even there's no HTTPS since the data transferred between client and server is " +
-                    "ciphertext and the server will always don't know your plaintext. But DO REMEMBER that WRITE your SECRET KEY " +
-                    "on the notebook cause if you forget that, passwords you stored will decrypted incorrectly!"
+                    "ciphertext and the server will always don't know your plaintext. But DO REMEMBER that WRITE DOWN your " +
+                    "SECRET KEY cause if you forget that, passwords you stored will decrypted incorrectly!"
         )
     }
 }
@@ -97,9 +97,9 @@ fun AppSymbolBox(modifier: Modifier = Modifier) {
 
 @Composable
 private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
-    val username = remember { mutableStateOf("lucas") }
-    val password = remember { mutableStateOf("lucas_password") }
-    val secretKey = remember { mutableStateOf("SkGk5x4IqWs0HC5w9b5Fcak8NX0lgBmMrvVRFxg3nAQ=") }
+    val username = remember { mutableStateOf("") }
+    val password = remember { mutableStateOf("") }
+    val secretKey = remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -255,6 +255,7 @@ fun OutlinedEditTextBox(
     modifier: Modifier = Modifier.width(300.dp),
     value: String,
     labelValue: String,
+    maxLines: Int = 1,
     imageVector: ImageVector? = null,
     colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
         focusedBorderColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -275,8 +276,8 @@ fun OutlinedEditTextBox(
             }
         },
         value = text.value,
-        maxLines = 1,
-        singleLine = true,
+        maxLines = maxLines,
+        singleLine = maxLines == 1,
         onValueChange = {
             text.value = it
             onInputChanged(it)
