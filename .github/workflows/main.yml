@@ -25,6 +25,9 @@ jobs:
       - name: Execute Gradle build
         run: ./gradlew packageDistributionForCurrentOS
 
+      # - run: pwd
+      # - run: ls -R
+
 
 
   release-package:
@@ -45,6 +48,7 @@ jobs:
       #        with:
       #          name: build/compose/binaries/main/deb/passwddesktop_1.0.0-1_amd64.deb
       - run: pwd
+      - run: ls -R
       - name: Upload APK
         uses: actions/upload-artifact@v2
         with:
