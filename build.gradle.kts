@@ -75,6 +75,16 @@ compose.desktop {
                     configurationFiles.from("compose-desktop.pro")
                 }
             }
+
+            macOS {
+                iconFile.set(project.file("icons/app_icon_round_corner.icns"))
+            }
+            windows {
+                iconFile.set(project.file("icons/app_icon_round_corner.ico"))
+            }
+            linux {
+                iconFile.set(project.file("icons/app_icon_round_corner.png"))
+            }
         }
     }
 }
