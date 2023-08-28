@@ -25,28 +25,6 @@ jobs:
       - name: Execute Gradle build
         run: ./gradlew packageDistributionForCurrentOS
 
-      # - run: pwd
-      # - run: ls -R
-
-
-
-  release-package:
-    permissions: write-all
-    name: Release Package
-    needs: gradle
-    runs-on: ubuntu-latest
-    steps:
-      #      - name: Get branch name
-      #        id: branch-name
-      #        uses: tj-actions/branch-names@v5.1
-      #      - name: Print branch
-      #        run: |
-      #          echo "Running on default: ${{ steps.branch-name.outputs.current_branch }}"
-
-      #      - name: Download Package from build
-      #        uses: actions/download-artifact@v1
-      #        with:
-      #          name: build/compose/binaries/main/deb/passwddesktop_1.0.0-1_amd64.deb
       - run: pwd
       - run: ls -R
       - name: Upload APK
@@ -54,6 +32,22 @@ jobs:
         with:
           name: app
           path: build/compose/binaries/main/deb/passwddesktop_1.0.0-1_amd64.deb
+
+
+
+  # release-package:
+  #   permissions: write-all
+  #   name: Release Package
+  #   needs: gradle
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - run: pwd
+  #     - run: ls -R
+  #     - name: Upload APK
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: app
+  #         path: build/compose/binaries/main/deb/passwddesktop_1.0.0-1_amd64.deb
 
 #      - name: Create Release
 #        id: create_release
