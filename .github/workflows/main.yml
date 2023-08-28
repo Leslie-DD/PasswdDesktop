@@ -48,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: app
-          path: /home/runner/work/PasswdDesktop/PasswdDesktop/build/compose/binaries/main/deb/passwddesktop_1.0.0-1_amd64.deb
+          path: PasswdDesktop/build/compose/binaries/main/deb/passwddesktop_1.0.0-1_amd64.deb
 
 #      - name: Create Release
 #        id: create_release
