@@ -44,6 +44,7 @@ jobs:
       #        uses: actions/download-artifact@v1
       #        with:
       #          name: build/compose/binaries/main/deb/passwddesktop_1.0.0-1_amd64.deb
+      - run: pwd
       - name: Upload APK
         uses: actions/upload-artifact@v2
         with:
