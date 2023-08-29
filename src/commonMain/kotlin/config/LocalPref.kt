@@ -3,13 +3,18 @@ package config
 import model.ScreenOrientation
 import model.Theme
 import org.liangguo.ktpref.KtPref
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import platform.desktop.storageDir
 
 object LocalPref {
 
     private val apiConfig by lazy { KtPref("ApiConfig", storageDir) }
 
+    private val logger: Logger = LoggerFactory.getLogger(javaClass)
+
     init {
+        logger.info("LocalPref initialize storageDir: ${storageDir.absolutePath}")
         KtPref.initialize(storageDir)
     }
 
