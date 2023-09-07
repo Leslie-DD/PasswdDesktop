@@ -1,0 +1,40 @@
+[versions]
+
+kotlin = "1.7.20"
+ktor = "2.1.2"
+kotlinx-coroutines = "1.6.4"
+kotlinx-serialization = "1.3.3"
+
+gson = "2.9.0"
+
+ktpref = "1.0.0"
+
+logback = "1.4.11"
+log4j12 = "1.7.36"
+
+[libraries]
+
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-client-serialization = { module = "io.ktor:ktor-client-serialization", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-core-jvm = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin"}
+
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
+
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+
+ktpref = { module = "com.gitee.liang_dh:KtPref", version.ref = "ktpref" }
+
+logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+log4j12 = { module = "org.slf4j:slf4j-log4j12", version.ref = "log4j12" }
+

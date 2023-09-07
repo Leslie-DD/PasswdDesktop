@@ -36,28 +36,26 @@ kotlin {
         val jvmTest by getting
 
         dependencies {
-            val ktor_version: String by project
-            commonMainImplementation("io.ktor:ktor-client-core:$ktor_version")
-            commonMainImplementation("io.ktor:ktor-client-cio:$ktor_version")
-            commonMainImplementation("io.ktor:ktor-client-okhttp:$ktor_version")
-            commonMainImplementation("io.ktor:ktor-client-logging:$ktor_version")
-            commonMainImplementation("io.ktor:ktor-client-serialization:$ktor_version")
-            commonMainImplementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
-            commonMainImplementation("io.ktor:ktor-serialization-kotlinx-json:$ktor_version")
+            commonMainImplementation(libs.ktor.client.core)
+            commonMainImplementation(libs.ktor.client.cio)
+            commonMainImplementation(libs.ktor.client.okhttp)
+            commonMainImplementation(libs.ktor.client.logging)
+            commonMainImplementation(libs.ktor.client.serialization)
+            commonMainImplementation(libs.ktor.client.content.negotiation)
+            commonMainImplementation(libs.ktor.serialization.kotlinx.json)
 
-            commonMainImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-            commonMainImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.6.4")
-            commonMainImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.6.4")
-            commonMainImplementation("org.jetbrains.kotlin:kotlin-reflect:1.7.20")
-            commonMainImplementation("com.google.code.gson:gson:2.9.0")
-            commonMainImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
-            commonMainImplementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.3")
+            commonMainImplementation(libs.kotlinx.coroutines.core)
+            commonMainImplementation(libs.kotlinx.coroutines.core.jvm)
+            commonMainImplementation(libs.kotlinx.coroutines.swing)
+            commonMainImplementation(libs.kotlin.reflect)
+            commonMainImplementation(libs.gson)
+            commonMainImplementation(libs.kotlinx.serialization.json)
+            commonMainImplementation(libs.kotlinx.serialization.core)
 
-            commonMainImplementation("com.gitee.liang_dh:KtPref:1.0.0")
+            commonMainImplementation(libs.ktpref)
 
-            commonMainImplementation("ch.qos.logback:logback-classic:1.4.11")
-
-            commonMainImplementation("org.slf4j:slf4j-log4j12:1.7.36")
+            commonMainImplementation(libs.logback)
+            commonMainImplementation(libs.log4j12)
         }
     }
 }

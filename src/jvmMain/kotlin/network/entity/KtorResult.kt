@@ -15,7 +15,7 @@ data class KtorResult<T>(
     var api: String? = null
 
     companion object {
-        private val logger: Logger = LoggerFactory.getLogger(javaClass)
+        private val logger: Logger = LoggerFactory.getLogger(Companion::class.java)
     }
 
     fun result(): Result<T> {
