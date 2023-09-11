@@ -17,7 +17,13 @@ sealed class UiAction {
 
     class ShowPasswd(val passwdId: Int) : UiAction()
 
-    class Login(val username: String, val password: String, val secretKey: String) : UiAction()
+    class Login(
+        val username: String,
+        val password: String,
+        val secretKey: String,
+        val saved: Boolean,
+        val silentlySignIn: Boolean
+    ) : UiAction()
 
     class Register(val username: String, val password: String) : UiAction()
 

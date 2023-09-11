@@ -97,9 +97,13 @@ fun AppSymbolBox(modifier: Modifier = Modifier) {
 
 @Composable
 private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
-    val username = remember { mutableStateOf("") }
-    val password = remember { mutableStateOf("") }
-    val secretKey = remember { mutableStateOf("") }
+    val loginUiState = viewModel.loginUiState.collectAsState().value
+
+    val username = remember { mutableStateOf(loginUiState.historyData.username) }
+    val password = remember { mutableStateOf(loginUiState.historyData.password) }
+    val secretKey = remember { mutableStateOf(loginUiState.historyData.secretKey) }
+    val saved = remember { mutableStateOf(loginUiState.historyData.saved) }
+    val silentlySignIn = remember { mutableStateOf(loginUiState.historyData.silentlySignIn) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -120,14 +124,30 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
             currentScreen = if (isLogin.value) UiScreen.Login else UiScreen.Register,
             username = username,
             password = password,
-            secretKey = secretKey
+            secretKey = secretKey,
+            saved = saved,
+            onSaveClick = { save ->
+                saved.value = save
+                if (!save && silentlySignIn.value) {
+                    silentlySignIn.value = false
+                }
+            },
+            silentlySignIn = silentlySignIn,
+            onSilentlySignInClick = { silentlySignInValue ->
+                silentlySignIn.value = silentlySignInValue
+                if (silentlySignInValue) {
+                    saved.value = true
+                }
+            }
         ) {
             viewModel.onAction(
                 if (isLogin.value) {
                     UiAction.Login(
                         username = username.value,
                         password = password.value,
-                        secretKey = secretKey.value
+                        secretKey = secretKey.value,
+                        saved = saved.value,
+                        silentlySignIn = silentlySignIn.value
                     )
                 } else {
                     UiAction.Register(
@@ -136,7 +156,6 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
                     )
                 }
             )
-
         }
     }
 
@@ -198,6 +217,10 @@ private fun InfoBox(
     username: MutableState<String>,
     password: MutableState<String>,
     secretKey: MutableState<String>,
+    saved: MutableState<Boolean>,
+    onSaveClick: (Boolean) -> Unit,
+    silentlySignIn: MutableState<Boolean>,
+    onSilentlySignInClick: (Boolean) -> Unit,
     onSubmitClick: () -> Unit
 ) {
     Column(
@@ -232,6 +255,32 @@ private fun InfoBox(
                 secretKey.value = it
             }
             Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                RadioButton(
+                    selected = saved.value,
+                    onClick = { onSaveClick(!saved.value) },
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = Color(0xFFFF5722),
+                        unselectedColor = Color(0xFFBF360C)
+                    )
+                )
+                Text("Save")
+
+                Spacer(modifier = Modifier.width(20.dp))
+
+                RadioButton(
+                    selected = silentlySignIn.value,
+                    onClick = { onSilentlySignInClick(!silentlySignIn.value) },
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = Color(0xFFFF5722),
+                        unselectedColor = Color(0xFFBF360C)
+                    )
+                )
+                Text("Silently sign in")
+            }
         }
 
         Button(
@@ -313,5 +362,7 @@ fun LazyListScope.screensListMenu(
             Spacer(modifier = Modifier.width(15.dp))
             Text(text = screen.name, fontSize = 18.sp)
         }
+
+        Spacer(modifier = Modifier.width(15.dp))
     }
 }
