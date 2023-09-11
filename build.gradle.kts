@@ -2,8 +2,9 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
     kotlin("multiplatform")
-    kotlin("plugin.serialization") version "1.7.20"
+    kotlin("plugin.serialization") version "1.8.10"
     id("org.jetbrains.compose")
+    id("app.cash.sqldelight") version "2.0.0-alpha05"
 }
 
 //group = "com.leslie"
@@ -14,6 +15,14 @@ repositories {
     mavenCentral()
     maven("https://jitpack.io")
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+}
+
+sqldelight {
+    databases {
+        create("HistoryDatabase") {
+            packageName.set("com.passwd.common.database")
+        }
+    }
 }
 
 kotlin {
@@ -31,6 +40,8 @@ kotlin {
                 api(compose.material3)
                 api(compose.material)
                 api(compose.materialIconsExtended)
+                implementation("app.cash.sqldelight:sqlite-driver:2.0.0-alpha05")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
             }
         }
         val jvmTest by getting
@@ -52,8 +63,6 @@ kotlin {
             commonMainImplementation(libs.kotlinx.serialization.json)
             commonMainImplementation(libs.kotlinx.serialization.core)
 
-            commonMainImplementation(libs.ktpref)
-
             commonMainImplementation(libs.logback)
             commonMainImplementation(libs.log4j12)
         }
@@ -67,6 +76,8 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "PasswdDesktop"
             packageVersion = "1.0.0"
+
+            modules("java.sql")
 
             buildTypes.release {
                 proguard {

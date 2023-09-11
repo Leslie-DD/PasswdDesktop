@@ -1,18 +1,17 @@
 package passwds.model
 
-import config.LocalPref
+import database.DataBase
+import datamodel.HistoryData
+import datamodel.HistoryData.Companion.defaultHistoryData
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import model.Setting
+import model.Theme
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import passwds.entity.Group
 import passwds.entity.LoginResult
 import passwds.entity.Passwd
-import passwds.model.uistate.DialogUiState
-import passwds.model.uistate.GroupUiState
-import passwds.model.uistate.PasswdUiState
-import passwds.model.uistate.WindowUiState
+import passwds.model.uistate.*
 import passwds.repository.PasswdRepository
 import platform.desktop.Platform
 import platform.desktop.currentPlatform
@@ -42,11 +41,19 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     val passwdUiState: StateFlow<PasswdUiState> by lazy {
         _passwdUiState
     }
+
     private val _dialogUiState: MutableStateFlow<DialogUiState> by lazy {
         MutableStateFlow(DialogUiState.defaultDialogUiState())
     }
     val dialogUiState: StateFlow<DialogUiState> by lazy {
         _dialogUiState
+    }
+
+    private val _loginUiState: MutableStateFlow<LoginUiState> by lazy {
+        MutableStateFlow(LoginUiState(defaultHistoryData()))
+    }
+    val loginUiState: StateFlow<LoginUiState> by lazy {
+        _loginUiState
     }
 
     private val _searchFlow: MutableStateFlow<String> by lazy {
@@ -58,11 +65,13 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     val exitApp = MutableStateFlow(false)
 
-    val theme = MutableStateFlow(LocalPref.theme)
+    val theme = MutableStateFlow<Theme>(Theme.Light)
+
+    private val dataBase = DataBase.instance
 
     init {
         launch(Dispatchers.IO) {
-            loginByToken()
+            silentlySignIn()
         }
 
         launch {
@@ -107,6 +116,11 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 }
             }
         }
+
+        launch {
+            val all = dataBase.getAll()
+            logger.info("database.all: $all")
+        }
     }
 
     private fun clearData() {
@@ -118,33 +132,30 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
     }
 
-    private suspend fun loginByToken() {
-        val username = Setting.username.value
-        if (username.isBlank()) {
-            logger.warn("loginByToken, username is blank")
+    private suspend fun silentlySignIn() {
+        val savedHistoryData = dataBase.lastInsertHistory()
+        if (savedHistoryData == null) {
             updateWindowUiState { copy(uiScreen = UiScreen.Login) }
             return
         }
-        val token = Setting.accessToken.value
-        if (token.isBlank()) {
-            logger.warn("loginByToken, token is blank")
-            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
-            return
-        }
-        val secretKey = Setting.secretKey.value
-        if (secretKey.isBlank()) {
-            logger.warn("loginByToken, secretKey is blank")
-            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
-            return
-        }
-        logger.debug(".loginByToken, username: $username, token: $token, secretKey: $secretKey")
-        repository.loginByToken(
-            username = username,
-            token = token,
-        ).onSuccess {
-            onLoginSuccess(secretKey, it)
-        }.onFailure {
-            it.printStackTrace()
+        if (savedHistoryData.silentlySignIn) {
+            loginByPassword(
+                username = savedHistoryData.username,
+                password = savedHistoryData.password,
+                secretKey = savedHistoryData.secretKey,
+                saved = savedHistoryData.saved,
+                silentlySignIn = true,
+                updateDb = false
+            )
+            updateLoginUiState {
+                copy(historyData = savedHistoryData)
+            }
+        } else {
+            if (savedHistoryData.saved) {
+                updateLoginUiState {
+                    copy(historyData = savedHistoryData)
+                }
+            }
             updateWindowUiState { copy(uiScreen = UiScreen.Login) }
         }
     }
@@ -152,11 +163,14 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     private suspend fun loginByPassword(
         username: String,
         password: String,
-        secretKey: String
+        secretKey: String,
+        saved: Boolean,
+        silentlySignIn: Boolean,
+        updateDb: Boolean = true
     ) {
-        logger.debug("PasswdsViewModel().loginByPassword start")
+        logger.debug("(loginByPassword) start")
         if (username.isBlank() || password.isBlank() || secretKey.isBlank()) {
-            logger.error("PasswdsViewModel().loginByPassword error, $username, $password, $secretKey")
+            logger.error("(loginByPassword) error, $username, $password, $secretKey")
             return
         }
         repository.loginByPassword(
@@ -164,10 +178,13 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             password = password,
             secretKey = secretKey
         ).onSuccess {
-            logger.info("PasswdsViewModel().loginByPassword success, result: $it")
+            logger.info("(loginByPassword) success, result: $it")
+            if (updateDb) {
+                saveLoginInfo(username, password, secretKey, it.token, saved, silentlySignIn)
+            }
             onLoginSuccess(secretKey, it)
         }.onFailure {
-            logger.error("PasswdsViewModel().loginByPassword error: ${it.message}")
+            logger.error("(loginByPassword) error: ${it.message}")
             updateDialogUiState {
                 copy(effect = DialogUiEffect.LoginAndRegisterFailure(it.message))
             }
@@ -176,13 +193,14 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private suspend fun onLoginSuccess(secretKey: String, loginResult: LoginResult) {
+        logger.info("(onLoginSuccess)")
         updateWindowUiState { copy(uiScreen = UiScreen.Passwds) }
         coroutineScope {
             withContext(Dispatchers.IO) {
-                Setting.secretKey.emit(secretKey)
-                Setting.userId.emit(loginResult.userId)
-                Setting.username.emit(loginResult.username)
-                Setting.accessToken.emit(loginResult.token)
+                dataBase.globalSecretKey.emit(secretKey)
+                dataBase.globalUserId.emit(loginResult.userId)
+                dataBase.globalUsername.emit(loginResult.username)
+                dataBase.globalAccessToken.emit(loginResult.token)
                 clearData()
             }
             fetchGroups()
@@ -213,10 +231,10 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             }
             coroutineScope {
                 withContext(Dispatchers.IO) {
-                    Setting.secretKey.emit(it.secretKey)
-                    Setting.userId.emit(it.userId)
-                    Setting.username.emit(username)
-                    Setting.accessToken.emit(it.token)
+                    dataBase.globalSecretKey.emit(it.secretKey)
+                    dataBase.globalUserId.emit(it.userId)
+                    dataBase.globalUsername.emit(username)
+                    dataBase.globalAccessToken.emit(it.token)
                     clearData()
                 }
             }
@@ -373,8 +391,42 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             }
     }
 
+    private fun saveLoginInfo(
+        username: String,
+        password: String,
+        secretKey: String,
+        accessToken: String,
+        saved: Boolean,
+        silentlySignIn: Boolean
+    ) {
+        logger.info("(saveLoginInfo). username: $username, password: $password, secretKey: $secretKey, saved: $saved")
+        var insertResultId = -1
+        var insertHistoryData: HistoryData? = null
+        dataBase.delete(null)
+        if (saved) {
+            insertHistoryData = HistoryData(
+                username = username,
+                password = password,
+                secretKey = secretKey,
+                accessToken = accessToken,
+                saved = true,
+                silentlySignIn = silentlySignIn
+            )
+            insertResultId = dataBase.insert(insertHistoryData)
+        }
+        val historyData = if (insertResultId == -1) {
+            defaultHistoryData()
+        } else {
+            insertHistoryData!!
+        }
+        updateLoginUiState {
+            copy(historyData = historyData)
+        }
+        logger.info("(saveLoginInfo) insertResultId: $insertResultId, ${loginUiState.value}")
+    }
+
     fun onAction(action: UiAction) {
-        logger.debug("onAction: $action")
+        logger.debug("onAction: {}", action)
         with(action) {
             when (this) {
                 is UiAction.GoScreen -> {
@@ -417,7 +469,9 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                         loginByPassword(
                             username = username,
                             password = password,
-                            secretKey = secretKey
+                            secretKey = secretKey,
+                            saved = saved,
+                            silentlySignIn = silentlySignIn
                         )
                     }
                 }
@@ -530,6 +584,10 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     private fun updateDialogUiState(update: DialogUiState.() -> DialogUiState) {
         _dialogUiState.update { update(it) }
+    }
+
+    private fun updateLoginUiState(update: LoginUiState.() -> LoginUiState) {
+        _loginUiState.update { update(it) }
     }
 
     init {

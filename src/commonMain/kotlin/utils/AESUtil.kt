@@ -1,10 +1,10 @@
 package utils
 
+import database.DataBase
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import model.Setting
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
 import java.security.GeneralSecurityException
@@ -33,7 +33,7 @@ object AESUtil {
 
     init {
         GlobalScope.launch {
-            Setting.secretKey.collectLatest {
+            DataBase.instance.globalSecretKey.collectLatest {
                 log.info("secretKey update: $it")
                 secretKeyByteArray = getDecoder().decode(it)
             }

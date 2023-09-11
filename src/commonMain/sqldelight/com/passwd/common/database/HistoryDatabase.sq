@@ -1,0 +1,40 @@
+import kotlin.Boolean;
+import kotlin.Int;
+
+CREATE TABLE History (
+    id INTEGER AS Int PRIMARY KEY AUTOINCREMENT,
+    userId INTEGER AS Int,
+    username TEXT,
+    password TEXT,
+    secretKey TEXT,
+    accessToken TEXT,
+    saved INTEGER AS Boolean DEFAULT 0,
+    silentlySignIn INTEGER AS Boolean DEFAULT 0,
+    createTime INTEGER
+);
+
+getAllHistory:
+SELECT * FROM History;
+
+insertHistory:
+INSERT INTO History(userId, username, password, secretKey, accessToken, saved, silentlySignIn, createTime)
+VALUES ?;
+
+lastInsertHistory:
+SELECT * FROM History ORDER BY id DESC LIMIT 1;
+
+deleteHistory:
+DELETE FROM History WHERE History.id == ?;
+
+deleteAllHistory:
+DELETE FROM History;
+
+updateHistoryUserIdById:
+UPDATE History SET userId = ? WHERE id = ?;
+
+updateHistoryAccessTokenById:
+UPDATE History SET accessToken = ? WHERE id = ?;
+
+getAccessTokenByUserId:
+SELECT accessToken FROM History WHERE userId = ?;
+

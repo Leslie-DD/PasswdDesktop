@@ -17,7 +17,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import model.Setting
+import database.DataBase
 import passwds.model.PasswdsViewModel
 
 @Composable
@@ -32,7 +32,7 @@ fun SettingsScreen(
             modifier = Modifier.wrapContentSize(), horizontalAlignment = Alignment.Start
         ) {
 
-            UsernameView(Setting.username.value)
+            UsernameView(DataBase.instance.globalUsername.value)
             Spacer(modifier = Modifier.height(10.dp))
             PasswordView("")
             Spacer(modifier = Modifier.height(10.dp))
@@ -83,7 +83,7 @@ fun SecretKeyView(viewModel: PasswdsViewModel) {
     Row(
         modifier = Modifier.wrapContentWidth(), verticalAlignment = Alignment.CenterVertically
     ) {
-        val secretKey by Setting.secretKey.collectAsState()
+        val secretKey by DataBase.instance.globalSecretKey.collectAsState()
         var text by remember {
             mutableStateOf("")
         }
@@ -134,7 +134,7 @@ fun SecretKeyView(viewModel: PasswdsViewModel) {
             )
         }
         IconButton(enabled = enableEdit, onClick = {
-            Setting.secretKey.tryEmit(text)
+            DataBase.instance.globalSecretKey.tryEmit(text)
             enableEdit = false
         }) {
             Icon(

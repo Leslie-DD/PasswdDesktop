@@ -1,7 +1,7 @@
 package passwds.repository
 
+import database.DataBase
 import kotlinx.coroutines.flow.MutableStateFlow
-import model.Setting
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import passwds.datasource.LocalDataSource
@@ -24,7 +24,7 @@ class PasswdRepository(
     val groupPasswds = MutableStateFlow<MutableList<Passwd>>(arrayListOf())
 
     private fun MutableList<Passwd>.mapToPasswdsMap(
-        secretKey: String = Setting.secretKey.value
+        secretKey: String = DataBase.instance.globalSecretKey.value
     ): MutableMap<Int, MutableList<Passwd>> {
         logger.debug("mapToPasswdsMap secretKey: $secretKey")
         val secretKeyByteArray = Base64.getDecoder().decode(secretKey)
@@ -134,7 +134,7 @@ class PasswdRepository(
         ).onSuccess {
             val newGroup = Group(
                 id = it,
-                userId = Setting.userId.value,
+                userId = DataBase.instance.globalUserId.value,
                 groupName = groupName,
                 groupComment = groupComment
             )
@@ -198,7 +198,7 @@ class PasswdRepository(
         link: String,
         comment: String,
     ): Result<Passwd> {
-        val secretKeyByteArray = Base64.getDecoder().decode(Setting.secretKey.value)
+        val secretKeyByteArray = Base64.getDecoder().decode(DataBase.instance.globalSecretKey.value)
         var result = Result.failure<Passwd>(Throwable())
         remoteDataSource.newPasswd(
             groupId = groupId,
@@ -212,7 +212,7 @@ class PasswdRepository(
                 id = it,
                 groupId = groupId,
                 title = title,
-                userId = Setting.userId.value,
+                userId = DataBase.instance.globalUserId.value,
                 link = link,
                 comment = comment,
                 usernameString = usernameString,
@@ -237,7 +237,7 @@ class PasswdRepository(
         link: String?,
         comment: String?
     ): Result<Passwd> {
-        val secretKeyByteArray = Base64.getDecoder().decode(Setting.secretKey.value)
+        val secretKeyByteArray = Base64.getDecoder().decode(DataBase.instance.globalSecretKey.value)
         var result = Result.failure<Passwd>(Throwable())
         remoteDataSource.updatePasswd(
             id = id,
