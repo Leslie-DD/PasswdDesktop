@@ -65,25 +65,29 @@ class PasswdRepository(
         groupPasswds.emit(localDataSource.getGroupPasswds(groupId))
     }
 
-
-    suspend fun loginByToken(
-        username: String,
-        token: String,
-    ): Result<LoginResult> {
-        return remoteDataSource.loginByToken(
-            username = username,
-            token = token,
-        ).onSuccess { loginResult ->
-            logger.info("loginByToken -> mapToPasswdsMap username: $username")
-            localDataSource.passwdsMap = loginResult.passwds.mapToPasswdsMap()
-            localDataSource.groups = mutableListOf()
-            groups.emit(arrayListOf())
-            groupPasswds.emit(arrayListOf())
-            Result.success(loginResult)
-        }.onFailure {
-            Result.failure<LoginResult>(it)
-        }
+    suspend fun updateGroupPasswds(passwds: MutableList<Passwd>) {
+        groupPasswds.emit(passwds)
     }
+
+
+//    suspend fun loginByToken(
+//        username: String,
+//        token: String,
+//    ): Result<LoginResult> {
+//        return remoteDataSource.loginByToken(
+//            username = username,
+//            token = token,
+//        ).onSuccess { loginResult ->
+//            logger.info("loginByToken -> mapToPasswdsMap username: $username")
+//            localDataSource.passwdsMap = loginResult.passwds.mapToPasswdsMap()
+//            localDataSource.groups = mutableListOf()
+//            groups.emit(arrayListOf())
+//            groupPasswds.emit(arrayListOf())
+//            Result.success(loginResult)
+//        }.onFailure {
+//            Result.failure<LoginResult>(it)
+//        }
+//    }
 
     suspend fun loginByPassword(
         username: String,
@@ -283,7 +287,7 @@ class PasswdRepository(
         return result
     }
 
-    fun getAllPasswds(value: String): MutableList<Passwd> {
+    suspend fun searchLikePasswdsAndUpdate(value: String) {
         val pattern = Regex(PATTERN_PREFIX + value + PATTERN_SUFFIX)
         val result = arrayListOf<Passwd>()
         localDataSource.passwdsMap
@@ -293,7 +297,7 @@ class PasswdRepository(
                     result.add(passwd)
                 }
             }
-        return result
+        updateGroupPasswds(result)
     }
 
     private fun decodePasswd(

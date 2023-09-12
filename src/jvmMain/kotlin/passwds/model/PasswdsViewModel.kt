@@ -85,6 +85,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         launch {
             repository.groupPasswds.collect {
                 updatePasswdUiState {
+                    logger.debug("groupPasswds changed, size: {} {}", it.size, it)
                     copy(groupPasswds = it)
                 }
             }
@@ -93,22 +94,17 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         launch {
             searchFlow.debounce(500).collectLatest {
                 if (it.isNotBlank()) {
-                    val passwds = repository.getAllPasswds(it)
+                    repository.searchLikePasswdsAndUpdate(it)
                     updatePasswdUiState {
-                        copy(
-                            groupPasswds = passwds,
-                            selectPasswd = null
-                        )
+                        copy(selectPasswd = null)
                     }
                     updateGroupUiState {
                         copy(selectGroup = null)
                     }
                 } else {
+                    repository.updateGroupPasswds(mutableListOf())
                     updatePasswdUiState {
-                        copy(
-                            groupPasswds = mutableListOf(),
-                            selectPasswd = null
-                        )
+                        copy(selectPasswd = null)
                     }
                     updateGroupUiState {
                         copy(selectGroup = null)
