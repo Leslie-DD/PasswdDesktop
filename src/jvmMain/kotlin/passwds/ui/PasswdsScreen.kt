@@ -12,6 +12,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,11 +31,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import network.KtorRequest.logger
 import passwds.entity.Group
 import passwds.entity.Passwd
 import passwds.model.DialogUiEffect
 import passwds.model.PasswdsViewModel
 import passwds.model.UiAction
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
 
 /**
  * 密码界面主要内容的显示区域
@@ -451,7 +457,24 @@ private fun PasswdDetails(
         DetailTextField(
             label = "username",
             leadingIcon = Icons.Default.People,
-            value = passwd.usernameString ?: ""
+            value = passwd.usernameString ?: "",
+            trailingIcon = {
+                Row(modifier = Modifier.wrapContentSize().padding(end = 10.dp)) {
+                    IconButton(
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
+                        onClick = {
+                            (passwd.usernameString ?: "").copyToClipboard()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.ContentCopy,
+                            contentDescription = "copy username to clipboard"
+                        )
+                    }
+                }
+            }
         )
         var passwordVisible by remember { mutableStateOf(false) }
         DetailTextField(
@@ -461,7 +484,7 @@ private fun PasswdDetails(
             value = passwd.passwordString ?: "",
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
-                Box(modifier = Modifier.wrapContentSize().padding(end = 10.dp)) {
+                Row(modifier = Modifier.wrapContentSize().padding(end = 10.dp)) {
                     IconButton(
                         colors = IconButtonDefaults.iconButtonColors(
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -471,8 +494,22 @@ private fun PasswdDetails(
                         }
                     ) {
                         Icon(
-                            imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            imageVector = if (passwordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
                             contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                        )
+                    }
+
+                    IconButton(
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
+                        onClick = {
+                            (passwd.passwordString ?: "").copyToClipboard()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.ContentCopy,
+                            contentDescription = "copy password to clipboard"
                         )
                     }
                 }
@@ -681,4 +718,13 @@ private fun RowSpacer() {
             .background(color = MaterialTheme.colorScheme.background)
             .border(width = 1.dp, color = MaterialTheme.colorScheme.onBackground)
     )
+}
+
+private fun String.copyToClipboard() = try {
+    Toolkit.getDefaultToolkit()
+        .systemClipboard
+        .setContents(StringSelection(this), null)
+} catch (throwable: Throwable) {
+    logger.error("PasswdScreen copy to clipboard error: ${throwable.message}")
+    throwable.printStackTrace()
 }
