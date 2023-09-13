@@ -20,6 +20,19 @@ data class KtorResult<T>(
 
     fun result(): Result<T> {
         return if (success) {
+//            try {
+//                val databasePath = File(System.getProperty("compose.application.resources.dir"), "passwd_log.log")
+//                if (!databasePath.exists()) {    //文件不存在则创建文件，先创建目录
+//                    File(databasePath.parent).mkdirs()
+//                    databasePath.createNewFile()
+//                }
+//                val outStream = FileOutputStream(databasePath)    //文件输出流用于将数据写入文件
+//                val sourceByte: ByteArray = this.toString().toByteArray()
+//                outStream.write(sourceByte)
+//                outStream.close()    //关
+//            } catch (exception: Exception) {
+//                logger.info("($api) logfile printerror $this")
+//            }
             logger.info("($api) success $this")
             Result.success(data)
         } else {

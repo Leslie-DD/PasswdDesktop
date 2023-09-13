@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+
+    <contextListener class="LoggerStartupListener"/>
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>testFile.log</file>
+        <file>${logFilePath}</file>
         <append>true</append>
         <encoder>
             <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
