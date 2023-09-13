@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets
 import java.security.GeneralSecurityException
 import java.security.NoSuchAlgorithmException
 import java.security.SecureRandom
+import java.security.Security
 import java.util.*
 import java.util.Base64.getDecoder
 import java.util.Base64.getEncoder
@@ -27,7 +28,7 @@ object AESUtil {
     private val log = LoggerFactory.getLogger(this.javaClass)
 
     private val cipher: Cipher = Cipher.getInstance(TRANSFORMATION_CBC)
-    private val secureRandom: SecureRandom = SecureRandom.getInstance(ALGORITHM_SECURE_RANDOM)
+    private val secureRandom: SecureRandom = getSecureRandom()
 
     private var secretKeyByteArray: ByteArray? = null
 
@@ -36,6 +37,20 @@ object AESUtil {
             DataBase.instance.globalSecretKey.collectLatest {
                 log.info("secretKey update: $it")
                 secretKeyByteArray = getDecoder().decode(it)
+            }
+        }
+    }
+
+    /**
+     * 适配 windows 平台 NoSuchAlgorithmException 的问题
+     */
+    private fun getSecureRandom(): SecureRandom {
+        return try {
+            SecureRandom.getInstance(ALGORITHM_SECURE_RANDOM)
+        } catch (exception: NoSuchAlgorithmException) {
+            return SecureRandom().also {
+                it.provider["SecureRandom.NativePRNGNonBlocking"] = it.provider["SecureRandom.${it.algorithm}"]
+                Security.addProvider(it.provider)
             }
         }
     }
