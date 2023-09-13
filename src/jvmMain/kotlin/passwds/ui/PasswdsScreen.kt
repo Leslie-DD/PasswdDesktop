@@ -1,8 +1,8 @@
 package passwds.ui
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,10 +20,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,10 +42,14 @@ fun PasswdsScreen(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
-    Row(modifier = modifier.padding(end = 10.dp, top = 10.dp, bottom = 10.dp)) {
-        PasswdGroupList(viewModel = viewModel, modifier = Modifier.width(250.dp))
-        Spacer(modifier = Modifier.fillMaxHeight().width(10.dp))
-        PasswdItemsContent(viewModel = viewModel)
+    Row(
+        modifier = modifier
+            .padding(end = 10.dp)
+            .background(color = MaterialTheme.colorScheme.primaryContainer)
+    ) {
+        GroupList(viewModel = viewModel, modifier = Modifier.width(250.dp))
+        RowSpacer()
+        PasswdsAndDetailWrapper(viewModel = viewModel)
     }
 }
 
@@ -55,7 +57,7 @@ fun PasswdsScreen(
  * 密码分组 List
  */
 @Composable
-fun PasswdGroupList(
+fun GroupList(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -98,10 +100,7 @@ fun PasswdGroupList(
     }
 
     Column(
-        modifier = modifier.fillMaxSize().background(
-            color = MaterialTheme.colorScheme.primaryContainer,
-            shape = RoundedCornerShape(10.dp)
-        )
+        modifier = modifier.fillMaxSize()
     ) {
         val groupUiState = viewModel.groupUiState.collectAsState().value
         val selectGroup = groupUiState.selectGroup
@@ -113,7 +112,7 @@ fun PasswdGroupList(
                 state = listState
             ) {
                 items(groups) { group ->
-                    GroupCard(
+                    GroupItem(
                         group = group,
                         isSelected = group.id == selectGroup?.id
                     ) {
@@ -135,6 +134,9 @@ fun PasswdGroupList(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             IconButton(
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
                 onClick = { isNewGroupDialogOpen.value = true }
             ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
@@ -155,6 +157,9 @@ fun PasswdGroupList(
 
             IconButton(
                 enabled = selectGroup != null,
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
                 onClick = { isUpdateGroupDialogOpen.value = true }
             ) {
                 Icon(imageVector = Icons.Default.Edit, contentDescription = null)
@@ -177,6 +182,9 @@ fun PasswdGroupList(
 
             IconButton(
                 enabled = selectGroup != null,
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
                 onClick = { isDeleteGroupConfirmDialogOpen.value = true }
             ) {
                 Icon(imageVector = Icons.Default.Delete, contentDescription = null)
@@ -199,7 +207,7 @@ fun PasswdGroupList(
  * 包含密码 List 和密码详情两部分
  */
 @Composable
-fun PasswdItemsContent(
+fun PasswdsAndDetailWrapper(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -207,9 +215,9 @@ fun PasswdItemsContent(
         modifier = Modifier.fillMaxSize()
     ) {
         Row {
-            PasswdItemsList(viewModel = viewModel, modifier = Modifier.width(250.dp))
-            Spacer(modifier = Modifier.fillMaxHeight().width(10.dp))
-            PasswdDetailScreen(viewModel = viewModel)
+            PasswdList(viewModel = viewModel, modifier = Modifier.width(250.dp))
+            RowSpacer()
+            PasswdDetailWrapper(viewModel = viewModel)
         }
     }
 }
@@ -218,7 +226,7 @@ fun PasswdItemsContent(
  * 密码 List（显示指定分组下的所有密码，每条 item 只显示 title 和 username）
  */
 @Composable
-fun PasswdItemsList(
+fun PasswdList(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -254,13 +262,9 @@ fun PasswdItemsList(
         SearchBox {
             viewModel.onAction(UiAction.SearchPasswds(it))
         }
-        Spacer(modifier = Modifier.fillMaxWidth().height(10.dp))
 
         Column(
-            modifier = Modifier.weight(1f).background(
-                color = MaterialTheme.colorScheme.primaryContainer,
-                shape = RoundedCornerShape(10.dp)
-            )
+            modifier = Modifier.weight(1f)
         ) {
             val passwdUiState = viewModel.passwdUiState.collectAsState().value
             Row(
@@ -271,7 +275,7 @@ fun PasswdItemsList(
                     state = listState
                 ) {
                     items(passwdUiState.groupPasswds) { passwd ->
-                        PasswdCard(
+                        PasswdItem(
                             passwd = passwd,
                             isSelected = passwd.id == passwdUiState.selectPasswd?.id
                         ) {
@@ -298,6 +302,9 @@ fun PasswdItemsList(
                 val groupUiState = viewModel.groupUiState.collectAsState().value
                 IconButton(
                     enabled = groupUiState.selectGroup != null,
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
                     onClick = {
                         isNewPasswdDialogOpened.value = true
                     }
@@ -332,6 +339,9 @@ fun PasswdItemsList(
 
                 IconButton(
                     enabled = passwdUiState.selectPasswd != null,
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
                     onClick = {
                         isDeletePasswdConfirmDialogOpened.value = true
                     }
@@ -359,15 +369,12 @@ fun PasswdItemsList(
  * 密码详情
  */
 @Composable
-fun PasswdDetailScreen(
+fun PasswdDetailWrapper(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
     Box(
-        modifier.fillMaxSize().background(
-            color = MaterialTheme.colorScheme.primaryContainer,
-            shape = RoundedCornerShape(10.dp)
-        )
+        modifier.fillMaxSize()
     ) {
         val passwdUiState = viewModel.passwdUiState.collectAsState().value
         passwdUiState.selectPasswd?.let {
@@ -376,7 +383,7 @@ fun PasswdDetailScreen(
                 modifier = modifier.fillMaxSize()
             ) {
                 Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                    PasswdDetailBox(it)
+                    PasswdDetails(it)
                 }
 
                 Row(
@@ -386,6 +393,9 @@ fun PasswdDetailScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     IconButton(
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                         onClick = {
                             isEditDialogOpen.value = true
                         }
@@ -425,11 +435,10 @@ fun PasswdDetailScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PasswdDetailBox(
+private fun PasswdDetails(
     passwd: Passwd,
     editEnable: Boolean = false
 ) {
-    var passwordVisible by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -444,16 +453,19 @@ private fun PasswdDetailBox(
             leadingIcon = Icons.Default.People,
             value = passwd.usernameString ?: ""
         )
+        var passwordVisible by remember { mutableStateOf(false) }
         DetailTextField(
             modifier = Modifier.fillMaxWidth(),
             label = "password",
             leadingIcon = Icons.Default.Lock,
             value = passwd.passwordString ?: "",
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             trailingIcon = {
                 Box(modifier = Modifier.wrapContentSize().padding(end = 10.dp)) {
                     IconButton(
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                         onClick = {
                             passwordVisible = !passwordVisible
                         }
@@ -474,10 +486,15 @@ private fun PasswdDetailBox(
             value = passwd.link ?: ""
         )
         OutlinedTextField(
+            enabled = false,
             modifier = Modifier.fillMaxSize().align(Alignment.Start),
             label = { Text("comment", maxLines = 1, overflow = TextOverflow.Ellipsis) },
             value = passwd.comment ?: "",
-            onValueChange = { }
+            onValueChange = { },
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                disabledTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                disabledLabelColor = MaterialTheme.colorScheme.outline,
+            )
         )
     }
 }
@@ -499,87 +516,83 @@ private fun DetailTextField(
         modifier = modifier,
         label = { Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         leadingIcon = {
-            Icon(imageVector = leadingIcon, contentDescription = null)
+            Icon(
+                imageVector = leadingIcon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
         },
         value = value,
         maxLines = 1,
         onValueChange = { },
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
-        trailingIcon = trailingIcon
+        trailingIcon = trailingIcon,
+        colors = TextFieldDefaults.textFieldColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            disabledTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            disabledLabelColor = MaterialTheme.colorScheme.outline,
+        )
     )
 }
 
 @Composable
-fun GroupCard(
+fun GroupItem(
     group: Group,
     isSelected: Boolean,
     onClick: (Int) -> Unit
 ) {
-    Box(
+    TextButton(
         modifier = Modifier.fillMaxWidth().height(40.dp).padding(end = 10.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Row(modifier = Modifier.fillMaxSize()) {
-            AnimatedVisibility(
-                modifier = Modifier.fillMaxSize(),
-                visible = isSelected
-            ) {
-                Box(
-                    modifier = Modifier.fillMaxSize().background(
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                    )
-                )
+        shape = RoundedCornerShape(20),
+        interactionSource = remember { NoRippleInteractionSource() },
+        onClick = { onClick(group.id) },
+        colors = ButtonDefaults.textButtonColors(
+            containerColor = if (isSelected) {
+                MaterialTheme.colorScheme.tertiaryContainer
+            } else {
+                MaterialTheme.colorScheme.primaryContainer
+            },
+            contentColor = if (isSelected) {
+                Color.White
+            } else {
+                MaterialTheme.colorScheme.onPrimaryContainer
             }
-        }
-
-        TextButton(
-            modifier = Modifier.fillMaxWidth(),
-            interactionSource = remember { NoRippleInteractionSource() },
-            onClick = { onClick(group.id) },
-            colors = ButtonDefaults.textButtonColors(
-                contentColor = if (isSelected) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.outline
-                }
-            )
-        ) {
-            Spacer(modifier = Modifier.width(15.dp).fillMaxHeight())
-            Text(
-                text = group.groupName ?: "",
-                fontSize = 14.sp, maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-            Spacer(modifier = Modifier.weight(0.6f))
-        }
+        )
+    ) {
+        Spacer(modifier = Modifier.width(15.dp).fillMaxHeight())
+        Text(
+            text = group.groupName ?: "",
+            fontSize = 14.sp, maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Spacer(modifier = Modifier.weight(0.6f))
     }
 }
 
 @Composable
-fun PasswdCard(
+fun PasswdItem(
     passwd: Passwd,
     isSelected: Boolean,
     onClick: (Int) -> Unit
 ) {
     TextButton(
         modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20),
         interactionSource = remember { NoRippleInteractionSource() },
         onClick = { onClick(passwd.id) },
         colors = ButtonDefaults.textButtonColors(
             containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.secondaryContainer
+                MaterialTheme.colorScheme.tertiaryContainer
             } else {
                 MaterialTheme.colorScheme.primaryContainer
             },
             contentColor = if (isSelected) {
-                MaterialTheme.colorScheme.onSecondaryContainer
+                Color.White
             } else {
                 MaterialTheme.colorScheme.onPrimaryContainer
             }
-        ),
-        shape = RectangleShape
+        )
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Spacer(modifier = Modifier.weight(0.1f))
@@ -588,7 +601,6 @@ fun PasswdCard(
                 fontSize = 16.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
             )
             Spacer(modifier = Modifier.weight(0.1f))
             if (!passwd.usernameString.isNullOrBlank()) {
@@ -597,7 +609,11 @@ fun PasswdCard(
                     fontSize = 13.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = if (isSelected) {
+                        Color.White
+                    } else {
+                        MaterialTheme.colorScheme.outline
+                    }
                 )
                 Spacer(modifier = Modifier.weight(0.1f))
             }
@@ -615,15 +631,15 @@ private fun SearchBox(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(start = 10.dp, end = 10.dp, top = 10.dp)
             .focusRequester(focusRequester)
             .onFocusChanged {
                 text.value = ""
-//                onSearch(text.value)
             }
     ) {
-        TextField(
+        OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(50),
+            shape = RoundedCornerShape(20),
             maxLines = 1,
             placeholder = {
                 Text(
@@ -645,12 +661,24 @@ private fun SearchBox(
                 text.value = it
                 onSearch(text.value)
             },
-            colors = TextFieldDefaults.textFieldColors(
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                textColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer
             ),
         )
     }
+}
+
+@Composable
+private fun RowSpacer() {
+    Box(
+        modifier = Modifier
+            .fillMaxHeight()
+            .width(16.dp)
+            .background(color = MaterialTheme.colorScheme.background)
+            .border(width = 1.dp, color = MaterialTheme.colorScheme.onBackground)
+    )
 }

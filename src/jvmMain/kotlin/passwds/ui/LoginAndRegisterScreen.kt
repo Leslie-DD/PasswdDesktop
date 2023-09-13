@@ -5,8 +5,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.People
@@ -18,6 +21,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,7 +42,8 @@ fun LoginAndRegisterScreen(
     ) {
         Card(
             modifier = Modifier.weight(0.4f).fillMaxHeight(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
+            shape = RoundedCornerShape(0f, 20f, 20f, 0f)
         ) {
             IntroductionBox()
         }
@@ -111,6 +117,7 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
         verticalArrangement = Arrangement.Top
     ) {
         val isLogin = remember { mutableStateOf(true) }
+        Spacer(modifier = Modifier.height(20.dp))
         LazyRow(modifier = Modifier.wrapContentSize()) {
             screensListMenu(
                 screens = UiScreen.LoginAndRegister,
@@ -231,16 +238,18 @@ private fun InfoBox(
         OutlinedEditTextBox(
             value = username.value,
             labelValue = "Username",
-            imageVector = Icons.Outlined.People
+            leadingIconImageVector = Icons.Outlined.People
         ) {
             username.value = it
         }
         Spacer(modifier = Modifier.height(10.dp))
 
+        var passwordVisible by remember { mutableStateOf(false) }
         OutlinedEditTextBox(
             value = password.value,
             labelValue = "Password",
-            imageVector = Icons.Outlined.Lock
+            leadingIconImageVector = Icons.Outlined.Lock,
+            disableContentEncrypt = false
         ) {
             password.value = it
         }
@@ -250,12 +259,13 @@ private fun InfoBox(
             OutlinedEditTextBox(
                 value = secretKey.value,
                 labelValue = "SecretKey",
-                imageVector = Icons.Outlined.Key
+                leadingIconImageVector = Icons.Outlined.Key,
+                disableContentEncrypt = false
             ) {
                 secretKey.value = it
             }
-            Spacer(modifier = Modifier.height(10.dp))
 
+            Spacer(modifier = Modifier.height(10.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -263,11 +273,15 @@ private fun InfoBox(
                     selected = saved.value,
                     onClick = { onSaveClick(!saved.value) },
                     colors = RadioButtonDefaults.colors(
-                        selectedColor = Color(0xFFFF5722),
-                        unselectedColor = Color(0xFFBF360C)
+                        selectedColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        unselectedColor = MaterialTheme.colorScheme.outline
                     )
                 )
-                Text("Save")
+                Text(
+                    text = "Save",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
 
                 Spacer(modifier = Modifier.width(20.dp))
 
@@ -275,18 +289,22 @@ private fun InfoBox(
                     selected = silentlySignIn.value,
                     onClick = { onSilentlySignInClick(!silentlySignIn.value) },
                     colors = RadioButtonDefaults.colors(
-                        selectedColor = Color(0xFFFF5722),
-                        unselectedColor = Color(0xFFBF360C)
+                        selectedColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        unselectedColor = MaterialTheme.colorScheme.outline
                     )
                 )
-                Text("Silently sign in")
+                Text(
+                    text = "Silently sign in",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             }
         }
 
         Button(
             colors = ButtonDefaults.buttonColors(
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                containerColor = MaterialTheme.colorScheme.primaryContainer
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
             ),
             onClick = { onSubmitClick() }
         ) {
@@ -305,9 +323,12 @@ fun OutlinedEditTextBox(
     value: String,
     labelValue: String,
     maxLines: Int = 1,
-    imageVector: ImageVector? = null,
+    leadingIconImageVector: ImageVector? = null,
+    disableContentEncrypt: Boolean = true,
     colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
-        focusedBorderColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        textColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        focusedBorderColor = MaterialTheme.colorScheme.secondary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
         focusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
         cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
         selectionColors = TextSelectionColors(handleColor = Color.White, backgroundColor = Color.Blue)
@@ -315,13 +336,43 @@ fun OutlinedEditTextBox(
     onInputChanged: (String) -> Unit
 ) {
     val text = remember { mutableStateOf(value) }
+    var contentVisible by remember { mutableStateOf(disableContentEncrypt) }
+
     OutlinedTextField(
         modifier = modifier,
         enabled = enabled,
-        label = { Text(labelValue, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        label = {
+            Text(
+                text = labelValue,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
         leadingIcon = {
-            imageVector?.let {
-                Icon(imageVector = imageVector, contentDescription = null)
+            leadingIconImageVector?.let {
+                Icon(imageVector = leadingIconImageVector, contentDescription = null)
+            }
+        },
+        visualTransformation = if (contentVisible) VisualTransformation.None else PasswordVisualTransformation(),
+        trailingIcon = if (disableContentEncrypt) {
+            null
+        } else {
+            {
+                Box(modifier = Modifier.wrapContentSize().padding(end = 10.dp)) {
+                    IconButton(
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
+                        onClick = {
+                            contentVisible = !contentVisible
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (contentVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            contentDescription = if (contentVisible) "Hide content" else "Show content"
+                        )
+                    }
+                }
             }
         },
         value = text.value,
@@ -347,12 +398,12 @@ fun LazyListScope.screensListMenu(
             onClick = { onChoice(screen) },
             colors = ButtonDefaults.textButtonColors(
                 containerColor = if (isSelected) {
-                    MaterialTheme.colorScheme.secondaryContainer
+                    MaterialTheme.colorScheme.tertiaryContainer
                 } else {
-                    MaterialTheme.colorScheme.primaryContainer
+                    MaterialTheme.colorScheme.secondaryContainer
                 },
                 contentColor = if (isSelected) {
-                    MaterialTheme.colorScheme.onSecondaryContainer
+                    Color.White
                 } else {
                     MaterialTheme.colorScheme.onPrimaryContainer
                 }

@@ -11,7 +11,7 @@ import passwds.entity.LoginResult
 import passwds.entity.Passwd
 import passwds.entity.RegisterResult
 import utils.AESUtil
-import java.util.*
+import java.util.Base64
 
 class PasswdRepository(
     private val remoteDataSource: RemoteDataSource = RemoteDataSource(),

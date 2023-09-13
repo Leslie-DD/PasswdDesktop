@@ -29,7 +29,7 @@ fun App(
 
         val modifier = Modifier
             .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.primary)
+            .background(color = MaterialTheme.colorScheme.primaryContainer)
         Crossfade(
             modifier = Modifier.fillMaxSize(),
             targetState = windowUiState.uiScreen,
