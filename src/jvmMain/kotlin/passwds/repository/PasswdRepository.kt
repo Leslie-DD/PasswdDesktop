@@ -310,6 +310,7 @@ class PasswdRepository(
             passwd.usernameString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.usernameString)
             passwd.passwordString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.passwordString)
         } catch (e: Exception) {
+            logger.error("fetchGroupPasswd error " + e.message)
             e.printStackTrace()
         }
         logger.debug("fetchGroupPasswd decode after: passwd: {}", passwd)
