@@ -4,6 +4,8 @@
 -dontwarn org.apache.log4j.**
 -dontwarn ch.qos.logback.**
 
+-keep class org.sqlite.** { *; }
+
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt # core serialization annotations
 
