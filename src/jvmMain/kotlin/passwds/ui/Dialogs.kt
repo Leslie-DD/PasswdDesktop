@@ -42,6 +42,7 @@ fun AddPasswdDialog(
     val link = remember { mutableStateOf("") }
     val enable = remember { mutableStateOf(true) }
     Dialog(
+        title = "add a passwd",
         onCloseRequest = { onCloseClick() },
         state = rememberDialogState(
             position = WindowPosition(Alignment.Center),
@@ -83,16 +84,15 @@ fun AddPasswdDialog(
                 )
                 OutlinedEditTextBox(
                     modifier = Modifier.wrapContentHeight().fillMaxWidth().align(Alignment.Start),
-                    labelValue = "comment",
                     value = comment.value,
-                    onInputChanged = { comment.value = it },
+                    labelValue = "comment",
                     maxLines = 10
-                )
+                ) { comment.value = it }
 
                 Button(
                     colors = ButtonDefaults.buttonColors(
-                        contentColor = theme.materialColorScheme.onPrimaryContainer,
-                        containerColor = theme.materialColorScheme.primaryContainer
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
                     ),
                     enabled = enable.value,
                     onClick = {
@@ -113,7 +113,11 @@ fun AddPasswdDialog(
 fun CustomTextField(
     enabled: Boolean = true,
     modifier: Modifier = Modifier.fillMaxWidth(),
-    colors: TextFieldColors = TextFieldDefaults.textFieldColors(
+    colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
+        textColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        focusedBorderColor = MaterialTheme.colorScheme.secondary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
         unfocusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
         focusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
         cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -124,7 +128,7 @@ fun CustomTextField(
     value: String,
     onValueChange: (String) -> Unit
 ) {
-    TextField(
+    OutlinedTextField(
         enabled = enabled,
         colors = colors,
         modifier = modifier,
@@ -166,12 +170,14 @@ fun DeletePasswdConfirmDialog(
         ) {
             Text(
                 text = "Delete the Passwd",
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 18.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
                 modifier = Modifier.padding(vertical = 10.dp, horizontal = 30.dp),
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 text = "删除该密码将不可恢复，确定删除吗？",
                 fontSize = 14.sp
             )
@@ -181,8 +187,8 @@ fun DeletePasswdConfirmDialog(
             ) {
                 Button(
                     colors = ButtonDefaults.buttonColors(
-                        contentColor = theme.materialColorScheme.onPrimaryContainer,
-                        containerColor = theme.materialColorScheme.primaryContainer
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
                     ),
                     enabled = enable.value,
                     onClick = {
@@ -195,8 +201,8 @@ fun DeletePasswdConfirmDialog(
                 Spacer(modifier = Modifier.width(20.dp))
                 Button(
                     colors = ButtonDefaults.buttonColors(
-                        contentColor = theme.materialColorScheme.onPrimaryContainer,
-                        containerColor = theme.materialColorScheme.primaryContainer
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
                     ),
                     enabled = enable.value,
                     onClick = {
@@ -231,13 +237,16 @@ fun AddGroupDialog(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Add a Group")
+            Text(
+                text = "Add a Group",
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
             Spacer(modifier = Modifier.height(30.dp))
 
             OutlinedEditTextBox(
                 value = groupName.value,
                 labelValue = "Group Name",
-                imageVector = Icons.Outlined.Group
+                leadingIconImageVector = Icons.Outlined.Group
             ) {
                 groupName.value = it
             }
@@ -246,15 +255,15 @@ fun AddGroupDialog(
             OutlinedEditTextBox(
                 value = commentName.value,
                 labelValue = "Group Comment",
-                imageVector = Icons.Outlined.Comment
+                leadingIconImageVector = Icons.Outlined.Comment
             ) {
                 commentName.value = it
             }
 
             Button(
                 colors = ButtonDefaults.buttonColors(
-                    contentColor = theme.materialColorScheme.onPrimaryContainer,
-                    containerColor = theme.materialColorScheme.primaryContainer
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
                 ),
                 enabled = enable.value,
                 onClick = {
@@ -291,13 +300,16 @@ fun UpdateGroupDialog(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Update the Group")
+            Text(
+                text = "Update the Group",
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
             Spacer(modifier = Modifier.height(30.dp))
 
             OutlinedEditTextBox(
                 value = groupNameState.value,
                 labelValue = "Group Name",
-                imageVector = Icons.Outlined.Group
+                leadingIconImageVector = Icons.Outlined.Group
             ) {
                 groupNameState.value = it
             }
@@ -306,15 +318,15 @@ fun UpdateGroupDialog(
             OutlinedEditTextBox(
                 value = groupCommentState.value,
                 labelValue = "Group Comment",
-                imageVector = Icons.Outlined.Comment
+                leadingIconImageVector = Icons.Outlined.Comment
             ) {
                 groupCommentState.value = it
             }
 
             Button(
                 colors = ButtonDefaults.buttonColors(
-                    contentColor = theme.materialColorScheme.onPrimaryContainer,
-                    containerColor = theme.materialColorScheme.primaryContainer
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
                 ),
                 enabled = enable.value,
                 onClick = {
@@ -348,12 +360,14 @@ fun DeleteGroupConfirmDialog(
         ) {
             Text(
                 text = "Delete the Group",
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 18.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
                 modifier = Modifier.padding(vertical = 10.dp, horizontal = 30.dp),
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 text = "删除该分组，该分组下所有密码将会被删除并且不可恢复，确定删除吗？",
                 fontSize = 14.sp
             )
@@ -363,8 +377,8 @@ fun DeleteGroupConfirmDialog(
             ) {
                 Button(
                     colors = ButtonDefaults.buttonColors(
-                        contentColor = theme.materialColorScheme.onPrimaryContainer,
-                        containerColor = theme.materialColorScheme.primaryContainer
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
                     ),
                     enabled = enable.value,
                     onClick = {
@@ -377,8 +391,8 @@ fun DeleteGroupConfirmDialog(
                 Spacer(modifier = Modifier.width(20.dp))
                 Button(
                     colors = ButtonDefaults.buttonColors(
-                        contentColor = theme.materialColorScheme.onPrimaryContainer,
-                        containerColor = theme.materialColorScheme.primaryContainer
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
                     ),
                     enabled = enable.value,
                     onClick = {
@@ -459,11 +473,10 @@ fun PasswdDetailEditDialog(
                 OutlinedEditTextBox(
                     enabled = textFieldEditEnable.value,
                     modifier = Modifier.wrapContentHeight().fillMaxWidth().align(Alignment.Start),
+                    value = comment.value,
                     labelValue = "comment",
                     maxLines = 10,
-                    value = comment.value,
-                    onInputChanged = { comment.value = it },
-                )
+                ) { comment.value = it }
 
                 val enable = remember { mutableStateOf(true) }
                 Row(
@@ -473,8 +486,8 @@ fun PasswdDetailEditDialog(
                 ) {
                     Button(
                         colors = ButtonDefaults.buttonColors(
-                            contentColor = theme.materialColorScheme.onPrimaryContainer,
-                            containerColor = theme.materialColorScheme.primaryContainer
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
                         ),
                         enabled = enable.value,
                         onClick = {
@@ -496,8 +509,8 @@ fun PasswdDetailEditDialog(
                     Spacer(modifier = Modifier.width(20.dp))
                     Button(
                         colors = ButtonDefaults.buttonColors(
-                            contentColor = theme.materialColorScheme.onPrimaryContainer,
-                            containerColor = theme.materialColorScheme.primaryContainer
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
                         ),
                         enabled = enable.value,
                         onClick = {
@@ -538,8 +551,8 @@ fun CommonTipsDialog(
             Spacer(modifier = Modifier.height(20.dp))
             Button(
                 colors = ButtonDefaults.buttonColors(
-                    contentColor = theme.materialColorScheme.onPrimaryContainer,
-                    containerColor = theme.materialColorScheme.primaryContainer
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
                 ),
                 onClick = { onCloseClick() }
             ) {
@@ -599,8 +612,8 @@ fun ImportantTipsDialog(
             Spacer(modifier = Modifier.height(20.dp))
             Button(
                 colors = ButtonDefaults.buttonColors(
-                    contentColor = theme.materialColorScheme.onPrimaryContainer,
-                    containerColor = theme.materialColorScheme.primaryContainer
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
                 ),
                 onClick = { onCloseClick() }
             ) {

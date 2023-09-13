@@ -41,7 +41,7 @@ fun SideMenuScreen(
             .width(if (expand) 200.dp else 70.dp)
             .fillMaxHeight()
             .background(
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.surface
             )
             .padding(top = 20.dp, bottom = 40.dp, start = 10.dp, end = 10.dp),
         verticalArrangement = Arrangement.SpaceBetween,
@@ -58,10 +58,13 @@ fun SideMenuScreen(
                             modifier = Modifier.padding(start = 10.dp),
                             text = "Passwd",
                             fontSize = 20.sp,
-                            color = Color(0xffa9c8fc)
+                            color = MaterialTheme.colorScheme.tertiaryContainer
                         )
                     }
                     IconButton(
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                         onClick = { viewModel.onAction(UiAction.MenuOpenOrClose(!expand)) }
                     ) {
                         Icon(
@@ -73,26 +76,21 @@ fun SideMenuScreen(
             }
 
             items(UiScreen.Screens) { screen ->
-                Spacer(modifier = Modifier.height(15.dp))
-                val windowUiState = viewModel.windowUiState.collectAsState().value
-                val isSelected = screen == windowUiState.uiScreen
+                val isSelected = screen == viewModel.windowUiState.collectAsState().value.uiScreen
                 TextButton(
                     modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20),
                     interactionSource = remember { NoRippleInteractionSource() },
                     onClick = {
                         viewModel.onAction(UiAction.GoScreen(screen))
                     },
                     colors = ButtonDefaults.textButtonColors(
                         containerColor = if (isSelected) {
-                            MaterialTheme.colorScheme.secondaryContainer
+                            MaterialTheme.colorScheme.onSurface
                         } else {
-                            MaterialTheme.colorScheme.primaryContainer
+                            MaterialTheme.colorScheme.surface
                         },
-                        contentColor = if (isSelected) {
-                            MaterialTheme.colorScheme.onSecondaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.onPrimaryContainer
-                        }
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 ) {
                     Icon(imageVector = screen.icon, contentDescription = null)
@@ -113,8 +111,8 @@ fun SideMenuScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.textButtonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor = Color.White
                 ),
                 onClick = {
                     viewModel.onAction(UiAction.GoScreen(UiScreen.Login))
