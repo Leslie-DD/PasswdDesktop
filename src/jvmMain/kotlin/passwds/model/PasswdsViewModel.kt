@@ -101,6 +101,9 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         launch {
             searchFlow.debounce(300).collectLatest {
                 repository.searchLikePasswdsAndUpdate(it)
+                updateGroupUiState {
+                    copy(selectGroup = null)
+                }
             }
         }
 
