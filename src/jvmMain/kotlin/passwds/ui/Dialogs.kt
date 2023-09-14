@@ -2,13 +2,12 @@ package passwds.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.Title
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Comment
+import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -19,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -563,15 +563,16 @@ fun CommonTipsDialog(
 }
 
 @Composable
-fun ImportantTipsDialog(
-    title: String? = null,
+fun TipsDialog(
+    title: String = "Uh-oh!",
+    infoLabel: String = "label",
     info: String? = null,
     warn: String? = null,
     buttonValue: String = "Got it",
-    theme: Theme,
     onCloseClick: () -> Unit,
 ) {
     Dialog(
+        title = title,
         onCloseRequest = { onCloseClick() },
         state = rememberDialogState(
             size = DpSize(600.dp, 400.dp)
@@ -585,19 +586,37 @@ fun ImportantTipsDialog(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            title?.let {
-                Text(
-                    text = title,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-            }
+            Text(
+                text = title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+
             info?.let {
-                Text(
-                    text = info,
-                    fontSize = 16.sp,
-                    color = Color.Green
+                InfoTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    label = infoLabel,
+                    leadingIcon = Icons.Default.Key,
+                    value = info,
+                    trailingIcon = {
+                        Row(modifier = Modifier.wrapContentSize().padding(end = 10.dp)) {
+                            IconButton(
+                                colors = IconButtonDefaults.iconButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                ),
+                                onClick = {
+                                    info.copyToClipboard()
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.ContentCopy,
+                                    contentDescription = "copy password to clipboard"
+                                )
+                            }
+                        }
+                    }
                 )
                 Spacer(modifier = Modifier.height(10.dp))
             }
@@ -605,7 +624,8 @@ fun ImportantTipsDialog(
                 Text(
                     text = warn,
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Spacer(modifier = Modifier.height(10.dp))
             }
@@ -622,3 +642,43 @@ fun ImportantTipsDialog(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun InfoTextField(
+    modifier: Modifier = Modifier.fillMaxWidth(),
+    label: String,
+    leadingIcon: ImageVector,
+    value: String,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    trailingIcon: @Composable (() -> Unit)? = null
+) {
+    OutlinedTextField(
+        enabled = false,
+        modifier = modifier,
+        label = { Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        leadingIcon = {
+            Icon(
+                imageVector = leadingIcon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        },
+        value = value,
+        maxLines = 1,
+        onValueChange = { },
+        visualTransformation = visualTransformation,
+        keyboardOptions = keyboardOptions,
+        trailingIcon = trailingIcon,
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            disabledTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            disabledBorderColor = MaterialTheme.colorScheme.secondary,
+            disabledLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            selectionColors = TextSelectionColors(handleColor = Color.White, backgroundColor = Color.Blue)
+        ),
+    )
+}
+
+

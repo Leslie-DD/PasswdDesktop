@@ -8,11 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Key
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.People
-import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -166,30 +162,16 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
         }
     }
 
-    val isCommonTipsDialogOpen = remember { mutableStateOf(false) }
-    val commonTipsMsg = remember { mutableStateOf<String?>(null) }
-    if (isCommonTipsDialogOpen.value) {
-        val theme by viewModel.theme.collectAsState()
-        CommonTipsDialog(
-            msg = commonTipsMsg.value,
-            theme = theme,
-        ) {
-            isCommonTipsDialogOpen.value = false
-            viewModel.onAction(UiAction.ClearEffect)
-        }
-    }
-
     val isImportantTipsDialogOpen = remember { mutableStateOf(false) }
-    val tipsDialogTitle = remember { mutableStateOf<String?>(null) }
+    val tipsDialogTitle = remember { mutableStateOf("") }
     val tipsDialogInfo = remember { mutableStateOf<String?>(null) }
     val tipsDialogWarn = remember { mutableStateOf<String?>(null) }
     if (isImportantTipsDialogOpen.value) {
-        val theme by viewModel.theme.collectAsState()
-        ImportantTipsDialog(
+        TipsDialog(
             title = tipsDialogTitle.value,
+            infoLabel = "Secret Key",
             info = tipsDialogInfo.value,
             warn = tipsDialogWarn.value,
-            theme = theme,
             buttonValue = "Got it, I've written it down!"
         ) {
             isImportantTipsDialogOpen.value = false
@@ -200,16 +182,11 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
     val dialogUiState = viewModel.dialogUiState.collectAsState().value
     with(dialogUiState.effect) {
         when (this) {
-            is DialogUiEffect.LoginAndRegisterFailure -> {
-                commonTipsMsg.value = this.tipsMsg
-                isCommonTipsDialogOpen.value = true
-            }
-
             is DialogUiEffect.RegisterResult -> {
                 tipsDialogTitle.value = "Successfully Registered!"
-                tipsDialogInfo.value = "SecretKey: ${this.secretKey}"
+                tipsDialogInfo.value = this.secretKey
                 tipsDialogWarn.value =
-                    "Please make sure write down your secret key, or there will be severe problem while encrypting/decrypting passwords."
+                    "Please make sure WRITE DOWN your secret key, or there will be severe problem while encrypting/decrypting passwords."
                 isImportantTipsDialogOpen.value = true
             }
 

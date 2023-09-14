@@ -720,7 +720,7 @@ private fun RowSpacer() {
     )
 }
 
-private fun String.copyToClipboard() = try {
+fun String.copyToClipboard() = try {
     Toolkit.getDefaultToolkit()
         .systemClipboard
         .setContents(StringSelection(this), null)
