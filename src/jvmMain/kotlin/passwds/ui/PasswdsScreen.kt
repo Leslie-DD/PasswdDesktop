@@ -30,6 +30,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import network.KtorRequest.logger
 import passwds.entity.Group
@@ -48,14 +49,15 @@ fun PasswdsScreen(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
+    val coroutineScope = rememberCoroutineScope()
     Row(
         modifier = modifier
             .padding(end = 10.dp)
             .background(color = MaterialTheme.colorScheme.primaryContainer)
     ) {
-        GroupList(viewModel = viewModel, modifier = Modifier.width(250.dp))
+        GroupList(viewModel, Modifier.width(250.dp), coroutineScope)
         RowSpacer()
-        PasswdsAndDetailWrapper(viewModel = viewModel)
+        PasswdsAndDetailWrapper(viewModel = viewModel, coroutineScope = coroutineScope)
     }
 }
 
@@ -65,9 +67,9 @@ fun PasswdsScreen(
 @Composable
 fun GroupList(
     viewModel: PasswdsViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    coroutineScope: CoroutineScope
 ) {
-    val coroutineScope = rememberCoroutineScope()
     val dialogUiState = viewModel.dialogUiState.collectAsState().value
 
     val listState = rememberLazyListState()
@@ -215,13 +217,14 @@ fun GroupList(
 @Composable
 fun PasswdsAndDetailWrapper(
     viewModel: PasswdsViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    coroutineScope: CoroutineScope
 ) {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
         Row {
-            PasswdList(viewModel = viewModel, modifier = Modifier.width(250.dp))
+            PasswdList(viewModel, Modifier.width(250.dp), coroutineScope)
             RowSpacer()
             PasswdDetailWrapper(viewModel = viewModel)
         }
@@ -234,9 +237,9 @@ fun PasswdsAndDetailWrapper(
 @Composable
 fun PasswdList(
     viewModel: PasswdsViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    coroutineScope: CoroutineScope
 ) {
-    val coroutineScope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val dialogUiState = viewModel.dialogUiState.collectAsState().value
 
@@ -265,7 +268,7 @@ fun PasswdList(
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        SearchBox {
+        SearchBox(coroutineScope) {
             viewModel.onAction(UiAction.SearchPasswds(it))
         }
 
@@ -442,8 +445,7 @@ fun PasswdDetailWrapper(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PasswdDetails(
-    passwd: Passwd,
-    editEnable: Boolean = false
+    passwd: Passwd
 ) {
     Column(
         modifier = Modifier.fillMaxSize()
@@ -661,6 +663,7 @@ fun PasswdItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchBox(
+    coroutineScope: CoroutineScope,
     onSearch: (String) -> Unit
 ) {
     val text = remember { mutableStateOf("") }
@@ -706,6 +709,12 @@ private fun SearchBox(
                 unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer
             ),
         )
+    }
+
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            focusRequester.requestFocus()
+        }
     }
 }
 
