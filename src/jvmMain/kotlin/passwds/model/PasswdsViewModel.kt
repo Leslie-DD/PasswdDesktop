@@ -184,6 +184,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             updateDialogUiState {
                 copy(effect = DialogUiEffect.LoginAndRegisterFailure(it.message))
             }
+            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
             it.printStackTrace()
         }
     }

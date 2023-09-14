@@ -1,11 +1,7 @@
 package passwds.model
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AppRegistration
-import androidx.compose.material.icons.filled.Downloading
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Login
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed interface UiScreen {
