@@ -75,56 +75,38 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
 
         launch {
-            repository.groups.collect {
+            repository.groupsFlow.collect {
+                logger.debug("collect groups changed, size: ${it.size}")
                 updateGroupUiState {
-                    copy(groups = it)
+                    copy(
+                        groups = it,
+                        selectGroup = if (it.isEmpty()) null else it.first()
+                    )
                 }
             }
         }
 
         launch {
-            repository.groupPasswds.collect {
+            repository.groupPasswdsFlow.collect {
+                logger.debug("collect groupPasswds changed, size: ${it.size}")
                 updatePasswdUiState {
-                    logger.debug("groupPasswds changed, size: {} {}", it.size, it)
-                    copy(groupPasswds = it)
+                    copy(
+                        groupPasswds = it,
+                        selectPasswd = if (it.isEmpty()) null else it.first()
+                    )
                 }
             }
         }
 
         launch {
-            searchFlow.debounce(500).collectLatest {
-                if (it.isNotBlank()) {
-                    repository.searchLikePasswdsAndUpdate(it)
-                    updatePasswdUiState {
-                        copy(selectPasswd = null)
-                    }
-                    updateGroupUiState {
-                        copy(selectGroup = null)
-                    }
-                } else {
-                    repository.updateGroupPasswds(mutableListOf())
-                    updatePasswdUiState {
-                        copy(selectPasswd = null)
-                    }
-                    updateGroupUiState {
-                        copy(selectGroup = null)
-                    }
-                }
+            searchFlow.debounce(300).collectLatest {
+                repository.searchLikePasswdsAndUpdate(it)
             }
         }
 
         launch {
             val all = dataBase.getAll()
             logger.info("database.all: $all")
-        }
-    }
-
-    private fun clearData() {
-        updatePasswdUiState {
-            copy(selectPasswd = null)
-        }
-        updateGroupUiState {
-            copy(selectGroup = null)
         }
     }
 
@@ -164,9 +146,11 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         silentlySignIn: Boolean,
         updateDb: Boolean = true
     ) {
-        logger.debug("(loginByPassword) start")
         if (username.isBlank() || password.isBlank() || secretKey.isBlank()) {
-            logger.error("(loginByPassword) error, $username, $password, $secretKey")
+            logger.warn("(loginByPassword) warn, $username, $password, $secretKey")
+            updateDialogUiState {
+                copy(effect = DialogUiEffect.LoginAndRegisterFailure("username, password and secret key can not be null"))
+            }
             return
         }
         repository.loginByPassword(
@@ -174,7 +158,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             password = password,
             secretKey = secretKey
         ).onSuccess {
-            logger.info("(loginByPassword) success, result: $it")
+            logger.info("(loginByPassword) success")
             if (updateDb) {
                 saveLoginInfo(username, password, secretKey, it.token, saved, silentlySignIn)
             }
@@ -190,7 +174,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private suspend fun onLoginSuccess(secretKey: String, loginResult: LoginResult) {
-        logger.info("(onLoginSuccess)")
         updateWindowUiState { copy(uiScreen = UiScreen.Passwds) }
         coroutineScope {
             withContext(Dispatchers.IO) {
@@ -198,9 +181,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 dataBase.globalUserId.emit(loginResult.userId)
                 dataBase.globalUsername.emit(loginResult.username)
                 dataBase.globalAccessToken.emit(loginResult.token)
-                clearData()
             }
-            fetchGroups()
+            repository.fetchGroups()
             updateDialogUiState {
                 copy(effect = null)
             }
@@ -212,8 +194,10 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         password: String,
     ) {
         if (username.isBlank() || password.isBlank()) {
-            // TODO: tips 提示
             logger.warn("register username and password can not be empty")
+            updateDialogUiState {
+                copy(effect = DialogUiEffect.LoginAndRegisterFailure("register username and password can not be empty"))
+            }
             return
         }
         repository.register(
@@ -232,7 +216,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     dataBase.globalUserId.emit(it.userId)
                     dataBase.globalUsername.emit(username)
                     dataBase.globalAccessToken.emit(it.token)
-                    clearData()
                 }
             }
         }.onFailure {
@@ -243,12 +226,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
     }
 
-    private suspend fun fetchGroups() {
-        repository.fetchGroups()
-    }
-
     private suspend fun fetchGroupPasswds(groupId: Int) {
-        repository.fetchGroupPasswds(groupId)
+        repository.updateGroupPasswds(groupId)
     }
 
     private suspend fun newGroup(
