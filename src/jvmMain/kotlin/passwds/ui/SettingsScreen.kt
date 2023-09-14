@@ -2,17 +2,19 @@ package passwds.ui
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.IconButton
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Key
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.People
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
@@ -26,124 +28,107 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = modifier, contentAlignment = Alignment.TopCenter
+        modifier = modifier.padding(top = 20.dp),
+        contentAlignment = Alignment.TopCenter
     ) {
         Column(
             modifier = Modifier.wrapContentSize(), horizontalAlignment = Alignment.Start
         ) {
-
             UsernameView(DataBase.instance.globalUsername.value)
             Spacer(modifier = Modifier.height(10.dp))
-            PasswordView("")
-            Spacer(modifier = Modifier.height(10.dp))
-            SecretKeyView(viewModel)
+            SecretKeyView(DataBase.instance.globalSecretKey.value)
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UsernameView(username: String) {
-    OutlinedTextField(
+    DetailTextField(
         modifier = Modifier.width(300.dp),
-        enabled = false,
-        label = { Text("Username", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-        leadingIcon = {
-            Icon(imageVector = Icons.Outlined.People, contentDescription = null)
-        },
-        value = username,
-        maxLines = 1,
-        singleLine = true,
-        onValueChange = {},
+        label = "Username",
+        leadingIcon = Icons.Outlined.People,
+        value = username
     )
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PasswordView(password: String) {
-    OutlinedTextField(
-        modifier = Modifier.width(300.dp),
-        enabled = false,
-        label = { Text("Password", maxLines = 1, overflow = TextOverflow.Ellipsis) },
-        leadingIcon = {
-            Icon(imageVector = Icons.Outlined.Lock, contentDescription = null)
-        },
-        value = password,
-        maxLines = 1,
-        singleLine = true,
-        onValueChange = {},
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SecretKeyView(viewModel: PasswdsViewModel) {
+fun SecretKeyView(secretKey: String) {
     var secretKeyVisible by remember { mutableStateOf(false) }
-    Row(
-        modifier = Modifier.wrapContentWidth(), verticalAlignment = Alignment.CenterVertically
-    ) {
-        val secretKey by DataBase.instance.globalSecretKey.collectAsState()
-        var text by remember {
-            mutableStateOf("")
-        }
-        var enableEdit by remember { mutableStateOf(false) }
-        OutlinedTextField(
-            modifier = Modifier.width(300.dp),
-            enabled = enableEdit,
-            label = {
-                Text(
-                    text = "Secret Key",
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            },
-            leadingIcon = {
-                Icon(imageVector = Icons.Default.Key, contentDescription = null)
-            },
-            value = if (enableEdit) text else secretKey,
-            maxLines = 1,
-            singleLine = true,
-            onValueChange = {
-                text = it
-            },
-            visualTransformation = if (secretKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            trailingIcon = {
-                Box(modifier = Modifier.wrapContentSize().padding(end = 10.dp)) {
-                    IconButton(onClick = { secretKeyVisible = !secretKeyVisible }) {
-                        Icon(
-                            imageVector = if (secretKeyVisible) {
-                                Icons.Filled.Visibility
+    DetailTextField(
+        modifier = Modifier.width(300.dp),
+        label = "Secret Key",
+        leadingIcon = Icons.Default.Key,
+        value = secretKey,
+        visualTransformation = if (secretKeyVisible) VisualTransformation.None else PasswordVisualTransformation(),
+        trailingIcon = {
+            Row(modifier = Modifier.wrapContentSize().padding(end = 10.dp)) {
+                IconButton(
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    onClick = {
+                        secretKeyVisible = !secretKeyVisible
+                    }) {
+                    Icon(
+                        imageVector = if (secretKeyVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
+                        contentDescription = if (secretKeyVisible) "Hide secret key" else "Show secret key"
+                    )
+                }
 
-                            } else {
-                                Icons.Filled.VisibilityOff
-                            }, contentDescription = if (secretKeyVisible) "Hide password" else "Show password"
-                        )
+                IconButton(
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    onClick = {
+                        secretKey.copyToClipboard()
                     }
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.ContentCopy,
+                        contentDescription = "copy password to clipboard"
+                    )
                 }
             }
-        )
-        IconButton(onClick = {
-            enableEdit = !enableEdit
-        }) {
+        }
+    )
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DetailTextField(
+    enabled: Boolean = false,
+    modifier: Modifier = Modifier.fillMaxWidth(),
+    label: String,
+    leadingIcon: ImageVector,
+    value: String,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    trailingIcon: @Composable (() -> Unit)? = null
+) {
+    OutlinedTextField(
+        enabled = enabled,
+        modifier = modifier,
+        label = { Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        leadingIcon = {
             Icon(
-                imageVector = if (enableEdit) Icons.Outlined.Cancel else Icons.Outlined.Edit,
+                imageVector = leadingIcon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
-        }
-        IconButton(enabled = enableEdit, onClick = {
-            DataBase.instance.globalSecretKey.tryEmit(text)
-            enableEdit = false
-        }) {
-            Icon(
-                imageVector = Icons.Outlined.ArrowCircleUp, contentDescription = null, tint = if (enableEdit) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.outline
-                }
-            )
-        }
-    }
+        },
+        value = value,
+        maxLines = 1,
+        onValueChange = { },
+        visualTransformation = visualTransformation,
+        keyboardOptions = keyboardOptions,
+        trailingIcon = trailingIcon,
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            disabledTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            disabledBorderColor = MaterialTheme.colorScheme.secondary,
+            disabledLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            selectionColors = TextSelectionColors(handleColor = Color.White, backgroundColor = Color.Blue)
+        )
+    )
 }
