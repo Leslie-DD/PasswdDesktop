@@ -1,12 +1,36 @@
 package passwds.datasource
 
+import kotlinx.coroutines.flow.MutableStateFlow
 import passwds.entity.Group
 import passwds.entity.Passwd
 
+/**
+ * 此 DataSource 作为单一数据源
+ */
 class LocalDataSource {
 
     var passwdsMap: MutableMap<Int, MutableList<Passwd>> = mutableMapOf()
-    var groups: MutableList<Group> = mutableListOf()
+    val groups = MutableStateFlow<MutableList<Group>>(arrayListOf())
+    val groupPasswds = MutableStateFlow<MutableList<Passwd>>(arrayListOf())
 
-    fun getGroupPasswds(groupId: Int): MutableList<Passwd> = passwdsMap[groupId] ?: arrayListOf()
+    suspend fun updateGroups(
+        groupList: MutableList<Group>
+    ) {
+        groups.emit(groupList)
+    }
+
+    suspend fun updateGroupPasswds(
+        groupId: Int,
+        convert: (MutableList<Passwd>) -> MutableList<Passwd> = { passwds -> passwds }
+    ): MutableList<Passwd> {
+        return (passwdsMap[groupId] ?: arrayListOf()).also {
+            groupPasswds.emit(convert(it))
+        }
+    }
+
+
+    suspend fun updateGroupPasswds(passwds: MutableList<Passwd>) {
+        groupPasswds.emit(passwds)
+    }
+
 }
