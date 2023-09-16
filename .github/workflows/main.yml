@@ -84,7 +84,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PUBLISH_PACKAGE }}
         with:
           upload_url: ${{ steps.create_release_Linux.outputs.upload_url }}
-          asset_path: build/compose/binaries/main/deb/passwddesktop_1.0.0-1_amd64.deb
+          asset_path: build/compose/binaries/main/deb/passwd_1.0.0-1_amd64.deb
           asset_name: ${{ github.event.repository.name }}  ${{ steps.branch-name.outputs.current_branch }} v${{ github.run_number }}.${{ github.run_attempt }}.deb
           asset_content_type: application/zip
 
@@ -96,7 +96,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PUBLISH_PACKAGE }}
         with:
           upload_url: ${{ steps.create_release_Windows.outputs.upload_url }}
-          asset_path: build\compose\binaries\main\msi\PasswdDesktop-1.0.0.msi
+          asset_path: build\compose\binaries\main\msi\Passwd-1.0.0.msi
           asset_name: ${{ github.event.repository.name }}  ${{ steps.branch-name.outputs.current_branch }} v${{ github.run_number }}.${{ github.run_attempt }}.msi
           asset_content_type: application/zip
 
@@ -108,7 +108,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PUBLISH_PACKAGE }}
         with:
           upload_url: ${{ steps.create_release_macOS.outputs.upload_url }}
-          asset_path: build/compose/binaries/main/dmg/PasswdDesktop-1.0.0.dmg
+          asset_path: build/compose/binaries/main/dmg/Passwd-1.0.0.dmg
           asset_name: ${{ github.event.repository.name }}  ${{ steps.branch-name.outputs.current_branch }} v${{ github.run_number }}.${{ github.run_attempt }}.dmg
           asset_content_type: application/zip
 

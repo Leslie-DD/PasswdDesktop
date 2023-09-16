@@ -48,7 +48,8 @@ object AESUtil {
             SecureRandom.getInstance(ALGORITHM_SECURE_RANDOM)
         } catch (exception: NoSuchAlgorithmException) {
             return SecureRandom().also {
-                it.provider["SecureRandom.NativePRNGNonBlocking"] = it.provider["SecureRandom.${it.algorithm}"]
+                it.provider["SecureRandom.NativePRNGNonBlocking"] =
+                    it.provider["SecureRandom.${it.algorithm}"]
                 Security.addProvider(it.provider)
             }
         }
@@ -69,7 +70,8 @@ object AESUtil {
         if (plainText.isNullOrEmpty()) {
             return null
         }
-        val encryptByteArray = encrypt(secretKeyBytes, plainText.toByteArray(StandardCharsets.UTF_8))
+        val encryptByteArray =
+            encrypt(secretKeyBytes, plainText.toByteArray(StandardCharsets.UTF_8))
         return if (encryptByteArray != null) getEncoder().encodeToString(encryptByteArray) else null
     }
 

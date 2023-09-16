@@ -97,7 +97,13 @@ fun AddPasswdDialog(
                     enabled = enable.value,
                     onClick = {
                         enable.value = false
-                        onAddClick(title.value, username.value, password.value, link.value, comment.value)
+                        onAddClick(
+                            title.value,
+                            username.value,
+                            password.value,
+                            link.value,
+                            comment.value
+                        )
                     }
                 ) {
                     Text("Add", color = MaterialTheme.colorScheme.onPrimaryContainer)
@@ -121,7 +127,10 @@ fun CustomTextField(
         unfocusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
         focusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
         cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        selectionColors = TextSelectionColors(handleColor = Color.White, backgroundColor = Color.Blue)
+        selectionColors = TextSelectionColors(
+            handleColor = Color.White,
+            backgroundColor = Color.Blue
+        )
     ),
     imageVector: ImageVector,
     label: String,
@@ -676,7 +685,10 @@ private fun InfoTextField(
             disabledBorderColor = MaterialTheme.colorScheme.secondary,
             disabledLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
             cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            selectionColors = TextSelectionColors(handleColor = Color.White, backgroundColor = Color.Blue)
+            selectionColors = TextSelectionColors(
+                handleColor = Color.White,
+                backgroundColor = Color.Blue
+            )
         ),
     )
 }

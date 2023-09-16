@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import passwds.model.DialogUiEffect
 import passwds.model.PasswdsViewModel
 import passwds.model.UiAction
@@ -69,4 +70,8 @@ fun App(
             }
         )
     }
+}
+
+fun Color.toAwt(): java.awt.Color {
+    return java.awt.Color(red, green, blue)
 }

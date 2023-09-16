@@ -11,10 +11,10 @@ open class LoggerStartupListener : ContextAwareBase(), LoggerContextListener, Li
     private var started = false
 
     override fun start() {
-        val databasePath = File(System.getProperty("compose.application.resources.dir"), "passwd_log.log")
+        val logFile = File(System.getProperty("compose.application.resources.dir"), "passwd_log.log")
         val context = getContext()
-        context.putProperty("logFilePath", databasePath.absolutePath)
-        println("[LoggerStartupListener] (start) logFilePath: " + databasePath.absolutePath)
+        context.putProperty("logFilePath", logFile.absolutePath)
+        println("[LoggerStartupListener] (start) logFilePath: " + logFile.absolutePath)
         started = true
     }
 

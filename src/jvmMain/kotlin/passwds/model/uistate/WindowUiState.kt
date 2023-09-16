@@ -9,7 +9,7 @@ data class WindowUiState(
     val isLandscape: Boolean,
     val uiScreen: UiScreen,
 
-    val menuOpen: Boolean = true,
+    val menuOpen: Boolean = false,
 ) {
     companion object {
         val Default = WindowUiState(

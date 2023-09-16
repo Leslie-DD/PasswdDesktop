@@ -1,11 +1,13 @@
 package passwds.model
 
+import com.jthemedetecor.OsThemeDetector
 import database.DataBase
 import datamodel.HistoryData
 import datamodel.HistoryData.Companion.defaultHistoryData
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import model.Theme
+import model.next
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import passwds.entity.Group
@@ -15,6 +17,7 @@ import passwds.model.uistate.*
 import passwds.repository.PasswdRepository
 import platform.desktop.Platform
 import platform.desktop.currentPlatform
+import javax.swing.SwingUtilities
 
 @OptIn(FlowPreview::class)
 class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
@@ -63,13 +66,25 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         _searchFlow
     }
 
-    val exitApp = MutableStateFlow(false)
-
-    val theme = MutableStateFlow<Theme>(Theme.Light)
+    val theme = MutableStateFlow<Theme>(Theme.Default)
+    private var systemDark = false
+    private val detector: OsThemeDetector = OsThemeDetector.getDetector()
 
     private val dataBase = DataBase.instance
 
     init {
+        updateSystemDark(detector.isDark)
+        updateTheme(nextTheme = theme.value)
+        detector.registerListener { isDark ->
+            logger.info("OsThemeDetector listener: isDark $isDark")
+            updateSystemDark(isDark)
+            if (theme.value is Theme.Auto) {
+                SwingUtilities.invokeLater {
+                    updateTheme(isDark, nextTheme = Theme.Auto())
+                }
+            }
+        }
+
         launch(Dispatchers.IO) {
             silentlySignIn()
         }
@@ -414,10 +429,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     }
                 }
 
-                is UiAction.ExitApp -> {
-                    exitApp.tryEmit(true)
-                }
-
                 is UiAction.WindowVisible -> {
                     updateWindowUiState {
                         copy(windowVisible = visible)
@@ -569,9 +580,29 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         _loginUiState.update { update(it) }
     }
 
+    private fun updateSystemDark(dark: Boolean) {
+        logger.debug("(updateSystemDark) dark: $dark")
+        systemDark = dark
+    }
+
+    fun updateTheme(
+        forceDark: Boolean = false,
+        nextTheme: Theme = theme.value.next()
+    ) {
+        logger.debug("(updateTheme) nextTheme: {}. forceDark: {}, systemDark: {}", nextTheme, forceDark, systemDark)
+        if (nextTheme is Theme.Auto) {
+            nextTheme.dark = forceDark || systemDark
+        }
+        theme.tryEmit(nextTheme)
+    }
+
     init {
         launch {
-            shouldBeLandscape.stateIn(this, SharingStarted.WhileSubscribed(), WindowUiState.Default.isLandscape)
+            shouldBeLandscape.stateIn(
+                scope = this,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = WindowUiState.Default.isLandscape
+            )
                 .collectLatest {
                     updateWindowUiState { copy(isLandscape = it) }
                 }

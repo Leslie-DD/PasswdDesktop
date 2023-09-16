@@ -3,6 +3,7 @@
 -dontwarn org.slf4j.**
 -dontwarn org.apache.log4j.**
 -dontwarn ch.qos.logback.**
+-dontwarn io.github.g00fy2.**
 
 -keep class org.sqlite.** { *; }
 
@@ -25,3 +26,6 @@
 -keepclasseswithmembers class **.entity.** { # <-- change package name to your app's
     kotlinx.serialization.KSerializer serializer(...);
 }
+
+-keep class com.sun.jna.** { *; }
+-keep class * implements com.sun.jna.** { *; }

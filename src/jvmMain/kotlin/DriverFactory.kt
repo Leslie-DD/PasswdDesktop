@@ -5,7 +5,8 @@ import network.KtorRequest.logger
 import java.io.File
 
 actual fun createDriver(): SqlDriver {
-    val databasePath = File(System.getProperty("compose.application.resources.dir"), "HistoryDatabase.db")
+    val databasePath =
+        File(System.getProperty("compose.application.resources.dir"), "HistoryDatabase.db")
     logger.info("HistoryDatabase.db absolute path: ${databasePath.absolutePath}")
     return JdbcSqliteDriver(url = "jdbc:sqlite:${databasePath.absolutePath}").also {
         if (!databasePath.exists()) {
