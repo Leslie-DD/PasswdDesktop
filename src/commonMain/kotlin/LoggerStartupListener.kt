@@ -4,16 +4,15 @@ import ch.qos.logback.classic.LoggerContext
 import ch.qos.logback.classic.spi.LoggerContextListener
 import ch.qos.logback.core.spi.ContextAwareBase
 import ch.qos.logback.core.spi.LifeCycle
-import java.io.File
+import utils.FileUtils
 
 open class LoggerStartupListener : ContextAwareBase(), LoggerContextListener, LifeCycle {
 
     private var started = false
 
     override fun start() {
-        val logFile = File(System.getProperty("compose.application.resources.dir"), "passwd_log.log")
-        val context = getContext()
-        context.putProperty("logFilePath", logFile.absolutePath)
+        val logFile = FileUtils.getFileInUserHome("passwd.log")
+        getContext().putProperty("logFilePath", logFile.absolutePath)
         println("[LoggerStartupListener] (start) logFilePath: " + logFile.absolutePath)
         started = true
     }
