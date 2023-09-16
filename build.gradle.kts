@@ -27,7 +27,7 @@ sqldelight {
 
 kotlin {
     jvm {
-        jvmToolchain(11)
+        jvmToolchain(17)
         withJava()
     }
     sourceSets {
@@ -42,6 +42,7 @@ kotlin {
                 api(compose.materialIconsExtended)
                 implementation("app.cash.sqldelight:sqlite-driver:2.0.0-alpha05")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+                implementation("com.github.Dansoftowner:jSystemThemeDetector:3.6")
             }
         }
         val jvmTest by getting
@@ -71,10 +72,13 @@ kotlin {
 
 compose.desktop {
     application {
+
         mainClass = "MainKt"
+        jvmArgs += listOf("-Dapple.awt.application.appearance=system")
+
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "PasswdDesktop"
+            packageName = "Passwd"
             packageVersion = "1.0.0"
 
             modules("java.sql", "java.naming")

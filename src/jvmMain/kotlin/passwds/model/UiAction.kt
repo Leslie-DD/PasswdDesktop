@@ -4,11 +4,6 @@ import passwds.entity.Passwd
 
 sealed class UiAction {
 
-    /**
-     * 关闭此应用
-     */
-    object ExitApp : UiAction()
-
     class WindowVisible(val visible: Boolean) : UiAction()
 
     class GoScreen(val screen: UiScreen) : UiAction()

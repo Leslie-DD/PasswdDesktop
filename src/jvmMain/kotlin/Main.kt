@@ -1,4 +1,5 @@
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -23,12 +24,10 @@ import theme.Spacing
 
 fun main() = application {
     val state = rememberWindowState(width = 1200.dp, height = 800.dp)
+
     val viewModel = remember { PasswdsViewModel() }
-    if (viewModel.exitApp.collectAsState().value) {
-        exitApplication()
-    }
     viewModel.shouldBeLandscape.tryEmit(!state.size.isLandscape)
-    // 这是 菜单栏
+
     Tray(
         icon = painterResource(Res.Drawable.APP_ICON_ROUND_CORNER),
         onAction = { viewModel.onAction(UiAction.WindowVisible(true)) },
@@ -38,35 +37,33 @@ fun main() = application {
         Separator()
         Item("Exit App", onClick = ::exitApplication)
     }
-    val windowUiState = viewModel.windowUiState.collectAsState().value
+
     Window(
         onCloseRequest = { viewModel.onAction(UiAction.WindowVisible(false)) },
-        visible = windowUiState.windowVisible,
+        visible = viewModel.windowUiState.collectAsState().value.windowVisible,
         title = "Passwd",
         state = state,
     ) {
 
-        val theme by viewModel.theme.collectAsState()
+        window.rootPane.apply {
+            rootPane.putClientProperty("apple.awt.fullWindowContent", true)
+            rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
+            rootPane.putClientProperty("apple.awt.windowTitleVisible", false)
+        }
+
         CompositionLocalProvider(LocalSpacing provides Spacing()) {
+            val theme by viewModel.theme.collectAsState()
             MaterialTheme(colorScheme = theme.materialColorScheme) {
-                Surface(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary)) {
-                    App(viewModel = viewModel)
+                Surface(
+                    modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary)
+                ) {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        App(viewModel = viewModel)
+                    }
                 }
             }
         }
 
-//        MenuBar {
-//            Menu("File") {
-//                Item("New window", onClick = { })
-//                Menu("File") {
-//                    Item("New window", onClick = { })
-//                    Item("Exit", onClick = { })
-//                }
-//                Item("设置", onClick = {
-//                    viewModel.onAction(UiAction.GoScreen(UiScreen.Settings))
-//                }, icon = painterResource(Res.Drawable.APP_ICON_ROUND_CORNER))
-//            }
-//        }
     }
 }
 

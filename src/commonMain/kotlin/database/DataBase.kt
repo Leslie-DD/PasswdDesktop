@@ -53,7 +53,17 @@ internal class DataBase {
     internal fun insert(item: HistoryData): Int {
         item.run {
             val insertResult = dbQuery.insertHistory(
-                History(id, userId, username, password, secretKey, accessToken, saved, silentlySignIn, createTime)
+                History(
+                    id,
+                    userId,
+                    username,
+                    password,
+                    secretKey,
+                    accessToken,
+                    saved,
+                    silentlySignIn,
+                    createTime
+                )
             )
             logger.debug("DataBase insert result: {}", insertResult)
         }

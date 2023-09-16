@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import model.next
 import passwds.model.PasswdsViewModel
 import passwds.model.UiAction
 import passwds.model.UiScreen
@@ -137,7 +136,7 @@ fun ThemeChoiceButton(viewModel: PasswdsViewModel, expand: Boolean) {
         modifier = Modifier.fillMaxWidth(),
         interactionSource = remember { NoRippleInteractionSource() },
         onClick = {
-            viewModel.theme.tryEmit(theme.next())
+            viewModel.updateTheme()
         },
         colors = ButtonDefaults.textButtonColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,

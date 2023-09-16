@@ -308,7 +308,10 @@ fun OutlinedEditTextBox(
         unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
         focusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
         cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        selectionColors = TextSelectionColors(handleColor = Color.White, backgroundColor = Color.Blue)
+        selectionColors = TextSelectionColors(
+            handleColor = Color.White,
+            backgroundColor = Color.Blue
+        )
     ),
     onInputChanged: (String) -> Unit
 ) {

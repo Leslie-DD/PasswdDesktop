@@ -2,6 +2,7 @@
 <configuration>
 
     <contextListener class="LoggerStartupListener"/>
+
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <file>${logFilePath}</file>
         <append>true</append>

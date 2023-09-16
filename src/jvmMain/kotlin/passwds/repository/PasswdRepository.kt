@@ -275,7 +275,10 @@ class PasswdRepository(
             localDataSource.passwdsMap
                 .flatMap { it.value }
                 .forEach { passwd ->
-                    if (passwd.title?.matches(pattern) == true || passwd.usernameString?.matches(pattern) == true) {
+                    if (passwd.title?.matches(pattern) == true || passwd.usernameString?.matches(
+                            pattern
+                        ) == true
+                    ) {
                         result.add(passwd)
                     }
                 }
@@ -289,9 +292,12 @@ class PasswdRepository(
     ): Passwd {
 //        logger.debug("fetchGroupPasswd decode before: passwd: {}", passwd)
         try {
-            passwd.title = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.title)
-            passwd.usernameString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.usernameString)
-            passwd.passwordString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.passwordString)
+            passwd.title =
+                AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.title)
+            passwd.usernameString =
+                AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.usernameString)
+            passwd.passwordString =
+                AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.passwordString)
         } catch (e: Exception) {
             logger.error("fetchGroupPasswd error " + e.message)
             e.printStackTrace()
