@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
@@ -338,7 +339,12 @@ fun OutlinedEditTextBox(
             null
         } else {
             {
-                Box(modifier = Modifier.wrapContentSize().padding(end = 10.dp)) {
+                Box(
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .padding(end = 10.dp)
+                        .focusProperties { canFocus = false }
+                ) {
                     IconButton(
                         colors = IconButtonDefaults.iconButtonColors(
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
