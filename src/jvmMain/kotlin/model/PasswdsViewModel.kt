@@ -10,7 +10,6 @@ import entity.Passwd
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import model.uieffect.DialogUiEffect
-import model.uieffect.GroupUiEffect
 import model.uistate.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -545,6 +544,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 }
 
                 is UiAction.ReorderGroupDragEnd -> {
+                    /**
+                     * TODO: 服务端实现。
+                     * 暂时服务端未实现，所以直接更新GroupUiState，
+                     * 但是repository.groupsFlow未更新，违反了单一数据源的原则，
+                     * 所以目前会有重新排序后，添加新的 Group 不显示的问题
+                     */
                     updateGroupUiState {
                         copy(groups = reorderedGroupList)
                     }
@@ -569,13 +574,20 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         _windowUiState.update { update(it) }
     }
 
+    private val _reorderableGroupList: MutableStateFlow<MutableList<Group>> by lazy {
+        MutableStateFlow(arrayListOf())
+    }
+    val reorderGroupList = _reorderableGroupList.asStateFlow()
+
+    fun updateReorderGroupList(groups: MutableList<Group>) {
+        _reorderableGroupList.tryEmit(groups)
+    }
+
     private fun updateGroupUiState(update: GroupUiState.() -> GroupUiState) {
         _groupUiState.update {
             update(it)
         }
-        _groupUiState.update {
-            it.copy(uiEffect = GroupUiEffect.GroupListUpdated(it.groups))
-        }
+        updateReorderGroupList(_groupUiState.value.groups)
     }
 
     private fun updatePasswdUiState(update: PasswdUiState.() -> PasswdUiState) {

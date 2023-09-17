@@ -6,20 +6,17 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.Key
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.People
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -213,7 +210,7 @@ private fun InfoBox(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        OutlinedEditTextBox(
+        EnabledOutlinedTextField(
             value = username.value,
             labelValue = "Username",
             leadingIconImageVector = Icons.Outlined.People
@@ -222,8 +219,7 @@ private fun InfoBox(
         }
         Spacer(modifier = Modifier.height(10.dp))
 
-        var passwordVisible by remember { mutableStateOf(false) }
-        OutlinedEditTextBox(
+        EnabledOutlinedTextField(
             value = password.value,
             labelValue = "Password",
             leadingIconImageVector = Icons.Outlined.Lock,
@@ -234,7 +230,7 @@ private fun InfoBox(
         Spacer(modifier = Modifier.height(10.dp))
 
         if (currentScreen is UiScreen.Login) {
-            OutlinedEditTextBox(
+            EnabledOutlinedTextField(
                 value = secretKey.value,
                 labelValue = "SecretKey",
                 leadingIconImageVector = Icons.Outlined.Key,
@@ -291,85 +287,6 @@ private fun InfoBox(
             )
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun OutlinedEditTextBox(
-    enabled: Boolean = true,
-    modifier: Modifier = Modifier.width(300.dp),
-    value: String,
-    labelValue: String,
-    maxLines: Int = 1,
-    leadingIconImageVector: ImageVector? = null,
-    disableContentEncrypt: Boolean = true,
-    colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
-        textColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        focusedBorderColor = MaterialTheme.colorScheme.secondary,
-        unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        focusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        selectionColors = TextSelectionColors(
-            handleColor = Color.White,
-            backgroundColor = Color.Blue
-        )
-    ),
-    onInputChanged: (String) -> Unit
-) {
-    val text = remember { mutableStateOf(value) }
-    var contentVisible by remember { mutableStateOf(disableContentEncrypt) }
-
-    OutlinedTextField(
-        modifier = modifier,
-        enabled = enabled,
-        label = {
-            Text(
-                text = labelValue,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        },
-        leadingIcon = {
-            leadingIconImageVector?.let {
-                Icon(imageVector = leadingIconImageVector, contentDescription = null)
-            }
-        },
-        visualTransformation = if (contentVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        trailingIcon = if (disableContentEncrypt) {
-            null
-        } else {
-            {
-                Box(
-                    modifier = Modifier
-                        .wrapContentSize()
-                        .padding(end = 10.dp)
-                        .focusProperties { canFocus = false }
-                ) {
-                    IconButton(
-                        colors = IconButtonDefaults.iconButtonColors(
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ),
-                        onClick = {
-                            contentVisible = !contentVisible
-                        }
-                    ) {
-                        Icon(
-                            imageVector = if (contentVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
-                            contentDescription = if (contentVisible) "Hide content" else "Show content"
-                        )
-                    }
-                }
-            }
-        },
-        value = text.value,
-        maxLines = maxLines,
-        singleLine = maxLines == 1,
-        onValueChange = {
-            text.value = it
-            onInputChanged(it)
-        },
-        colors = colors
-    )
 }
 
 fun LazyListScope.screensListMenu(

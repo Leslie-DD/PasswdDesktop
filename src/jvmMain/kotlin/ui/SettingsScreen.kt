@@ -1,23 +1,21 @@
 package ui
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.People
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import database.DataBase
 import model.PasswdsViewModel
@@ -43,7 +41,7 @@ fun SettingsScreen(
 
 @Composable
 fun UsernameView(username: String) {
-    DetailTextField(
+    ReadableTextField(
         modifier = Modifier.width(300.dp),
         label = "Username",
         leadingIcon = Icons.Outlined.People,
@@ -54,7 +52,7 @@ fun UsernameView(username: String) {
 @Composable
 fun SecretKeyView(secretKey: String) {
     var secretKeyVisible by remember { mutableStateOf(false) }
-    DetailTextField(
+    ReadableTextField(
         modifier = Modifier.width(300.dp),
         label = "Secret Key",
         leadingIcon = Icons.Default.Key,
@@ -90,48 +88,5 @@ fun SecretKeyView(secretKey: String) {
                 }
             }
         }
-    )
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DetailTextField(
-    enabled: Boolean = false,
-    modifier: Modifier = Modifier.fillMaxWidth(),
-    label: String,
-    leadingIcon: ImageVector,
-    value: String,
-    visualTransformation: VisualTransformation = VisualTransformation.None,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    trailingIcon: @Composable (() -> Unit)? = null
-) {
-    OutlinedTextField(
-        enabled = enabled,
-        modifier = modifier,
-        label = { Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-        leadingIcon = {
-            Icon(
-                imageVector = leadingIcon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-        },
-        value = value,
-        maxLines = 1,
-        onValueChange = { },
-        visualTransformation = visualTransformation,
-        keyboardOptions = keyboardOptions,
-        trailingIcon = trailingIcon,
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            disabledTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            disabledBorderColor = MaterialTheme.colorScheme.secondary,
-            disabledLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            selectionColors = TextSelectionColors(
-                handleColor = Color.White,
-                backgroundColor = Color.Blue
-            )
-        )
     )
 }

@@ -10,6 +10,11 @@ data class Group(
     var groupName: String?,
     var groupComment: String?
 ) {
+
+    override fun toString(): String {
+        return "[$groupName]"
+    }
+
     companion object {
         private val autoIncrementId = AtomicInteger(1)
         fun defaultGroup(): Group = Group(
