@@ -9,6 +9,8 @@ import entity.LoginResult
 import entity.Passwd
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import model.uieffect.DialogUiEffect
+import model.uieffect.GroupUiEffect
 import model.uistate.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -165,7 +167,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         if (username.isBlank() || password.isBlank() || secretKey.isBlank()) {
             logger.warn("(loginByPassword) warn, $username, $password, $secretKey")
             updateDialogUiState {
-                copy(effect = model.DialogUiEffect.LoginAndRegisterFailure("username, password and secret key can not be null"))
+                copy(effect = DialogUiEffect.LoginAndRegisterFailure("username, password and secret key can not be null"))
             }
             return
         }
@@ -182,7 +184,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }.onFailure {
             logger.error("(loginByPassword) error: ${it.message}")
             updateDialogUiState {
-                copy(effect = model.DialogUiEffect.LoginAndRegisterFailure(it.message))
+                copy(effect = DialogUiEffect.LoginAndRegisterFailure(it.message))
             }
             updateWindowUiState { copy(uiScreen = model.UiScreen.Login) }
             it.printStackTrace()
@@ -212,7 +214,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         if (username.isBlank() || password.isBlank()) {
             logger.warn("register username and password can not be empty")
             updateDialogUiState {
-                copy(effect = model.DialogUiEffect.LoginAndRegisterFailure("register username and password can not be empty"))
+                copy(effect = DialogUiEffect.LoginAndRegisterFailure("register username and password can not be empty"))
             }
             return
         }
@@ -224,7 +226,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 return@onSuccess
             }
             updateDialogUiState {
-                copy(effect = model.DialogUiEffect.RegisterResult(it.secretKey))
+                copy(effect = DialogUiEffect.RegisterResult(it.secretKey))
             }
             coroutineScope {
                 withContext(Dispatchers.IO) {
@@ -236,7 +238,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             }
         }.onFailure {
             updateDialogUiState {
-                copy(effect = model.DialogUiEffect.LoginAndRegisterFailure(it.message))
+                copy(effect = DialogUiEffect.LoginAndRegisterFailure(it.message))
             }
             it.printStackTrace()
         }
@@ -257,7 +259,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         repository.newGroup(groupName, groupComment)
             .onSuccess {
                 updateDialogUiState {
-                    copy(effect = model.DialogUiEffect.NewGroupResult(it))
+                    copy(effect = DialogUiEffect.NewGroupResult(it))
                 }
                 updateGroupUiState {
                     copy(selectGroup = it)
@@ -267,7 +269,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 }
             }.onFailure {
                 updateDialogUiState {
-                    copy(effect = model.DialogUiEffect.NewGroupResult(null))
+                    copy(effect = DialogUiEffect.NewGroupResult(null))
                 }
             }
     }
@@ -279,12 +281,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     copy(selectGroup = null)
                 }
                 updateDialogUiState {
-                    copy(effect = model.DialogUiEffect.DeleteGroupResult(it))
+                    copy(effect = DialogUiEffect.DeleteGroupResult(it))
                 }
             }.onFailure {
                 // TODO: 删除失败的情况 tips 提示
                 updateDialogUiState {
-                    copy(effect = model.DialogUiEffect.DeleteGroupResult(null))
+                    copy(effect = DialogUiEffect.DeleteGroupResult(null))
                 }
             }
     }
@@ -300,12 +302,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             groupComment = groupComment
         ).onSuccess {
             updateDialogUiState {
-                copy(effect = model.DialogUiEffect.UpdateGroupResult(it))
+                copy(effect = DialogUiEffect.UpdateGroupResult(it))
             }
         }.onFailure {
             // TODO: 删除失败的情况 tips 提示
             updateDialogUiState {
-                copy(effect = model.DialogUiEffect.UpdateGroupResult(null))
+                copy(effect = DialogUiEffect.UpdateGroupResult(null))
             }
         }
     }
@@ -327,7 +329,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             comment = comment,
         ).onSuccess {
             updateDialogUiState {
-                copy(effect = model.DialogUiEffect.NewPasswdResult(it))
+                copy(effect = DialogUiEffect.NewPasswdResult(it))
             }
             updatePasswdUiState {
                 copy(selectPasswd = it)
@@ -335,7 +337,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }.onFailure {
             it.printStackTrace()
             updateDialogUiState {
-                copy(effect = model.DialogUiEffect.NewGroupResult(null))
+                copy(effect = DialogUiEffect.NewGroupResult(null))
             }
         }
     }
@@ -353,7 +355,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             comment = updatePasswd.comment
         ).onSuccess { passwd ->
             updateDialogUiState {
-                copy(effect = model.DialogUiEffect.UpdatePasswdResult(passwd))
+                copy(effect = DialogUiEffect.UpdatePasswdResult(passwd))
             }
             updatePasswdUiState {
                 copy(selectPasswd = passwd)
@@ -361,7 +363,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }.onFailure {
             it.printStackTrace()
             updateDialogUiState {
-                copy(effect = model.DialogUiEffect.UpdatePasswdResult(null))
+                copy(effect = DialogUiEffect.UpdatePasswdResult(null))
             }
         }
     }
@@ -370,7 +372,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         repository.deletePasswd(passwdId)
             .onSuccess {
                 updateDialogUiState {
-                    copy(effect = model.DialogUiEffect.DeletePasswdResult(it))
+                    copy(effect = DialogUiEffect.DeletePasswdResult(it))
                 }
                 updatePasswdUiState {
                     copy(selectPasswd = null)
@@ -378,7 +380,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             }.onFailure {
                 // TODO: 删除失败的情况 tips 提示
                 updateDialogUiState {
-                    copy(effect = model.DialogUiEffect.DeletePasswdResult(null))
+                    copy(effect = DialogUiEffect.DeletePasswdResult(null))
                 }
             }
     }
@@ -542,7 +544,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     _searchFlow.tryEmit(content)
                 }
 
-                else -> {}
+                is UiAction.ReorderGroupDragEnd -> {
+                    updateGroupUiState {
+                        copy(groups = reorderedGroupList)
+                    }
+                }
+
             }
         }
     }
@@ -563,7 +570,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private fun updateGroupUiState(update: GroupUiState.() -> GroupUiState) {
-        _groupUiState.update { update(it) }
+        _groupUiState.update {
+            update(it)
+        }
+        _groupUiState.update {
+            it.copy(uiEffect = GroupUiEffect.GroupListUpdated(it.groups))
+        }
     }
 
     private fun updatePasswdUiState(update: PasswdUiState.() -> PasswdUiState) {

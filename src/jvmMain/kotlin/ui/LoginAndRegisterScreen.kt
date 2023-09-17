@@ -23,7 +23,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import model.*
+import model.PasswdsViewModel
+import model.Res
+import model.UiAction
+import model.UiScreen
+import model.uieffect.DialogUiEffect
 
 @Composable
 fun LoginAndRegisterScreen(

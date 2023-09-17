@@ -1,5 +1,6 @@
 package ui
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,6 +20,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -34,10 +36,15 @@ import entity.Group
 import entity.Passwd
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import model.DialogUiEffect
 import model.PasswdsViewModel
 import model.UiAction
+import model.uieffect.DialogUiEffect
+import model.uieffect.GroupUiEffect
 import network.KtorRequest.logger
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.detectReorderAfterLongPress
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 
@@ -71,25 +78,40 @@ fun GroupList(
     coroutineScope: CoroutineScope
 ) {
     val dialogUiState = viewModel.dialogUiState.collectAsState().value
+    val groupUiState = viewModel.groupUiState.collectAsState().value
 
-    val listState = rememberLazyListState()
-    val groupState = viewModel.groupUiState.collectAsState().value
-    val groups = groupState.groups
+    val reorderableGroups = remember { mutableStateOf(groupUiState.groups) }
+    val state = rememberReorderableLazyListState(
+        onMove = { from, to ->
+            reorderableGroups.value = reorderableGroups.value.toMutableList().apply {
+                add(to.index, removeAt(from.index))
+            }
+        },
+        onDragEnd = { _, _ -> viewModel.onAction(UiAction.ReorderGroupDragEnd(reorderableGroups.value)) }
+    )
 
     val isNewGroupDialogOpen = remember { mutableStateOf(false) }
     val isUpdateGroupDialogOpen = remember { mutableStateOf(false) }
     val isDeleteGroupConfirmDialogOpen = remember { mutableStateOf(false) }
 
+    with(groupUiState.uiEffect) {
+        when (this) {
+            is GroupUiEffect.GroupListUpdated -> {
+                reorderableGroups.value = updateGroups
+            }
 
+            else -> {}
+        }
+    }
     when (dialogUiState.effect) {
         is DialogUiEffect.NewGroupResult -> {
             isNewGroupDialogOpen.value = false
             viewModel.onAction(UiAction.ClearEffect)
 
             coroutineScope.launch {
-                val size = groups.size
+                val size = reorderableGroups.value.size
                 if (size > 0) {
-                    listState.animateScrollToItem(index = size - 1)
+                    state.listState.animateScrollToItem(index = size - 1)
                 }
             }
         }
@@ -107,6 +129,7 @@ fun GroupList(
         else -> {}
     }
 
+
     Column(
         modifier = modifier.fillMaxSize()
     ) {
@@ -116,22 +139,34 @@ fun GroupList(
             modifier = Modifier.weight(1f).padding(4.dp)
         ) {
             LazyColumn(
-                modifier = Modifier.weight(1f).padding(10.dp),
-                state = listState
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(10.dp)
+                    .reorderable(state)
+                    .detectReorderAfterLongPress(state),
+                state = state.listState,
             ) {
-                items(groups) { group ->
-                    GroupItem(
-                        group = group,
-                        isSelected = group.id == selectGroup?.id
-                    ) {
-                        viewModel.onAction(UiAction.ShowGroupPasswds(groupId = it))
+                items(reorderableGroups.value, { it }) { group ->
+                    ReorderableItem(
+                        reorderableState = state,
+                        key = group
+                    ) { isDragging ->
+                        val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
+                        GroupItem(
+                            modifier = Modifier.shadow(elevation.value),
+                            group = group,
+                            isSelected = group.id == selectGroup?.id,
+                        ) {
+                            viewModel.onAction(UiAction.ShowGroupPasswds(groupId = it))
+                        }
                     }
+
                 }
             }
             VerticalScrollbar(
                 modifier = Modifier.fillMaxHeight(),
                 adapter = rememberScrollbarAdapter(
-                    scrollState = listState
+                    scrollState = state.listState
                 )
             )
         }
@@ -577,12 +612,13 @@ private fun DetailTextField(
 
 @Composable
 fun GroupItem(
+    modifier: Modifier = Modifier,
     group: Group,
     isSelected: Boolean,
-    onClick: (Int) -> Unit
+    onClick: (Int) -> Unit = {}
 ) {
     TextButton(
-        modifier = Modifier.fillMaxWidth().height(40.dp).padding(end = 10.dp),
+        modifier = modifier.fillMaxWidth().height(40.dp).padding(end = 10.dp),
         shape = RoundedCornerShape(20),
         interactionSource = remember { NoRippleInteractionSource() },
         onClick = { onClick(group.id) },
