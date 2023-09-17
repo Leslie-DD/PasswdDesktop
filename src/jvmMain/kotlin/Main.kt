@@ -15,12 +15,12 @@ import androidx.compose.ui.window.Tray
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import model.PasswdsViewModel
 import model.Res
-import passwds.model.PasswdsViewModel
-import passwds.model.UiAction
-import passwds.ui.App
+import model.UiAction
 import theme.LocalSpacing
 import theme.Spacing
+import ui.App
 
 fun main() = application {
     val state = rememberWindowState(width = 1200.dp, height = 800.dp)
