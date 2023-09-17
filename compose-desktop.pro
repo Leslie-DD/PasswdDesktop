@@ -27,5 +27,14 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
+# Change here com.yourcompany.yourpackage
+-keep,includedescriptorclasses class entity.**$$serializer { *; } # <-- change package name to your app's
+-keepclassmembers class entity.** { # <-- change package name to your app's
+    *** Companion;
+}
+-keepclasseswithmembers class entity.** { # <-- change package name to your app's
+    kotlinx.serialization.KSerializer serializer(...);
+}
+
 -keep class com.sun.jna.** { *; }
 -keep class * implements com.sun.jna.** { *; }
