@@ -37,12 +37,12 @@ fun SideMenuScreen(
     val expand = windowUiState.menuOpen
     Column(
         modifier = modifier
-            .width(if (expand) 200.dp else 70.dp)
+            .width(if (expand) 160.dp else 60.dp)
             .fillMaxHeight()
             .background(
                 color = MaterialTheme.colorScheme.surface
             )
-            .padding(top = 20.dp, bottom = 40.dp, start = 10.dp, end = 10.dp),
+            .padding(top = 30.dp, bottom = 20.dp, start = 6.dp, end = 6.dp),
         verticalArrangement = Arrangement.SpaceBetween,
     ) {
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
@@ -96,6 +96,7 @@ fun SideMenuScreen(
                     if (expand) {
                         Spacer(modifier = Modifier.width(15.dp))
                         Text(text = screen.name, fontSize = 18.sp)
+                        Spacer(modifier = Modifier.width(15.dp))
                     }
                 }
             }
