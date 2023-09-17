@@ -3,11 +3,11 @@ package database
 import app.cash.sqldelight.ColumnAdapter
 import com.passwd.common.database.History
 import com.passwd.common.database.HistoryDatabase
-import createDriver
-import datamodel.HistoryData
+import database.entity.HistoryData
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import platform.desktop.createSqlDriver
 
 internal class DataBase {
 
@@ -29,7 +29,7 @@ internal class DataBase {
     }
 
     private val database = HistoryDatabase(
-        createDriver(),
+        createSqlDriver(),
         HistoryAdapter = History.Adapter(
             idAdapter = longOfIntAdapter,
             userIdAdapter = longOfIntAdapter
