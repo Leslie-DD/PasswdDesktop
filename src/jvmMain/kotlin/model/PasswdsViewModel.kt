@@ -574,9 +574,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         _windowUiState.update { update(it) }
     }
 
-    private val _reorderableGroupList: MutableStateFlow<MutableList<Group>> by lazy {
-        MutableStateFlow(arrayListOf())
-    }
+    private val _reorderableGroupList = MutableStateFlow<MutableList<Group>>(arrayListOf())
     val reorderGroupList = _reorderableGroupList.asStateFlow()
 
     fun updateReorderGroupList(groups: MutableList<Group>) {

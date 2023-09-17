@@ -74,6 +74,12 @@ kotlin {
 compose.desktop {
     application {
 
+        buildTypes.release {
+            proguard {
+                configurationFiles.from("compose-desktop.pro")
+            }
+        }
+
         mainClass = "MainKt"
         jvmArgs += listOf("-Dapple.awt.application.appearance=system")
 
@@ -83,12 +89,6 @@ compose.desktop {
             packageVersion = "1.0.0"
 
             modules("java.sql", "java.naming")
-
-            buildTypes.release {
-                proguard {
-                    configurationFiles.from("compose-desktop.pro")
-                }
-            }
 
             macOS {
                 iconFile.set(project.file("icons/app_icon_round_corner.icns"))
