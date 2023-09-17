@@ -1,6 +1,6 @@
 package model.uistate
 
-import model.DialogUiEffect
+import model.uieffect.DialogUiEffect
 
 data class DialogUiState(
     val effect: DialogUiEffect? = null

@@ -1,4 +1,4 @@
-package model
+package model.uieffect
 
 import entity.Group
 import entity.Passwd

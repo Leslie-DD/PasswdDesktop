@@ -1,5 +1,6 @@
 package model
 
+import entity.Group
 import entity.Passwd
 
 sealed class UiAction {
@@ -46,5 +47,7 @@ sealed class UiAction {
     class MenuOpenOrClose(val open: Boolean) : UiAction()
 
     class SearchPasswds(val content: String) : UiAction()
+
+    class ReorderGroupDragEnd(val reorderedGroupList: MutableList<Group>) : UiAction()
 
 }
