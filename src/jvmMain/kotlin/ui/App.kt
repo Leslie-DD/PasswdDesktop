@@ -12,6 +12,7 @@ import model.PasswdsViewModel
 import model.UiAction
 import model.UiScreen
 import model.uieffect.DialogUiEffect
+import ui.content.ContentScreen
 
 @Composable
 fun App(
@@ -37,7 +38,7 @@ fun App(
             targetState = windowUiState.uiScreen,
             content = {
                 when (it) {
-                    UiScreen.Passwds -> PasswdsScreen(viewModel, modifier)
+                    UiScreen.Passwds -> ContentScreen(viewModel, modifier)
                     UiScreen.Settings -> SettingsScreen(viewModel, modifier)
                     UiScreen.Loading -> LoadingScreen(modifier)
                     in UiScreen.LoginAndRegister -> LoginAndRegisterScreen(viewModel, modifier)

@@ -326,7 +326,6 @@ class PasswdRepository(
     }
 
     companion object {
-        private const val TAG = "PasswdRepository"
         private const val PATTERN_PREFIX = "^.*(?i)"
         private const val PATTERN_SUFFIX = ".*"
     }
