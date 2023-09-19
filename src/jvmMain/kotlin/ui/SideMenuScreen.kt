@@ -6,6 +6,7 @@ import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -35,94 +36,121 @@ fun SideMenuScreen(
 ) {
     val windowUiState = viewModel.windowUiState.collectAsState().value
     val expand = windowUiState.menuOpen
-    Column(
+    Row(
         modifier = modifier
-            .width(if (expand) 160.dp else 68.dp)
+            .wrapContentWidth()
             .fillMaxHeight()
-            .background(
-                color = MaterialTheme.colorScheme.surface
-            )
-            .padding(top = 30.dp, bottom = 20.dp, start = 10.dp, end = 10.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
+            .background(color = MaterialTheme.colorScheme.surface)
     ) {
-        LazyColumn(modifier = Modifier.fillMaxWidth()) {
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (expand) {
-                        Text(
-                            modifier = Modifier.padding(start = 10.dp),
-                            text = "Passwd",
-                            fontSize = 20.sp,
-                            color = MaterialTheme.colorScheme.tertiaryContainer
-                        )
-                    }
-                    IconButton(
-                        colors = IconButtonDefaults.iconButtonColors(
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ),
-                        onClick = { viewModel.onAction(UiAction.MenuOpenOrClose(!expand)) }
-                    ) {
-                        Icon(
-                            imageVector = if (expand) Icons.Default.MenuOpen else Icons.Default.Menu,
-                            contentDescription = null
-                        )
-                    }
-                }
+        Column(
+            modifier = Modifier
+                .width(if (expand) 160.dp else 68.dp)
+                .fillMaxHeight()
+                .padding(top = 30.dp, bottom = 20.dp, start = 10.dp, end = 10.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+        ) {
+            LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                Symbol(expand, viewModel)
+                UiScreenList(viewModel, expand)
             }
 
-            items(UiScreen.Screens) { screen ->
-                val isSelected = screen == viewModel.windowUiState.collectAsState().value.uiScreen
-                TextButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20),
-                    interactionSource = remember { NoRippleInteractionSource() },
-                    onClick = {
-                        viewModel.onAction(UiAction.GoScreen(screen))
-                    },
-                    colors = ButtonDefaults.textButtonColors(
-                        containerColor = if (isSelected) {
-                            MaterialTheme.colorScheme.onSurface
-                        } else {
-                            MaterialTheme.colorScheme.surface
-                        },
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                ) {
-                    Icon(imageVector = screen.icon, contentDescription = null)
-                    if (expand) {
-                        Spacer(modifier = Modifier.width(15.dp))
-                        Text(text = screen.name, fontSize = 18.sp)
-                        Spacer(modifier = Modifier.width(15.dp))
-                    }
-                }
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                ThemeChoiceButton(viewModel, expand)
+                Spacer(modifier = modifier.height(15.dp))
+                LogoutButton(viewModel, expand)
             }
         }
 
-        Column(
-            modifier = Modifier.fillMaxWidth()
+        Spacer(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(1.dp)
+                .background(color = MaterialTheme.colorScheme.onBackground)
+        )
+    }
+}
+
+@Composable
+private fun LogoutButton(viewModel: PasswdsViewModel, expand: Boolean) {
+    TextButton(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.textButtonColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            contentColor = Color.White
+        ),
+        onClick = {
+            viewModel.onAction(UiAction.GoScreen(UiScreen.Login))
+        }
+    ) {
+        Icon(imageVector = Icons.Default.ExitToApp, contentDescription = null)
+        if (expand) {
+            Spacer(modifier = Modifier.width(10.dp).height(40.dp))
+            Text(text = "退出登录")
+        }
+    }
+}
+
+private fun LazyListScope.Symbol(
+    expand: Boolean,
+    viewModel: PasswdsViewModel
+) {
+    item {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            ThemeChoiceButton(viewModel, expand)
-            Spacer(modifier = modifier.height(15.dp))
-            TextButton(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.textButtonColors(
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    contentColor = Color.White
+            if (expand) {
+                Text(
+                    modifier = Modifier.padding(start = 10.dp),
+                    text = "Passwd",
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.tertiaryContainer
+                )
+            }
+            IconButton(
+                colors = IconButtonDefaults.iconButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
-                onClick = {
-                    viewModel.onAction(UiAction.GoScreen(UiScreen.Login))
-                }
+                onClick = { viewModel.onAction(UiAction.MenuOpenOrClose(!expand)) }
             ) {
-                Icon(imageVector = Icons.Default.ExitToApp, contentDescription = null)
-                if (expand) {
-                    Spacer(modifier = Modifier.width(10.dp).height(40.dp))
-                    Text(text = "退出登录")
-                }
+                Icon(
+                    imageVector = if (expand) Icons.Default.MenuOpen else Icons.Default.Menu,
+                    contentDescription = null
+                )
+            }
+        }
+    }
+}
+
+private fun LazyListScope.UiScreenList(
+    viewModel: PasswdsViewModel,
+    expand: Boolean
+) {
+    items(UiScreen.Screens) { screen ->
+        val isSelected = screen == viewModel.windowUiState.collectAsState().value.uiScreen
+        TextButton(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20),
+            interactionSource = remember { NoRippleInteractionSource() },
+            onClick = { viewModel.onAction(UiAction.GoScreen(screen)) },
+            colors = ButtonDefaults.textButtonColors(
+                containerColor = if (isSelected) {
+                    MaterialTheme.colorScheme.onSurface
+                } else {
+                    MaterialTheme.colorScheme.surface
+                },
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        ) {
+            Icon(imageVector = screen.icon, contentDescription = null)
+            if (expand) {
+                Spacer(modifier = Modifier.width(15.dp))
+                Text(text = screen.name, fontSize = 18.sp)
+                Spacer(modifier = Modifier.width(15.dp))
             }
         }
     }
