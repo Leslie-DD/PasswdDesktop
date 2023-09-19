@@ -44,19 +44,32 @@ private fun ToolBar(
     modifier: Modifier = Modifier,
     viewModel: PasswdsViewModel
 ) {
-    Row(
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .height(48.dp)
-            .background(color = MaterialTheme.colorScheme.tertiary),
-        horizontalArrangement = Arrangement.End,
-        verticalAlignment = Alignment.CenterVertically
+            .wrapContentHeight()
+            .background(color = MaterialTheme.colorScheme.tertiary)
     ) {
-        CustomOutlinedTextField(
-            modifier = Modifier.height(32.dp),
-            placeholderValue = "Search",
-            onValueChange = { viewModel.onAction(UiAction.SearchPasswds(it)) }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CustomOutlinedTextField(
+                modifier = Modifier.height(32.dp),
+                placeholderValue = "Search",
+                onValueChange = { viewModel.onAction(UiAction.SearchPasswds(it)) }
+            )
+            Spacer(modifier = modifier.fillMaxHeight().width(10.dp))
+        }
+
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(color = MaterialTheme.colorScheme.onBackground)
         )
-        Spacer(modifier = modifier.fillMaxHeight().width(10.dp))
     }
 }

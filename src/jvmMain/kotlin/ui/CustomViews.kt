@@ -58,6 +58,7 @@ fun CustomOutlinedTextField(
     val coroutineScope = rememberCoroutineScope()
     var text by rememberSaveable { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
+
     BasicTextField(
         value = text,
         modifier = modifier
