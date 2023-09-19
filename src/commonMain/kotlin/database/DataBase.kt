@@ -55,19 +55,7 @@ internal class DataBase {
         logger.debug("DataBase insert result")
         item.run {
             dbQuery.deleteHistoryByUsername(item.username)
-            dbQuery.insertHistory(
-                History(
-                    id,
-                    userId,
-                    username,
-                    password,
-                    secretKey,
-                    accessToken,
-                    saved,
-                    silentlySignIn,
-                    createTime
-                )
-            )
+            dbQuery.insertHistory(mapToHistory())
         }
         return (getHistoryByUserId(userId = item.userId)?.id ?: -1)
 
@@ -77,6 +65,10 @@ internal class DataBase {
         dbQuery.getHistoryByUserId(userId = userId, ::mapHistoryList).executeAsList().also {
             return if (it.isEmpty()) null else it[0]
         }
+    }
+
+    fun getSavedHistories(): List<HistoryData> {
+        return dbQuery.getSavedHistories(::mapHistoryList).executeAsList()
     }
 
     /**
@@ -107,6 +99,20 @@ internal class DataBase {
 
     internal fun updateHistoryUpdateTimeById(id: Int) {
         dbQuery.updateHistoryUpdateTimeById(updateTime = Clock.System.now().epochSeconds, id = id)
+    }
+
+    private fun HistoryData.mapToHistory(): History {
+        return History(
+            id,
+            userId,
+            username,
+            password,
+            secretKey,
+            accessToken,
+            saved,
+            silentlySignIn,
+            createTime
+        )
     }
 
     private fun mapHistoryList(
