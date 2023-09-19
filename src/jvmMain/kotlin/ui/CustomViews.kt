@@ -2,19 +2,28 @@ package ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
@@ -24,9 +33,91 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
-import network.KtorRequest
+import kotlinx.coroutines.launch
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CustomOutlinedTextField(
+    placeholderValue: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    singleLine: Boolean = true,
+    maxLines: Int = 1,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
+        textColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        focusedBorderColor = MaterialTheme.colorScheme.secondary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
+    ),
+    contentPadding: PaddingValues = PaddingValues(horizontal = 10.dp)
+) {
+    val coroutineScope = rememberCoroutineScope()
+    var text by rememberSaveable { mutableStateOf("") }
+    val focusRequester = remember { FocusRequester() }
+    BasicTextField(
+        value = text,
+        modifier = modifier
+            .focusRequester(focusRequester)
+            .onFocusChanged {
+                text = ""
+                onValueChange("")
+            },
+        onValueChange = {
+            text = it
+            onValueChange(it)
+        },
+        interactionSource = interactionSource,
+        singleLine = singleLine,
+        maxLines = maxLines,
+        decorationBox = @Composable { innerTextField ->
+            TextFieldDefaults.OutlinedTextFieldDecorationBox(
+                value = text,
+                visualTransformation = VisualTransformation.None,
+                innerTextField = innerTextField,
+                placeholder = {
+                    Text(
+                        text = placeholderValue,
+                        fontWeight = FontWeight.Light,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontSize = 14.sp
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        modifier = Modifier.size(20.dp),
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null
+                    )
+                },
+                enabled = true,
+                singleLine = singleLine,
+                interactionSource = interactionSource,
+                colors = colors,
+                contentPadding = contentPadding,
+                container = {
+                    TextFieldDefaults.OutlinedBorderContainerBox(
+                        enabled = true,
+                        isError = false,
+                        interactionSource,
+                        colors,
+                        RoundedCornerShape(30)
+                    )
+                }
+            )
+        }
+    )
+
+    LaunchedEffect(Unit) {
+        coroutineScope.launch {
+            focusRequester.requestFocus()
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -201,7 +292,6 @@ fun String.copyToClipboard() = try {
         .systemClipboard
         .setContents(StringSelection(this), null)
 } catch (throwable: Throwable) {
-    KtorRequest.logger.error("PasswdScreen copy to clipboard error: ${throwable.message}")
     throwable.printStackTrace()
 }
 

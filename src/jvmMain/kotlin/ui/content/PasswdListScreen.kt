@@ -10,15 +10,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,9 +68,6 @@ fun PasswdList(
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        SearchBox(coroutineScope) {
-            viewModel.onAction(UiAction.SearchPasswds(it))
-        }
 
         Column(
             modifier = Modifier.weight(1f)
@@ -125,7 +120,6 @@ fun PasswdList(
 
                 if (isNewPasswdDialogOpened.value) {
                     val selectGroupId = groupUiState.selectGroup?.id
-                    val theme by viewModel.theme.collectAsState()
                     AddPasswdDialog(
                         onCloseClick = {
                             isNewPasswdDialogOpened.value = false
@@ -161,7 +155,6 @@ fun PasswdList(
             }
 
             if (isDeletePasswdConfirmDialogOpened.value) {
-                val theme by viewModel.theme.collectAsState()
                 DeletePasswdConfirmDialog {
                     if (it) {
                         viewModel.onAction(UiAction.DeletePasswd)
@@ -170,64 +163,6 @@ fun PasswdList(
                     }
                 }
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SearchBox(
-    coroutineScope: CoroutineScope,
-    onSearch: (String) -> Unit
-) {
-    val text = remember { mutableStateOf("") }
-    val focusRequester = remember { FocusRequester() }
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp, end = 10.dp, top = 10.dp)
-            .focusRequester(focusRequester)
-            .onFocusChanged {
-                text.value = ""
-            }
-    ) {
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20),
-            maxLines = 1,
-            placeholder = {
-                Text(
-                    text = "Search",
-                    fontWeight = FontWeight.Light,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = null
-                )
-            },
-            value = text.value,
-            onValueChange = {
-                text.value = it
-                onSearch(text.value)
-            },
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                textColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer
-            ),
-        )
-    }
-
-    LaunchedEffect(Unit) {
-        coroutineScope.launch {
-            focusRequester.requestFocus()
         }
     }
 }
