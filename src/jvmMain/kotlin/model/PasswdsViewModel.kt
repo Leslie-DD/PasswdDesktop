@@ -128,9 +128,9 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private suspend fun silentlySignIn() {
-        val savedHistoryData = dataBase.lastInsertHistory()
+        val savedHistoryData = dataBase.latestSavedLoginHistoryData()
         if (savedHistoryData == null) {
-            updateWindowUiState { copy(uiScreen = model.UiScreen.Login) }
+            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
             return
         }
         if (savedHistoryData.silentlySignIn) {
@@ -140,7 +140,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 secretKey = savedHistoryData.secretKey,
                 saved = savedHistoryData.saved,
                 silentlySignIn = true,
-                updateDb = false
             )
             updateLoginUiState {
                 copy(historyData = savedHistoryData)
@@ -151,7 +150,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     copy(historyData = savedHistoryData)
                 }
             }
-            updateWindowUiState { copy(uiScreen = model.UiScreen.Login) }
+            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
         }
     }
 
@@ -161,7 +160,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         secretKey: String,
         saved: Boolean,
         silentlySignIn: Boolean,
-        updateDb: Boolean = true
     ) {
         if (username.isBlank() || password.isBlank() || secretKey.isBlank()) {
             logger.warn("(loginByPassword) warn, $username, $password, $secretKey")
@@ -176,22 +174,20 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             secretKey = secretKey
         ).onSuccess {
             logger.info("(loginByPassword) success")
-            if (updateDb) {
-                saveLoginInfo(username, password, secretKey, it.token, saved, silentlySignIn)
-            }
+            updateDB(username, password, secretKey, it.token, saved, silentlySignIn)
             onLoginSuccess(secretKey, it)
         }.onFailure {
             logger.error("(loginByPassword) error: ${it.message}")
             updateDialogUiState {
                 copy(effect = DialogUiEffect.LoginAndRegisterFailure(it.message))
             }
-            updateWindowUiState { copy(uiScreen = model.UiScreen.Login) }
+            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
             it.printStackTrace()
         }
     }
 
     private suspend fun onLoginSuccess(secretKey: String, loginResult: LoginResult) {
-        updateWindowUiState { copy(uiScreen = model.UiScreen.Passwds) }
+        updateWindowUiState { copy(uiScreen = UiScreen.Passwds) }
         coroutineScope {
             withContext(Dispatchers.IO) {
                 dataBase.globalSecretKey.emit(secretKey)
@@ -384,7 +380,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             }
     }
 
-    private fun saveLoginInfo(
+    private fun updateDB(
         username: String,
         password: String,
         secretKey: String,
@@ -392,21 +388,20 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         saved: Boolean,
         silentlySignIn: Boolean
     ) {
-        logger.info("(saveLoginInfo). username: $username, password: $password, secretKey: $secretKey, saved: $saved")
+        logger.info("(updateDB). username: $username, password: $password, secretKey: $secretKey, saved: $saved")
         var insertResultId = -1
         var insertHistoryData: HistoryData? = null
-        dataBase.delete(null)
-        if (saved) {
-            insertHistoryData = HistoryData(
-                username = username,
-                password = password,
-                secretKey = secretKey,
-                accessToken = accessToken,
-                saved = true,
-                silentlySignIn = silentlySignIn
-            )
-            insertResultId = dataBase.insert(insertHistoryData)
-        }
+
+        insertHistoryData = HistoryData(
+            username = username,
+            password = if (saved) password else "",
+            secretKey = secretKey,
+            accessToken = accessToken,
+            saved = saved,
+            silentlySignIn = silentlySignIn
+        )
+        insertResultId = dataBase.insert(insertHistoryData)
+
         val historyData = if (insertResultId == -1) {
             defaultHistoryData()
         } else {
