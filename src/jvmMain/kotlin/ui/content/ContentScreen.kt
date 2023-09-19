@@ -2,12 +2,19 @@ package ui.content
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import model.PasswdsViewModel
 import model.UiAction
 import ui.CustomOutlinedTextField
@@ -59,7 +66,22 @@ private fun ToolBar(
         ) {
             CustomOutlinedTextField(
                 modifier = Modifier.height(32.dp),
-                placeholderValue = "Search",
+                leadingIcon = {
+                    Icon(
+                        modifier = Modifier.size(20.dp),
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null
+                    )
+                },
+                placeholder = {
+                    Text(
+                        text = "Search",
+                        fontWeight = FontWeight.Light,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontSize = 14.sp
+                    )
+                },
                 onValueChange = { viewModel.onAction(UiAction.SearchPasswds(it)) }
             )
             Spacer(modifier = modifier.fillMaxHeight().width(10.dp))
