@@ -1,0 +1,127 @@
+package ui.login
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import model.PasswdsViewModel
+import model.UiAction
+
+@Composable
+fun LoginInfoBox(
+    viewModel: PasswdsViewModel,
+) {
+    val loginUiState = viewModel.loginUiState.collectAsState().value
+
+    var username by remember { mutableStateOf(loginUiState.historyData.username) }
+    var password by remember { mutableStateOf(if (loginUiState.historyData.saved) loginUiState.historyData.password else "") }
+    var secretKey by remember { mutableStateOf(if (loginUiState.historyData.saved) loginUiState.historyData.secretKey else "") }
+    var saved by remember { mutableStateOf(loginUiState.historyData.saved) }
+    var silentlyLogin by remember { mutableStateOf(loginUiState.historyData.silentlyLogin) }
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        UsernameTextField(
+            enabledDropMenu = true,
+            value = username,
+            histories = viewModel.loginUiState.collectAsState().value.historyDataList,
+            onHistorySelected = { item ->
+                username = item.username
+                password = item.password
+                secretKey = item.secretKey
+                saved = item.saved
+                silentlyLogin = item.silentlyLogin
+            },
+            onUsernameChanged = { username = it },
+        )
+        PasswdTextField(value = password) { password = it }
+        SecretKeyTextField(value = secretKey) { secretKey = it }
+
+        LoginSelections(
+            save = saved,
+            onSaveClick = { save ->
+                saved = save
+                if (!save && silentlyLogin) {
+                    silentlyLogin = false
+                }
+            },
+            silentlyLogin = silentlyLogin,
+            onSilentlyLoginClick = { silentlyLoginValue ->
+                silentlyLogin = silentlyLoginValue
+                if (silentlyLoginValue) {
+                    saved = true
+                }
+            },
+        )
+
+        Button(
+            colors = ButtonDefaults.buttonColors(
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
+            ),
+            onClick = {
+                viewModel.onAction(
+                    UiAction.Login(
+                        username = username,
+                        password = password,
+                        secretKey = secretKey,
+                        saved = saved,
+                        silentlyLogin = silentlyLogin
+                    )
+                )
+            }
+        ) {
+            Text(
+                text = "Login"
+            )
+        }
+    }
+}
+
+@Composable
+private fun LoginSelections(
+    save: Boolean,
+    onSaveClick: (Boolean) -> Unit,
+    silentlyLogin: Boolean,
+    onSilentlyLoginClick: (Boolean) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(
+            selected = save,
+            onClick = { onSaveClick(!save) },
+            colors = RadioButtonDefaults.colors(
+                selectedColor = MaterialTheme.colorScheme.tertiaryContainer,
+                unselectedColor = MaterialTheme.colorScheme.outline
+            )
+        )
+        Text(
+            text = "Save",
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+
+        Spacer(modifier = Modifier.width(20.dp))
+
+        RadioButton(
+            selected = silentlyLogin,
+            onClick = { onSilentlyLoginClick(!silentlyLogin) },
+            colors = RadioButtonDefaults.colors(
+                selectedColor = MaterialTheme.colorScheme.tertiaryContainer,
+                unselectedColor = MaterialTheme.colorScheme.outline
+            )
+        )
+        Text(
+            text = "Silently login",
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+    }
+}

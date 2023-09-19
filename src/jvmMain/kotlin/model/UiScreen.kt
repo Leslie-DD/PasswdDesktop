@@ -20,12 +20,12 @@ sealed interface UiScreen {
     }
 
     object Passwds : UiScreen {
-        override val name = "密码"
+        override val name = "Passwds"
         override val icon = Icons.Default.Lock
     }
 
     object Settings : UiScreen {
-        override val name = "设置"
+        override val name = "Settings"
         override val icon = Icons.Default.Settings
     }
 
