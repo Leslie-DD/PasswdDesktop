@@ -3,7 +3,7 @@ package datasource
 import entity.Group
 import entity.LoginResult
 import entity.Passwd
-import entity.RegisterResult
+import entity.SignupResult
 import network.Apis
 import network.KtorRequest
 import network.entity.Param
@@ -53,13 +53,13 @@ class RemoteDataSource {
         )
     )
 
-    suspend fun register(
+    suspend fun signup(
         username: String,
         password: String,
-    ): Result<RegisterResult?> = KtorRequest.postRequest(
+    ): Result<SignupResult?> = KtorRequest.postRequest(
         needToken = false,
         needUserId = false,
-        api = Apis.API_REGISTER,
+        api = Apis.API_SIGNUP,
         params = listOf(
             Param("username", username),
             Param("password", password),

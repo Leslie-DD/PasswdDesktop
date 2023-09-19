@@ -85,7 +85,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
 
         launch(Dispatchers.IO) {
-            silentlySignIn()
+            silentlyLogin()
         }
 
         launch {
@@ -127,19 +127,19 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
     }
 
-    private suspend fun silentlySignIn() {
+    private suspend fun silentlyLogin() {
         val savedHistoryData = dataBase.latestSavedLoginHistoryData()
         if (savedHistoryData == null) {
             updateWindowUiState { copy(uiScreen = UiScreen.Login) }
             return
         }
-        if (savedHistoryData.silentlySignIn) {
+        if (savedHistoryData.silentlyLogin) {
             loginByPassword(
                 username = savedHistoryData.username,
                 password = savedHistoryData.password,
                 secretKey = savedHistoryData.secretKey,
                 saved = savedHistoryData.saved,
-                silentlySignIn = true,
+                silentlyLogin = true,
             )
             updateLoginUiState {
                 copy(historyData = savedHistoryData)
@@ -159,12 +159,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         password: String,
         secretKey: String,
         saved: Boolean,
-        silentlySignIn: Boolean,
+        silentlyLogin: Boolean,
     ) {
         if (username.isBlank() || password.isBlank() || secretKey.isBlank()) {
             logger.warn("(loginByPassword) warn, $username, $password, $secretKey")
             updateDialogUiState {
-                copy(effect = DialogUiEffect.LoginAndRegisterFailure("username, password and secret key can not be null"))
+                copy(effect = DialogUiEffect.LoginAndSignupFailure("username, password and secret key can not be null"))
             }
             return
         }
@@ -174,12 +174,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             secretKey = secretKey
         ).onSuccess {
             logger.info("(loginByPassword) success")
-            updateDB(username, password, secretKey, it.token, saved, silentlySignIn)
+            updateDB(username, password, secretKey, it.token, saved, silentlyLogin)
             onLoginSuccess(secretKey, it)
         }.onFailure {
             logger.error("(loginByPassword) error: ${it.message}")
             updateDialogUiState {
-                copy(effect = DialogUiEffect.LoginAndRegisterFailure(it.message))
+                copy(effect = DialogUiEffect.LoginAndSignupFailure(it.message))
             }
             updateWindowUiState { copy(uiScreen = UiScreen.Login) }
             it.printStackTrace()
@@ -202,18 +202,18 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
     }
 
-    private suspend fun register(
+    private suspend fun signup(
         username: String,
         password: String,
     ) {
         if (username.isBlank() || password.isBlank()) {
-            logger.warn("register username and password can not be empty")
+            logger.warn("sign up username and password can not be empty")
             updateDialogUiState {
-                copy(effect = DialogUiEffect.LoginAndRegisterFailure("register username and password can not be empty"))
+                copy(effect = DialogUiEffect.LoginAndSignupFailure("sign up username and password can not be empty"))
             }
             return
         }
-        repository.register(
+        repository.signup(
             username = username,
             password = password,
         ).onSuccess {
@@ -221,7 +221,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 return@onSuccess
             }
             updateDialogUiState {
-                copy(effect = DialogUiEffect.RegisterResult(it.secretKey))
+                copy(effect = DialogUiEffect.SignupResult(it.secretKey))
             }
             coroutineScope {
                 withContext(Dispatchers.IO) {
@@ -233,7 +233,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             }
         }.onFailure {
             updateDialogUiState {
-                copy(effect = DialogUiEffect.LoginAndRegisterFailure(it.message))
+                copy(effect = DialogUiEffect.LoginAndSignupFailure(it.message))
             }
             it.printStackTrace()
         }
@@ -386,7 +386,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         secretKey: String,
         accessToken: String,
         saved: Boolean,
-        silentlySignIn: Boolean
+        silentlyLogin: Boolean
     ) {
         logger.info("(updateDB). username: $username, password: $password, secretKey: $secretKey, saved: $saved")
         val insertHistoryData = HistoryData(
@@ -395,7 +395,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             secretKey = secretKey,
             accessToken = accessToken,
             saved = saved,
-            silentlySignIn = silentlySignIn
+            silentlyLogin = silentlyLogin
         )
         val insertResultId = dataBase.insert(insertHistoryData)
 
@@ -455,14 +455,14 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                             password = password,
                             secretKey = secretKey,
                             saved = saved,
-                            silentlySignIn = silentlySignIn
+                            silentlyLogin = silentlyLogin
                         )
                     }
                 }
 
-                is UiAction.Register -> {
+                is UiAction.Signup -> {
                     launch(Dispatchers.IO) {
-                        register(
+                        signup(
                             username = username,
                             password = password
                         )

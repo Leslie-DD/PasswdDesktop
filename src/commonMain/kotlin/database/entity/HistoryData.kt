@@ -10,7 +10,7 @@ data class HistoryData(
     val secretKey: String,
     val accessToken: String,
     val saved: Boolean = false,
-    val silentlySignIn: Boolean = false,
+    val silentlyLogin: Boolean = false,
     val createTime: Long = Clock.System.now().epochSeconds
 ) {
     companion object {

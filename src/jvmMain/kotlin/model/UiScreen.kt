@@ -16,7 +16,7 @@ sealed interface UiScreen {
         val Screens = listOf(Passwds, Settings)
 
 
-        val LoginAndRegister = listOf(Login, Register)
+        val LoginAndSignup = listOf(Login, Signup)
     }
 
     object Passwds : UiScreen {
@@ -30,11 +30,11 @@ sealed interface UiScreen {
     }
 
     object Login : UiScreen {
-        override val name = "Sign in"
+        override val name = "Login"
         override val icon = Icons.Default.Login
     }
 
-    object Register : UiScreen {
+    object Signup : UiScreen {
         override val name = "Sign up"
         override val icon = Icons.Default.AppRegistration
     }

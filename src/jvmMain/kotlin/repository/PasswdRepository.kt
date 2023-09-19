@@ -6,7 +6,7 @@ import datasource.RemoteDataSource
 import entity.Group
 import entity.LoginResult
 import entity.Passwd
-import entity.RegisterResult
+import entity.SignupResult
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.slf4j.Logger
@@ -81,11 +81,11 @@ class PasswdRepository(
             }
     }
 
-    suspend fun register(
+    suspend fun signup(
         username: String,
         password: String,
-    ): Result<RegisterResult?> {
-        return remoteDataSource.register(
+    ): Result<SignupResult?> {
+        return remoteDataSource.signup(
             username = username,
             password = password
         ).onSuccess { loginResult ->

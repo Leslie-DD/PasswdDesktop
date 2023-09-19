@@ -18,10 +18,10 @@ sealed class UiAction {
         val password: String,
         val secretKey: String,
         val saved: Boolean,
-        val silentlySignIn: Boolean
+        val silentlyLogin: Boolean
     ) : UiAction()
 
-    class Register(val username: String, val password: String) : UiAction()
+    class Signup(val username: String, val password: String) : UiAction()
 
     class NewGroup(val groupName: String, val groupComment: String) : UiAction()
 

@@ -34,7 +34,7 @@ import model.uieffect.DialogUiEffect
 import network.KtorRequest.logger
 
 @Composable
-fun LoginAndRegisterScreen(
+fun LoginAndSignupScreen(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -51,7 +51,7 @@ fun LoginAndRegisterScreen(
         Box(
             modifier = Modifier.weight(0.6f).fillMaxHeight()
         ) {
-            LoginAndRegisterBox(viewModel)
+            LoginAndSignupBox(viewModel)
         }
     }
 }
@@ -103,14 +103,14 @@ fun AppSymbolBox(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
+private fun LoginAndSignupBox(viewModel: PasswdsViewModel) {
     val loginUiState = viewModel.loginUiState.collectAsState().value
 
     val username = remember { mutableStateOf(loginUiState.historyData.username) }
     val password = remember { mutableStateOf(if (loginUiState.historyData.saved) loginUiState.historyData.password else "") }
     val secretKey = remember { mutableStateOf(if (loginUiState.historyData.saved) loginUiState.historyData.secretKey else "") }
     val saved = remember { mutableStateOf(loginUiState.historyData.saved) }
-    val silentlySignIn = remember { mutableStateOf(loginUiState.historyData.silentlySignIn) }
+    val silentlyLogin = remember { mutableStateOf(loginUiState.historyData.silentlyLogin) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -121,8 +121,8 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
         Spacer(modifier = Modifier.height(20.dp))
         LazyRow(modifier = Modifier.wrapContentSize()) {
             screensListMenu(
-                screens = UiScreen.LoginAndRegister,
-                currentScreen = if (isLogin.value) UiScreen.Login else UiScreen.Register
+                screens = UiScreen.LoginAndSignup,
+                currentScreen = if (isLogin.value) UiScreen.Login else UiScreen.Signup
             ) {
                 isLogin.value = it is UiScreen.Login
             }
@@ -132,13 +132,13 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
         InfoBox(
             coroutineScope = coroutineScope,
             viewModel = viewModel,
-            currentScreen = if (isLogin.value) UiScreen.Login else UiScreen.Register,
+            currentScreen = if (isLogin.value) UiScreen.Login else UiScreen.Signup,
 
             username = username.value,
             password = password.value,
             secretKey = secretKey.value,
             saved = saved.value,
-            silentlySignIn = silentlySignIn.value,
+            silentlyLogin = silentlyLogin.value,
 
             onUsernameChanged = {
                 username.value = it
@@ -151,13 +151,13 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
             },
             onSaveClick = { save ->
                 saved.value = save
-                if (!save && silentlySignIn.value) {
-                    silentlySignIn.value = false
+                if (!save && silentlyLogin.value) {
+                    silentlyLogin.value = false
                 }
             },
-            onSilentlySignInClick = { silentlySignInValue ->
-                silentlySignIn.value = silentlySignInValue
-                if (silentlySignInValue) {
+            onSilentlyLoginClick = { silentlyLoginValue ->
+                silentlyLogin.value = silentlyLoginValue
+                if (silentlyLoginValue) {
                     saved.value = true
                 }
             },
@@ -167,7 +167,7 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
                 password.value = item.password
                 secretKey.value = item.secretKey
                 saved.value = item.saved
-                silentlySignIn.value = item.silentlySignIn
+                silentlyLogin.value = item.silentlyLogin
             }
         ) {
             viewModel.onAction(
@@ -177,10 +177,10 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
                         password = password.value,
                         secretKey = secretKey.value,
                         saved = saved.value,
-                        silentlySignIn = silentlySignIn.value
+                        silentlyLogin = silentlyLogin.value
                     )
                 } else {
-                    UiAction.Register(
+                    UiAction.Signup(
                         username = username.value,
                         password = password.value,
                     )
@@ -209,8 +209,8 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
     val dialogUiState = viewModel.dialogUiState.collectAsState().value
     with(dialogUiState.effect) {
         when (this) {
-            is DialogUiEffect.RegisterResult -> {
-                tipsDialogTitle.value = "Successfully Registered!"
+            is DialogUiEffect.SignupResult -> {
+                tipsDialogTitle.value = "Successfully signed up!"
                 tipsDialogInfo.value = this.secretKey
                 tipsDialogWarn.value =
                     "Please make sure WRITE DOWN your secret key, or there will be severe problem while encrypting/decrypting passwords."
@@ -232,13 +232,13 @@ private fun InfoBox(
     password: String,
     secretKey: String,
     saved: Boolean,
-    silentlySignIn: Boolean,
+    silentlyLogin: Boolean,
 
     onUsernameChanged: (String) -> Unit,
     onPasswordChanged: (String) -> Unit,
     onSecretKeyChanged: (String) -> Unit,
     onSaveClick: (Boolean) -> Unit,
-    onSilentlySignInClick: (Boolean) -> Unit,
+    onSilentlyLoginClick: (Boolean) -> Unit,
 
     onHistorySelected: (HistoryData) -> Unit,
     onSubmitClick: () -> Unit,
@@ -342,15 +342,15 @@ private fun InfoBox(
                 Spacer(modifier = Modifier.width(20.dp))
 
                 RadioButton(
-                    selected = silentlySignIn,
-                    onClick = { onSilentlySignInClick(!silentlySignIn) },
+                    selected = silentlyLogin,
+                    onClick = { onSilentlyLoginClick(!silentlyLogin) },
                     colors = RadioButtonDefaults.colors(
                         selectedColor = MaterialTheme.colorScheme.tertiaryContainer,
                         unselectedColor = MaterialTheme.colorScheme.outline
                     )
                 )
                 Text(
-                    text = "Silently sign in",
+                    text = "Silently login",
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
