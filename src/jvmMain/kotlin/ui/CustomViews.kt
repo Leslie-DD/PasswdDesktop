@@ -9,7 +9,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.*
@@ -22,8 +21,9 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
@@ -40,11 +40,12 @@ import java.awt.datatransfer.StringSelection
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomOutlinedTextField(
-    placeholderValue: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     singleLine: Boolean = true,
     maxLines: Int = 1,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    placeholder: @Composable (() -> Unit)? = null,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
         textColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -52,6 +53,7 @@ fun CustomOutlinedTextField(
         containerColor = MaterialTheme.colorScheme.secondaryContainer,
         focusedBorderColor = MaterialTheme.colorScheme.secondary,
         unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        placeholderColor = MaterialTheme.colorScheme.outline
     ),
     contentPadding: PaddingValues = PaddingValues(horizontal = 10.dp)
 ) {
@@ -71,6 +73,8 @@ fun CustomOutlinedTextField(
             text = it
             onValueChange(it)
         },
+        textStyle = LocalTextStyle.current.merge(TextStyle(color = textColor().value)),
+        cursorBrush = SolidColor(cursorColor().value),
         interactionSource = interactionSource,
         singleLine = singleLine,
         maxLines = maxLines,
@@ -79,22 +83,8 @@ fun CustomOutlinedTextField(
                 value = text,
                 visualTransformation = VisualTransformation.None,
                 innerTextField = innerTextField,
-                placeholder = {
-                    Text(
-                        text = placeholderValue,
-                        fontWeight = FontWeight.Light,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        fontSize = 14.sp
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        modifier = Modifier.size(20.dp),
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null
-                    )
-                },
+                placeholder = placeholder,
+                leadingIcon = leadingIcon,
                 enabled = true,
                 singleLine = singleLine,
                 interactionSource = interactionSource,
@@ -118,6 +108,16 @@ fun CustomOutlinedTextField(
             focusRequester.requestFocus()
         }
     }
+}
+
+@Composable
+private fun textColor(): State<Color> {
+    return rememberUpdatedState(MaterialTheme.colorScheme.onPrimaryContainer)
+}
+
+@Composable
+private fun cursorColor(): State<Color> {
+    return rememberUpdatedState(MaterialTheme.colorScheme.onPrimaryContainer)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
