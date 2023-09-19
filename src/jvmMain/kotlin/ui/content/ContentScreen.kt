@@ -1,15 +1,16 @@
 package ui.content
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import model.PasswdsViewModel
+import model.UiAction
+import ui.CustomOutlinedTextField
 import ui.RowSpacer
 
 /**
@@ -21,15 +22,41 @@ fun ContentScreen(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    Row(
+    Column(
         modifier = modifier
-            .padding(end = 10.dp)
             .background(color = MaterialTheme.colorScheme.primaryContainer)
     ) {
-        GroupList(viewModel, Modifier.width(250.dp), coroutineScope)
-        RowSpacer()
-        PasswdList(viewModel, Modifier.width(250.dp), coroutineScope)
-        RowSpacer()
-        PasswdDetailWrapper(viewModel = viewModel)
+        ToolBar(viewModel = viewModel)
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(end = 10.dp)
+        ) {
+            GroupList(viewModel, Modifier.width(250.dp), coroutineScope)
+            RowSpacer()
+            PasswdList(viewModel, Modifier.width(250.dp), coroutineScope)
+            RowSpacer()
+            PasswdDetailWrapper(viewModel = viewModel)
+        }
+    }
+}
+
+@Composable
+private fun ToolBar(
+    modifier: Modifier = Modifier,
+    viewModel: PasswdsViewModel
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .background(color = MaterialTheme.colorScheme.tertiary),
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        CustomOutlinedTextField(
+            modifier = Modifier.height(32.dp),
+            placeholderValue = "Search",
+            onValueChange = { viewModel.onAction(UiAction.SearchPasswds(it)) }
+        )
+        Spacer(modifier = modifier.fillMaxHeight().width(10.dp))
     }
 }
