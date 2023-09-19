@@ -143,12 +143,13 @@ fun EnabledOutlinedTextField(
             backgroundColor = Color.Blue
         )
     ),
+    onFocusChanged: (Boolean) -> Unit = {},
     onValueChange: (String) -> Unit
 ) {
     var contentVisible by remember { mutableStateOf(disableContentEncrypt) }
 
     OutlinedTextField(
-        modifier = modifier,
+        modifier = modifier.onFocusChanged { onFocusChanged(it.hasFocus) },
         enabled = enabled,
         label = {
             Text(

@@ -1,6 +1,7 @@
 package ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import database.entity.HistoryData
@@ -260,34 +262,18 @@ private fun InfoBox(
                         .padding(end = 10.dp)
                         .focusProperties { canFocus = false }
                 ) {
-                    var selectedMenuIndex by remember { mutableStateOf(-1) }
-                    DropdownMenu(
-                        modifier = Modifier.padding(10.dp).width(200.dp),
+                    HistoriesDropDownMenu(
+                        histories = viewModel.loginUiState.collectAsState().value.historyDataList,
                         expanded = menuVisible,
-                        onDismissRequest = {
-                            menuVisible = false
-                        },
-                    ) {
-                        viewModel.loginUiState.collectAsState().value.historyDataList.forEachIndexed { index, item ->
-                            HistoryMenuItem(
-                                item = item,
-                                selected = selectedMenuIndex == index,
-                                onItemSelected = {
-                                    onHistorySelected(item)
-                                    selectedMenuIndex = index
-                                    menuVisible = false
-                                }
-                            )
-                        }
-                    }
+                        offset = DpOffset((-200).dp, 0.dp),
+                        onHistorySelected = onHistorySelected
+                    ) { menuVisible = it }
 
                     IconButton(
                         colors = IconButtonDefaults.iconButtonColors(
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                         ),
-                        onClick = {
-                            menuVisible = !menuVisible
-                        }
+                        onClick = { menuVisible = !menuVisible }
                     ) {
                         Icon(
                             imageVector = if (menuVisible) Icons.Rounded.ArrowDropUp else Icons.Rounded.ArrowDropDown,
@@ -295,9 +281,17 @@ private fun InfoBox(
                         )
                     }
                 }
-            }
+            },
+            onFocusChanged = { hasFocus ->
+                if (hasFocus && username.isEmpty()) {
+                    menuVisible = true
+                }
+            },
         ) {
             onUsernameChanged(it)
+            if (it.isEmpty()) {
+                menuVisible = true
+            }
         }
         Spacer(modifier = Modifier.height(10.dp))
 
@@ -373,6 +367,35 @@ private fun InfoBox(
     LaunchedEffect(username) {
         coroutineScope.launch {
             logger.warn("re compose username: $username")
+        }
+    }
+}
+
+@Composable
+private fun HistoriesDropDownMenu(
+    histories: List<HistoryData>,
+    expanded: Boolean,
+    offset: DpOffset = DpOffset(0.dp, 0.dp),
+    onHistorySelected: (HistoryData) -> Unit,
+    onMenuVisibleChanged: (Boolean) -> Unit
+) {
+    var selectedMenuIndex by remember { mutableStateOf(-1) }
+    DropdownMenu(
+        modifier = Modifier.padding(10.dp).width(200.dp).background(color = MaterialTheme.colorScheme.surface),
+        offset = offset,
+        expanded = expanded,
+        onDismissRequest = { onMenuVisibleChanged(false) },
+    ) {
+        histories.forEachIndexed { index, item ->
+            HistoryMenuItem(
+                item = item,
+                selected = selectedMenuIndex == index,
+                onItemSelected = {
+                    onHistorySelected(item)
+                    selectedMenuIndex = index
+                    onMenuVisibleChanged(false)
+                }
+            )
         }
     }
 }
