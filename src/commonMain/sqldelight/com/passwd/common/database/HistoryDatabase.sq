@@ -16,8 +16,8 @@ CREATE TABLE History (
 getHistoryByUserId:
 SELECT * FROM History WHERE userId = ?;
 
-getHistoryByUsername:
-SELECT * FROM History WHERE username = ?;
+getSavedHistories:
+SELECT * FROM History WHERE saved = 1 ORDER BY updateTime DESC;
 
 getAllHistory:
 SELECT * FROM History;

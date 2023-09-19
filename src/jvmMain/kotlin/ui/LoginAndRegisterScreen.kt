@@ -10,21 +10,28 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.People
+import androidx.compose.material.icons.rounded.ArrowDropDown
+import androidx.compose.material.icons.rounded.ArrowDropUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import database.entity.HistoryData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import model.PasswdsViewModel
 import model.Res
 import model.UiAction
 import model.UiScreen
 import model.uieffect.DialogUiEffect
+import network.KtorRequest.logger
 
 @Composable
 fun LoginAndRegisterScreen(
@@ -121,24 +128,46 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
             }
         }
 
+        val coroutineScope = rememberCoroutineScope()
         InfoBox(
+            coroutineScope = coroutineScope,
+            viewModel = viewModel,
             currentScreen = if (isLogin.value) UiScreen.Login else UiScreen.Register,
-            username = username,
-            password = password,
-            secretKey = secretKey,
-            saved = saved,
+
+            username = username.value,
+            password = password.value,
+            secretKey = secretKey.value,
+            saved = saved.value,
+            silentlySignIn = silentlySignIn.value,
+
+            onUsernameChanged = {
+                username.value = it
+            },
+            onPasswordChanged = {
+                password.value = it
+            },
+            onSecretKeyChanged = {
+                secretKey.value = it
+            },
             onSaveClick = { save ->
                 saved.value = save
                 if (!save && silentlySignIn.value) {
                     silentlySignIn.value = false
                 }
             },
-            silentlySignIn = silentlySignIn,
             onSilentlySignInClick = { silentlySignInValue ->
                 silentlySignIn.value = silentlySignInValue
                 if (silentlySignInValue) {
                     saved.value = true
                 }
+            },
+
+            onHistorySelected = { item ->
+                username.value = item.username
+                password.value = item.password
+                secretKey.value = item.secretKey
+                saved.value = item.saved
+                silentlySignIn.value = item.silentlySignIn
             }
         ) {
             viewModel.onAction(
@@ -195,48 +224,101 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
 
 @Composable
 private fun InfoBox(
+    coroutineScope: CoroutineScope,
+    viewModel: PasswdsViewModel,
     currentScreen: UiScreen,
-    username: MutableState<String>,
-    password: MutableState<String>,
-    secretKey: MutableState<String>,
-    saved: MutableState<Boolean>,
+
+    username: String,
+    password: String,
+    secretKey: String,
+    saved: Boolean,
+    silentlySignIn: Boolean,
+
+    onUsernameChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onSecretKeyChanged: (String) -> Unit,
     onSaveClick: (Boolean) -> Unit,
-    silentlySignIn: MutableState<Boolean>,
     onSilentlySignInClick: (Boolean) -> Unit,
-    onSubmitClick: () -> Unit
+
+    onHistorySelected: (HistoryData) -> Unit,
+    onSubmitClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        var menuVisible by remember { mutableStateOf(false) }
         EnabledOutlinedTextField(
-            value = username.value,
+            value = username,
             labelValue = "Username",
-            leadingIconImageVector = Icons.Outlined.People
+            leadingIconImageVector = Icons.Outlined.People,
+            trailingIcon = {
+                Box(
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .padding(end = 10.dp)
+                        .focusProperties { canFocus = false }
+                ) {
+                    var selectedMenuIndex by remember { mutableStateOf(-1) }
+                    DropdownMenu(
+                        modifier = Modifier.padding(10.dp).width(200.dp),
+                        expanded = menuVisible,
+                        onDismissRequest = {
+                            menuVisible = false
+                        },
+                    ) {
+                        viewModel.loginUiState.collectAsState().value.historyDataList.forEachIndexed { index, item ->
+                            HistoryMenuItem(
+                                item = item,
+                                selected = selectedMenuIndex == index,
+                                onItemSelected = {
+                                    onHistorySelected(item)
+                                    selectedMenuIndex = index
+                                    menuVisible = false
+                                }
+                            )
+                        }
+                    }
+
+                    IconButton(
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
+                        onClick = {
+                            menuVisible = !menuVisible
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (menuVisible) Icons.Rounded.ArrowDropUp else Icons.Rounded.ArrowDropDown,
+                            contentDescription = if (menuVisible) "collapse menu list" else "expand menu list"
+                        )
+                    }
+                }
+            }
         ) {
-            username.value = it
+            onUsernameChanged(it)
         }
         Spacer(modifier = Modifier.height(10.dp))
 
         EnabledOutlinedTextField(
-            value = password.value,
+            value = password,
             labelValue = "Password",
             leadingIconImageVector = Icons.Outlined.Lock,
             disableContentEncrypt = false
         ) {
-            password.value = it
+            onPasswordChanged(it)
         }
         Spacer(modifier = Modifier.height(10.dp))
 
         if (currentScreen is UiScreen.Login) {
             EnabledOutlinedTextField(
-                value = secretKey.value,
+                value = secretKey,
                 labelValue = "SecretKey",
                 leadingIconImageVector = Icons.Outlined.Key,
                 disableContentEncrypt = false
             ) {
-                secretKey.value = it
+                onSecretKeyChanged(it)
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -244,8 +326,8 @@ private fun InfoBox(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 RadioButton(
-                    selected = saved.value,
-                    onClick = { onSaveClick(!saved.value) },
+                    selected = saved,
+                    onClick = { onSaveClick(!saved) },
                     colors = RadioButtonDefaults.colors(
                         selectedColor = MaterialTheme.colorScheme.tertiaryContainer,
                         unselectedColor = MaterialTheme.colorScheme.outline
@@ -260,8 +342,8 @@ private fun InfoBox(
                 Spacer(modifier = Modifier.width(20.dp))
 
                 RadioButton(
-                    selected = silentlySignIn.value,
-                    onClick = { onSilentlySignInClick(!silentlySignIn.value) },
+                    selected = silentlySignIn,
+                    onClick = { onSilentlySignInClick(!silentlySignIn) },
                     colors = RadioButtonDefaults.colors(
                         selectedColor = MaterialTheme.colorScheme.tertiaryContainer,
                         unselectedColor = MaterialTheme.colorScheme.outline
@@ -286,6 +368,46 @@ private fun InfoBox(
                 text = currentScreen.name
             )
         }
+    }
+
+    LaunchedEffect(username) {
+        coroutineScope.launch {
+            logger.warn("re compose username: $username")
+        }
+    }
+}
+
+@Composable
+private fun HistoryMenuItem(
+    item: HistoryData,
+    selected: Boolean,
+    onItemSelected: () -> Unit,
+) {
+    TextButton(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20),
+        interactionSource = remember { NoRippleInteractionSource() },
+        onClick = { onItemSelected() },
+        colors = ButtonDefaults.textButtonColors(
+            containerColor = if (selected) {
+                MaterialTheme.colorScheme.tertiaryContainer
+            } else {
+                MaterialTheme.colorScheme.primaryContainer
+            },
+            contentColor = if (selected) {
+                Color.White
+            } else {
+                MaterialTheme.colorScheme.onPrimaryContainer
+            }
+        )
+    ) {
+        Text(
+            text = item.username,
+            modifier = Modifier.fillMaxWidth(),
+            fontSize = 16.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 

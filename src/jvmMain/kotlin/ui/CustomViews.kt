@@ -131,6 +131,7 @@ fun EnabledOutlinedTextField(
     singleLine: Boolean = true,
     leadingIconImageVector: ImageVector? = null,
     disableContentEncrypt: Boolean = true,
+    trailingIcon: @Composable (() -> Unit)? = null,
     colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
         textColor = MaterialTheme.colorScheme.onPrimaryContainer,
         focusedBorderColor = MaterialTheme.colorScheme.secondary,
@@ -144,7 +145,6 @@ fun EnabledOutlinedTextField(
     ),
     onValueChange: (String) -> Unit
 ) {
-    val text = remember { mutableStateOf(value) }
     var contentVisible by remember { mutableStateOf(disableContentEncrypt) }
 
     OutlinedTextField(
@@ -163,9 +163,7 @@ fun EnabledOutlinedTextField(
             }
         },
         visualTransformation = if (contentVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        trailingIcon = if (disableContentEncrypt) {
-            null
-        } else {
+        trailingIcon = if (!disableContentEncrypt) {
             {
                 Box(
                     modifier = Modifier
@@ -188,12 +186,11 @@ fun EnabledOutlinedTextField(
                     }
                 }
             }
-        },
-        value = text.value,
+        } else trailingIcon,
+        value = value,
         maxLines = maxLines,
         singleLine = singleLine,
         onValueChange = {
-            text.value = it
             onValueChange(it)
         },
         colors = colors

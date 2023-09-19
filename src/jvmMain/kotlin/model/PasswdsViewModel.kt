@@ -52,7 +52,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private val _loginUiState: MutableStateFlow<LoginUiState> by lazy {
-        MutableStateFlow(LoginUiState(defaultHistoryData()))
+        MutableStateFlow(LoginUiState(defaultHistoryData(), dataBase.getSavedHistories()))
     }
     val loginUiState: StateFlow<LoginUiState> by lazy {
         _loginUiState
@@ -389,10 +389,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         silentlySignIn: Boolean
     ) {
         logger.info("(updateDB). username: $username, password: $password, secretKey: $secretKey, saved: $saved")
-        var insertResultId = -1
-        var insertHistoryData: HistoryData? = null
-
-        insertHistoryData = HistoryData(
+        val insertHistoryData = HistoryData(
             username = username,
             password = if (saved) password else "",
             secretKey = secretKey,
@@ -400,15 +397,18 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             saved = saved,
             silentlySignIn = silentlySignIn
         )
-        insertResultId = dataBase.insert(insertHistoryData)
+        val insertResultId = dataBase.insert(insertHistoryData)
 
         val historyData = if (insertResultId == -1) {
             defaultHistoryData()
         } else {
-            insertHistoryData!!
+            insertHistoryData
         }
         updateLoginUiState {
-            copy(historyData = historyData)
+            copy(
+                historyData = historyData,
+                historyDataList = dataBase.getSavedHistories()
+            )
         }
         logger.info("(saveLoginInfo) insertResultId: $insertResultId, ${loginUiState.value}")
     }
