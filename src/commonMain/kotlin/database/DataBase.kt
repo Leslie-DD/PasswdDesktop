@@ -5,6 +5,7 @@ import com.passwd.common.database.History
 import com.passwd.common.database.HistoryDatabase
 import database.entity.HistoryData
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.datetime.Clock
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import platform.desktop.createSqlDriver
@@ -42,7 +43,7 @@ internal class DataBase {
         if (historyData == null) {
             dbQuery.deleteAllHistory()
         } else {
-            dbQuery.deleteHistory(historyData.id)
+            dbQuery.deleteHistoryById(historyData.id)
         }
     }
 
@@ -51,8 +52,10 @@ internal class DataBase {
     }
 
     internal fun insert(item: HistoryData): Int {
+        logger.debug("DataBase insert result")
         item.run {
-            val insertResult = dbQuery.insertHistory(
+            dbQuery.deleteHistoryByUsername(item.username)
+            dbQuery.insertHistory(
                 History(
                     id,
                     userId,
@@ -65,15 +68,26 @@ internal class DataBase {
                     createTime
                 )
             )
-            logger.debug("DataBase insert result: {}", insertResult)
         }
-        return (lastInsertHistory()?.id ?: -1)
+        return (getHistoryByUserId(userId = item.userId)?.id ?: -1)
 
     }
 
-    internal fun lastInsertHistory(): HistoryData? {
-        dbQuery.lastInsertHistory(::mapHistoryList).executeAsList().also {
+    private fun getHistoryByUserId(userId: Int): HistoryData? {
+        dbQuery.getHistoryByUserId(userId = userId, ::mapHistoryList).executeAsList().also {
             return if (it.isEmpty()) null else it[0]
+        }
+    }
+
+    /**
+     * 上次登录的并且saved的用户
+     */
+    internal fun latestSavedLoginHistoryData(): HistoryData? {
+        dbQuery.latestLoginHistory(::mapHistoryList).executeAsList().also {
+            return if (it.isEmpty()) null else {
+                val result = it[0]
+                if (result.saved) result else null
+            }
         }
     }
 
@@ -89,6 +103,10 @@ internal class DataBase {
 
     internal fun updateHistoryUserIdById(userId: Int, id: Int) {
         dbQuery.updateHistoryUserIdById(userId = userId, id = id)
+    }
+
+    internal fun updateHistoryUpdateTimeById(id: Int) {
+        dbQuery.updateHistoryUpdateTimeById(updateTime = Clock.System.now().epochSeconds, id = id)
     }
 
     private fun mapHistoryList(

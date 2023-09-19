@@ -100,8 +100,8 @@ private fun LoginAndRegisterBox(viewModel: PasswdsViewModel) {
     val loginUiState = viewModel.loginUiState.collectAsState().value
 
     val username = remember { mutableStateOf(loginUiState.historyData.username) }
-    val password = remember { mutableStateOf(loginUiState.historyData.password) }
-    val secretKey = remember { mutableStateOf(loginUiState.historyData.secretKey) }
+    val password = remember { mutableStateOf(if (loginUiState.historyData.saved) loginUiState.historyData.password else "") }
+    val secretKey = remember { mutableStateOf(if (loginUiState.historyData.saved) loginUiState.historyData.secretKey else "") }
     val saved = remember { mutableStateOf(loginUiState.historyData.saved) }
     val silentlySignIn = remember { mutableStateOf(loginUiState.historyData.silentlySignIn) }
 

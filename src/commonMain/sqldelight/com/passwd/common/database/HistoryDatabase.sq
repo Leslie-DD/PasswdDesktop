@@ -10,21 +10,30 @@ CREATE TABLE History (
     accessToken TEXT,
     saved INTEGER AS Boolean DEFAULT 0,
     silentlySignIn INTEGER AS Boolean DEFAULT 0,
-    createTime INTEGER
+    updateTime INTEGER
 );
+
+getHistoryByUserId:
+SELECT * FROM History WHERE userId = ?;
+
+getHistoryByUsername:
+SELECT * FROM History WHERE username = ?;
 
 getAllHistory:
 SELECT * FROM History;
 
 insertHistory:
-INSERT INTO History(userId, username, password, secretKey, accessToken, saved, silentlySignIn, createTime)
+INSERT INTO History(userId, username, password, secretKey, accessToken, saved, silentlySignIn, updateTime)
 VALUES ?;
 
-lastInsertHistory:
-SELECT * FROM History ORDER BY id DESC LIMIT 1;
+latestLoginHistory:
+SELECT * FROM History ORDER BY updateTime DESC LIMIT 1;
 
-deleteHistory:
+deleteHistoryById:
 DELETE FROM History WHERE History.id == ?;
+
+deleteHistoryByUsername:
+DELETE FROM History WHERE History.username == ?;
 
 deleteAllHistory:
 DELETE FROM History;
@@ -34,6 +43,9 @@ UPDATE History SET userId = ? WHERE id = ?;
 
 updateHistoryAccessTokenById:
 UPDATE History SET accessToken = ? WHERE id = ?;
+
+updateHistoryUpdateTimeById:
+UPDATE History SET updateTime = ? WHERE id = ?;
 
 getAccessTokenByUserId:
 SELECT accessToken FROM History WHERE userId = ?;
