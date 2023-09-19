@@ -44,7 +44,7 @@ fun SideMenuScreen(
     ) {
         Column(
             modifier = Modifier
-                .width(if (expand) 160.dp else 68.dp)
+                .width(if (expand) 170.dp else 68.dp)
                 .fillMaxHeight()
                 .padding(top = 30.dp, bottom = 20.dp, start = 10.dp, end = 10.dp),
             verticalArrangement = Arrangement.SpaceBetween,
@@ -88,7 +88,7 @@ private fun LogoutButton(viewModel: PasswdsViewModel, expand: Boolean) {
         Icon(imageVector = Icons.Default.ExitToApp, contentDescription = null)
         if (expand) {
             Spacer(modifier = Modifier.width(10.dp).height(40.dp))
-            Text(text = "Log out")
+            Text(text = "Log out", maxLines = 1)
         }
     }
 }
@@ -108,7 +108,8 @@ private fun LazyListScope.Symbol(
                     modifier = Modifier.padding(start = 10.dp),
                     text = "Passwd",
                     fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.tertiaryContainer
+                    color = MaterialTheme.colorScheme.tertiaryContainer,
+                    maxLines = 1
                 )
             }
             IconButton(
@@ -146,11 +147,16 @@ private fun LazyListScope.UiScreenList(
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             )
         ) {
-            Icon(imageVector = screen.icon, contentDescription = null)
-            if (expand) {
-                Spacer(modifier = Modifier.width(15.dp))
-                Text(text = screen.name, fontSize = 18.sp)
-                Spacer(modifier = Modifier.width(15.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                Icon(imageVector = screen.icon, contentDescription = null)
+                if (expand) {
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(text = screen.name, fontSize = 16.sp, maxLines = 1)
+                    Spacer(modifier = Modifier.width(10.dp))
+                }
             }
         }
     }
@@ -189,7 +195,7 @@ fun ThemeChoiceButton(viewModel: PasswdsViewModel, expand: Boolean) {
                 )
                 if (expand) {
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text(text = theme.name)
+                    Text(text = theme.name, maxLines = 1)
                 }
             }
         }

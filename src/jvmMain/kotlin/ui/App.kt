@@ -12,6 +12,7 @@ import model.UiAction
 import model.UiScreen
 import model.uieffect.DialogUiEffect
 import ui.content.ContentScreen
+import ui.login.LoginAndSignupScreen
 
 @Composable
 fun App(
