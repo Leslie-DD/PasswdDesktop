@@ -40,7 +40,7 @@ fun App(
                     UiScreen.Passwds -> ContentScreen(viewModel, modifier)
                     UiScreen.Settings -> SettingsScreen(viewModel, modifier)
                     UiScreen.Loading -> LoadingScreen(modifier)
-                    in UiScreen.LoginAndRegister -> LoginAndRegisterScreen(viewModel, modifier)
+                    in UiScreen.LoginAndSignup -> LoginAndSignupScreen(viewModel, modifier)
 
                     else -> {}
                 }
@@ -59,7 +59,7 @@ fun App(
                 val dialogUiState = viewModel.dialogUiState.collectAsState().value
                 with(dialogUiState.effect) {
                     when (this) {
-                        is DialogUiEffect.LoginAndRegisterFailure -> {
+                        is DialogUiEffect.LoginAndSignupFailure -> {
                             tip = tipsMsg
                             isTipsDialogOpen = true
                         }

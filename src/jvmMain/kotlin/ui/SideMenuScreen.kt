@@ -88,7 +88,7 @@ private fun LogoutButton(viewModel: PasswdsViewModel, expand: Boolean) {
         Icon(imageVector = Icons.Default.ExitToApp, contentDescription = null)
         if (expand) {
             Spacer(modifier = Modifier.width(10.dp).height(40.dp))
-            Text(text = "退出登录")
+            Text(text = "Log out")
         }
     }
 }

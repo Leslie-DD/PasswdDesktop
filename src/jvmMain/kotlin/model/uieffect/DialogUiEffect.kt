@@ -17,8 +17,8 @@ sealed interface DialogUiEffect {
 
     class DeletePasswdResult(val passwd: Passwd?) : DialogUiEffect
 
-    class LoginAndRegisterFailure(val tipsMsg: String?) : DialogUiEffect
+    class LoginAndSignupFailure(val tipsMsg: String?) : DialogUiEffect
 
-    class RegisterResult(val secretKey: String) : DialogUiEffect
+    class SignupResult(val secretKey: String) : DialogUiEffect
 
 }

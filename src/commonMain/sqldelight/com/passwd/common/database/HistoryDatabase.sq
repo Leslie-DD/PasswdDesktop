@@ -9,7 +9,7 @@ CREATE TABLE History (
     secretKey TEXT,
     accessToken TEXT,
     saved INTEGER AS Boolean DEFAULT 0,
-    silentlySignIn INTEGER AS Boolean DEFAULT 0,
+    silentlyLogin INTEGER AS Boolean DEFAULT 0,
     updateTime INTEGER
 );
 
@@ -23,7 +23,7 @@ getAllHistory:
 SELECT * FROM History;
 
 insertHistory:
-INSERT INTO History(userId, username, password, secretKey, accessToken, saved, silentlySignIn, updateTime)
+INSERT INTO History(userId, username, password, secretKey, accessToken, saved, silentlyLogin, updateTime)
 VALUES ?;
 
 latestLoginHistory:

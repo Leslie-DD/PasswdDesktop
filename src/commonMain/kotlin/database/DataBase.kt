@@ -58,7 +58,6 @@ internal class DataBase {
             dbQuery.insertHistory(mapToHistory())
         }
         return (getHistoryByUserId(userId = item.userId)?.id ?: -1)
-
     }
 
     private fun getHistoryByUserId(userId: Int): HistoryData? {
@@ -110,7 +109,7 @@ internal class DataBase {
             secretKey,
             accessToken,
             saved,
-            silentlySignIn,
+            silentlyLogin,
             createTime
         )
     }
@@ -123,7 +122,7 @@ internal class DataBase {
         secretKey: String?,
         accessToken: String?,
         saved: Boolean?,
-        silentlySignIn: Boolean?,
+        silentlyLogin: Boolean?,
         createTime: Long?,
     ): HistoryData {
         return HistoryData(
@@ -134,7 +133,7 @@ internal class DataBase {
             secretKey = secretKey ?: "",
             accessToken = accessToken ?: "",
             saved = saved ?: false,
-            silentlySignIn = silentlySignIn ?: false,
+            silentlyLogin = silentlyLogin ?: false,
             createTime = createTime ?: 0
         )
     }

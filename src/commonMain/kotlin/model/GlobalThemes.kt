@@ -37,7 +37,7 @@ sealed interface Theme {
         override val isDark
             @Composable get() = !isLight
 
-        override val name = "深色模式"
+        override val name = "Dark mode"
 
         override val iconVector: ImageVector = Icons.Default.ShieldMoon
     }
@@ -50,7 +50,7 @@ sealed interface Theme {
         override val isDark
             @Composable get() = !isLight
 
-        override val name = "亮色模式"
+        override val name = "Light mode"
 
         override val iconVector: ImageVector = Icons.Default.WbSunny
     }
@@ -64,7 +64,7 @@ sealed interface Theme {
         override val isDark
             @Composable get() = isSystemInDarkTheme() || dark
 
-        override val name = "跟随系统"
+        override val name = "Sync OS"
 
         override val iconVector: ImageVector = Icons.Default.WbAuto
     }
