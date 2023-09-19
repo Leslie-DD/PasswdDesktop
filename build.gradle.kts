@@ -40,10 +40,11 @@ kotlin {
                 api(compose.material3)
                 api(compose.material)
                 api(compose.materialIconsExtended)
-                implementation("app.cash.sqldelight:sqlite-driver:2.0.0-alpha05")
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
-                implementation("com.github.Dansoftowner:jSystemThemeDetector:3.6")
-                implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
+
+                implementation(libs.sqldelight)
+                implementation(libs.reorderable)
+                implementation(libs.kotlinx.datetime)
+                implementation(libs.jSystemThemeDetector)
             }
         }
         val jvmTest by getting
