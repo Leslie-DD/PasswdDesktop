@@ -18,7 +18,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import database.DataBase
-import model.PasswdsViewModel
+import model.viewmodel.PasswdsViewModel
 
 @Composable
 fun SettingsScreen(

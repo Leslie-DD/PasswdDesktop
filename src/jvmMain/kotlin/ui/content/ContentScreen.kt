@@ -15,8 +15,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import model.PasswdsViewModel
 import model.UiAction
+import model.viewmodel.PasswdsViewModel
 import ui.CustomOutlinedTextField
 import ui.RowSpacer
 

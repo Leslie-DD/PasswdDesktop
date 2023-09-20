@@ -1,6 +1,5 @@
-package model
+package model.viewmodel
 
-import com.jthemedetecor.OsThemeDetector
 import database.DataBase
 import database.entity.HistoryData
 import database.entity.HistoryData.Companion.defaultHistoryData
@@ -9,14 +8,13 @@ import entity.LoginResult
 import entity.Passwd
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import model.UiAction
+import model.UiScreen
 import model.uieffect.DialogUiEffect
 import model.uistate.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import platform.Platform
-import platform.desktop.currentPlatform
 import repository.PasswdRepository
-import javax.swing.SwingUtilities
 
 @OptIn(FlowPreview::class)
 class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
@@ -25,17 +23,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     private val repository: PasswdRepository = PasswdRepository()
 
-    val shouldBeLandscape = MutableStateFlow(currentPlatform == Platform.Desktop)
-
     private val _windowUiState = MutableStateFlow(WindowUiState.Default)
     val windowUiState: StateFlow<WindowUiState> = _windowUiState
-
-    private val _groupUiState: MutableStateFlow<GroupUiState> by lazy {
-        MutableStateFlow(GroupUiState.defaultGroupUiState())
-    }
-    val groupUiState: StateFlow<GroupUiState> by lazy {
-        _groupUiState
-    }
 
     private val _passwdUiState: MutableStateFlow<PasswdUiState> by lazy {
         MutableStateFlow(PasswdUiState.defaultPasswdUiState())
@@ -65,24 +54,9 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         _searchFlow
     }
 
-    val theme = MutableStateFlow<Theme>(Theme.Default)
-    private var systemDark = false
-    private val detector: OsThemeDetector = OsThemeDetector.getDetector()
-
     private val dataBase = DataBase.instance
 
     init {
-        updateSystemDark(detector.isDark)
-        updateTheme(nextTheme = theme.value)
-        detector.registerListener { isDark ->
-            logger.info("OsThemeDetector listener: isDark $isDark")
-            updateSystemDark(isDark)
-            if (theme.value is Theme.Auto) {
-                SwingUtilities.invokeLater {
-                    updateTheme(isDark, nextTheme = Theme.Auto())
-                }
-            }
-        }
 
         launch(Dispatchers.IO) {
             silentlyLogin()
@@ -103,7 +77,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         launch {
             repository.groupPasswdsFlow.collect {
                 logger.debug("collect groupPasswds changed, size: ${it.size}")
-                updatePasswdUiState {
+                updateGroupUiState {
                     copy(
                         groupPasswds = it,
                         selectPasswd = if (it.isEmpty()) null else it.first()
@@ -259,7 +233,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 updateGroupUiState {
                     copy(selectGroup = it)
                 }
-                updatePasswdUiState {
+                updateGroupUiState {
                     copy(selectPasswd = null)
                 }
             }.onFailure {
@@ -326,7 +300,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             updateDialogUiState {
                 copy(effect = DialogUiEffect.NewPasswdResult(it))
             }
-            updatePasswdUiState {
+            updateGroupUiState {
                 copy(selectPasswd = it)
             }
         }.onFailure {
@@ -352,7 +326,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             updateDialogUiState {
                 copy(effect = DialogUiEffect.UpdatePasswdResult(passwd))
             }
-            updatePasswdUiState {
+            updateGroupUiState {
                 copy(selectPasswd = passwd)
             }
         }.onFailure {
@@ -369,7 +343,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 updateDialogUiState {
                     copy(effect = DialogUiEffect.DeletePasswdResult(it))
                 }
-                updatePasswdUiState {
+                updateGroupUiState {
                     copy(selectPasswd = null)
                 }
             }.onFailure {
@@ -430,11 +404,11 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 }
 
                 is UiAction.ShowGroupPasswds -> {
-                    updatePasswdUiState {
-                        copy(selectPasswd = null)
-                    }
                     updateGroupUiState {
-                        copy(selectGroup = getGroup(groupId))
+                        copy(
+                            selectGroup = getGroup(groupId),
+                            selectPasswd = null
+                        )
                     }
                     launch(Dispatchers.IO) {
                         fetchGroupPasswds(groupId)
@@ -443,7 +417,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
                 is UiAction.ShowPasswd -> {
                     val passwd = getGroupPasswd(passwdId)
-                    updatePasswdUiState {
+                    updateGroupUiState {
                         copy(selectPasswd = passwd)
                     }
                 }
@@ -479,14 +453,14 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 }
 
                 is UiAction.DeleteGroup -> {
-                    val selectGroupId = groupUiState.value.selectGroup?.id ?: return
+                    val selectGroupId = passwdUiState.value.selectGroup?.id ?: return
                     launch(Dispatchers.IO) {
                         deleteGroup(selectGroupId)
                     }
                 }
 
                 is UiAction.UpdateGroup -> {
-                    val selectGroupId = groupUiState.value.selectGroup?.id ?: return
+                    val selectGroupId = passwdUiState.value.selectGroup?.id ?: return
                     launch(Dispatchers.IO) {
                         updateGroup(
                             groupId = selectGroupId,
@@ -543,7 +517,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                      * TODO: 服务端实现。
                      * 暂时服务端未实现，所以直接更新GroupUiState，
                      * 但是repository.groupsFlow未更新，违反了单一数据源的原则，
-                     * 所以目前会有重新排序后，添加新的 Group 不显示的问题
+                     * 所以目前会有重新排序后，会有添加删除 Group，UI数据都不会更新的问题
                      */
                     updateGroupUiState {
                         copy(groups = reorderedGroupList)
@@ -558,7 +532,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         passwdUiState.value.groupPasswds.find { passwd: Passwd -> passwd.id == passwdId }
 
     private fun getGroup(groupId: Int): Group? =
-        groupUiState.value.groups.find { group: Group -> group.id == groupId }
+        passwdUiState.value.groups.find { group: Group -> group.id == groupId }
 
 
     /**
@@ -576,15 +550,11 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         _reorderableGroupList.tryEmit(groups)
     }
 
-    private fun updateGroupUiState(update: GroupUiState.() -> GroupUiState) {
-        _groupUiState.update {
+    private fun updateGroupUiState(update: PasswdUiState.() -> PasswdUiState) {
+        _passwdUiState.update {
             update(it)
         }
-        updateReorderGroupList(_groupUiState.value.groups)
-    }
-
-    private fun updatePasswdUiState(update: PasswdUiState.() -> PasswdUiState) {
-        _passwdUiState.update { update(it) }
+        updateReorderGroupList(_passwdUiState.value.groups)
     }
 
     private fun updateDialogUiState(update: DialogUiState.() -> DialogUiState) {
@@ -593,35 +563,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     private fun updateLoginUiState(update: LoginUiState.() -> LoginUiState) {
         _loginUiState.update { update(it) }
-    }
-
-    private fun updateSystemDark(dark: Boolean) {
-        logger.debug("(updateSystemDark) dark: $dark")
-        systemDark = dark
-    }
-
-    fun updateTheme(
-        forceDark: Boolean = false,
-        nextTheme: Theme = theme.value.next()
-    ) {
-        logger.debug("(updateTheme) nextTheme: {}. forceDark: {}, systemDark: {}", nextTheme, forceDark, systemDark)
-        if (nextTheme is Theme.Auto) {
-            nextTheme.dark = forceDark || systemDark
-        }
-        theme.tryEmit(nextTheme)
-    }
-
-    init {
-        launch {
-            shouldBeLandscape.stateIn(
-                scope = this,
-                started = SharingStarted.WhileSubscribed(),
-                initialValue = WindowUiState.Default.isLandscape
-            )
-                .collectLatest {
-                    updateWindowUiState { copy(isLandscape = it) }
-                }
-        }
     }
 
 }

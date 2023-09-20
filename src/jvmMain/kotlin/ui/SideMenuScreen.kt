@@ -25,16 +25,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import model.PasswdsViewModel
 import model.UiAction
 import model.UiScreen
+import model.viewmodel.ConfigViewModel
+import model.viewmodel.PasswdsViewModel
 
 @Composable
 fun SideMenuScreen(
-    viewModel: PasswdsViewModel,
+    passwdsViewModel: PasswdsViewModel,
+    configViewModel: ConfigViewModel,
     modifier: Modifier = Modifier
 ) {
-    val windowUiState = viewModel.windowUiState.collectAsState().value
+    val windowUiState = passwdsViewModel.windowUiState.collectAsState().value
     val expand = windowUiState.menuOpen
     Row(
         modifier = modifier
@@ -50,16 +52,16 @@ fun SideMenuScreen(
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                Symbol(expand, viewModel)
-                UiScreenList(viewModel, expand)
+                Symbol(expand, passwdsViewModel)
+                UiScreenList(passwdsViewModel, expand)
             }
 
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                ThemeChoiceButton(viewModel, expand)
+                ThemeChoiceButton(configViewModel, expand)
                 Spacer(modifier = modifier.height(15.dp))
-                LogoutButton(viewModel, expand)
+                LogoutButton(passwdsViewModel, expand)
             }
         }
 
@@ -164,7 +166,7 @@ private fun LazyListScope.UiScreenList(
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun ThemeChoiceButton(viewModel: PasswdsViewModel, expand: Boolean) {
+fun ThemeChoiceButton(viewModel: ConfigViewModel, expand: Boolean) {
     val theme by viewModel.theme.collectAsState()
 
     TextButton(

@@ -15,9 +15,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import entity.Passwd
-import model.PasswdsViewModel
 import model.UiAction
 import model.uieffect.DialogUiEffect
+import model.viewmodel.PasswdsViewModel
 import ui.EditPasswdDialog
 import ui.ReadableTextField
 import ui.copyToClipboard
@@ -75,7 +75,6 @@ fun PasswdDetailWrapper(
             }
 
             if (isEditDialogOpen.value) {
-                val theme by viewModel.theme.collectAsState()
                 EditPasswdDialog(
                     onEditConfirmClick = { passwd: Passwd ->
                         viewModel.onAction(UiAction.UpdatePasswd(passwd))

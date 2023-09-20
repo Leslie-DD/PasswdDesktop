@@ -23,9 +23,9 @@ import androidx.compose.ui.unit.sp
 import entity.Passwd
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import model.PasswdsViewModel
 import model.UiAction
 import model.uieffect.DialogUiEffect
+import model.viewmodel.PasswdsViewModel
 import ui.AddPasswdDialog
 import ui.DeletePasswdConfirmDialog
 import ui.NoRippleInteractionSource
@@ -105,7 +105,7 @@ fun PasswdList(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
 
-                val groupUiState = viewModel.groupUiState.collectAsState().value
+                val groupUiState = viewModel.passwdUiState.collectAsState().value
                 IconButton(
                     enabled = groupUiState.selectGroup != null,
                     colors = IconButtonDefaults.iconButtonColors(
