@@ -24,10 +24,10 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import database.entity.HistoryData
-import model.PasswdsViewModel
 import model.UiAction
 import model.UiScreen
 import model.uieffect.DialogUiEffect
+import model.viewmodel.PasswdsViewModel
 import ui.EnabledOutlinedTextField
 import ui.NoRippleInteractionSource
 import ui.TipsDialog

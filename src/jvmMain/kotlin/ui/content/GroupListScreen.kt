@@ -12,7 +12,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -22,9 +25,9 @@ import androidx.compose.ui.unit.sp
 import entity.Group
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import model.PasswdsViewModel
 import model.UiAction
 import model.uieffect.DialogUiEffect
+import model.viewmodel.PasswdsViewModel
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
@@ -45,7 +48,7 @@ fun GroupList(
     coroutineScope: CoroutineScope
 ) {
     val dialogUiState = viewModel.dialogUiState.collectAsState().value
-    val groupUiState = viewModel.groupUiState.collectAsState().value
+    val groupUiState = viewModel.passwdUiState.collectAsState().value
 
     val reorderableGroups = viewModel.reorderGroupList.collectAsState()
     val state = rememberReorderableLazyListState(
@@ -142,7 +145,6 @@ fun GroupList(
                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
             }
 
-            val theme by viewModel.theme.collectAsState()
             if (isNewGroupDialogOpen.value) {
                 AddGroupDialog(
                     onCloseClick = {

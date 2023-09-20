@@ -7,24 +7,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import model.PasswdsViewModel
 import model.UiAction
 import model.UiScreen
 import model.uieffect.DialogUiEffect
+import model.viewmodel.ConfigViewModel
+import model.viewmodel.PasswdsViewModel
 import ui.content.ContentScreen
 import ui.login.LoginAndSignupScreen
 
 @Composable
 fun App(
-    viewModel: PasswdsViewModel,
+    passwdsViewModel: PasswdsViewModel,
+    configViewModel: ConfigViewModel
 ) {
     Row(
         modifier = Modifier.fillMaxSize()
     ) {
-        val windowUiState = viewModel.windowUiState.collectAsState().value
+        val windowUiState = passwdsViewModel.windowUiState.collectAsState().value
         when (windowUiState.uiScreen) {
             UiScreen.Passwds, UiScreen.Settings -> {
-                SideMenuScreen(viewModel)
+                SideMenuScreen(passwdsViewModel, configViewModel)
             }
 
             else -> {}
@@ -38,10 +40,10 @@ fun App(
             targetState = windowUiState.uiScreen,
             content = {
                 when (it) {
-                    UiScreen.Passwds -> ContentScreen(viewModel, modifier)
-                    UiScreen.Settings -> SettingsScreen(viewModel, modifier)
+                    UiScreen.Passwds -> ContentScreen(passwdsViewModel, modifier)
+                    UiScreen.Settings -> SettingsScreen(passwdsViewModel, modifier)
                     UiScreen.Loading -> LoadingScreen(modifier)
-                    in UiScreen.LoginAndSignup -> LoginAndSignupScreen(viewModel, modifier)
+                    in UiScreen.LoginAndSignup -> LoginAndSignupScreen(passwdsViewModel, modifier)
 
                     else -> {}
                 }
@@ -53,11 +55,11 @@ fun App(
                         warn = tip
                     ) {
                         isTipsDialogOpen = false
-                        viewModel.onAction(UiAction.ClearEffect)
+                        passwdsViewModel.onAction(UiAction.ClearEffect)
                     }
                 }
 
-                val dialogUiState = viewModel.dialogUiState.collectAsState().value
+                val dialogUiState = passwdsViewModel.dialogUiState.collectAsState().value
                 with(dialogUiState.effect) {
                     when (this) {
                         is DialogUiEffect.LoginAndSignupFailure -> {
