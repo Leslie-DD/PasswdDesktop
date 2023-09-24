@@ -19,6 +19,8 @@ fun LoginInfoBox(
     var username by remember { mutableStateOf(loginUiState.historyData.username) }
     var password by remember { mutableStateOf(if (loginUiState.historyData.saved) loginUiState.historyData.password else "") }
     var secretKey by remember { mutableStateOf(if (loginUiState.historyData.saved) loginUiState.historyData.secretKey else "") }
+    var host by remember { mutableStateOf(if (loginUiState.historyData.saved) loginUiState.historyData.host else "") }
+    var port by remember { mutableStateOf(if (loginUiState.historyData.saved) loginUiState.historyData.port else 8080) }
     var saved by remember { mutableStateOf(loginUiState.historyData.saved) }
     var silentlyLogin by remember { mutableStateOf(loginUiState.historyData.silentlyLogin) }
 
@@ -42,6 +44,14 @@ fun LoginInfoBox(
         )
         PasswdTextField(value = password) { password = it }
         SecretKeyTextField(value = secretKey) { secretKey = it }
+        HostTextField(value = host) {
+            host = it
+            viewModel.onAction(UiAction.InitHost(Pair(host, port)))
+        }
+        PortTextField(value = port.toString()) {
+            port = Integer.valueOf(it)
+            viewModel.onAction(UiAction.InitHost(Pair(host, port)))
+        }
 
         LoginSelections(
             save = saved,
@@ -71,6 +81,8 @@ fun LoginInfoBox(
                         username = username,
                         password = password,
                         secretKey = secretKey,
+                        host = host,
+                        port = port,
                         saved = saved,
                         silentlyLogin = silentlyLogin
                     )

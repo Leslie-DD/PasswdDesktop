@@ -7,10 +7,9 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Key
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.People
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.ArrowDropUp
 import androidx.compose.material3.*
@@ -19,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -200,6 +200,39 @@ fun SecretKeyTextField(
         labelValue = "SecretKey",
         leadingIconImageVector = Icons.Outlined.Key,
         disableContentEncrypt = false
+    ) {
+        onSecretKeyChanged(it)
+    }
+
+    Spacer(modifier = Modifier.height(10.dp))
+}
+
+@Composable
+fun HostTextField(
+    value: String,
+    onSecretKeyChanged: (String) -> Unit
+) {
+    EnabledOutlinedTextField(
+        value = value,
+        labelValue = "Host",
+        leadingIconImageVector = Icons.Outlined.DoorFront,
+    ) {
+        onSecretKeyChanged(it)
+    }
+
+    Spacer(modifier = Modifier.height(10.dp))
+}
+
+@Composable
+fun PortTextField(
+    value: String,
+    onSecretKeyChanged: (String) -> Unit
+) {
+    EnabledOutlinedTextField(
+        value = value,
+        labelValue = "Port",
+        leadingIconImageVector = Icons.Outlined.Portrait,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
     ) {
         onSecretKeyChanged(it)
     }

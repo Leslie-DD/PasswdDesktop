@@ -16,6 +16,7 @@ import model.uistate.DialogUiState
 import model.uistate.LoginUiState
 import model.uistate.PasswdUiState
 import model.uistate.WindowUiState
+import network.HttpClientObj
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import repository.PasswdRepository
@@ -63,7 +64,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     private val dataBase = DataBase.instance
 
     init {
-
         launch(Dispatchers.IO) {
             silentlyLogin()
         }
@@ -118,6 +118,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 username = savedHistoryData.username,
                 password = savedHistoryData.password,
                 secretKey = savedHistoryData.secretKey,
+                host = savedHistoryData.host,
+                port = savedHistoryData.port,
                 saved = savedHistoryData.saved,
                 silentlyLogin = true,
             )
@@ -138,23 +140,34 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         username: String,
         password: String,
         secretKey: String,
+        host: String,
+        port: Int,
         saved: Boolean,
         silentlyLogin: Boolean,
     ) {
         if (username.isBlank() || password.isBlank() || secretKey.isBlank()) {
             logger.warn("(loginByPassword) warn, $username, $password, $secretKey")
-            updateDialogUiState {
-                copy(effect = DialogUiEffect.LoginAndSignupFailure("username, password and secret key can not be null"))
-            }
+            updateDialogUiState { copy(effect = DialogUiEffect.LoginAndSignupFailure("username, password and secret key can not be null")) }
+            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
             return
         }
+
+        try {
+            HttpClientObj.forceUpdateHttpClient(host, port)
+        } catch (e: Throwable) {
+            logger.warn("(loginByPassword) warn, ${e.message}")
+            updateDialogUiState { copy(effect = DialogUiEffect.LoginAndSignupFailure(e.message)) }
+            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
+            return
+        }
+
         repository.loginByPassword(
             username = username,
             password = password,
             secretKey = secretKey
         ).onSuccess {
             logger.info("(loginByPassword) success")
-            updateDB(username, password, secretKey, it.token, saved, silentlyLogin)
+            updateDB(username, password, secretKey, host, port, it.token, saved, silentlyLogin)
             onLoginSuccess(secretKey, it)
         }.onFailure {
             logger.error("(loginByPassword) error: ${it.message}")
@@ -185,14 +198,25 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     private suspend fun signup(
         username: String,
         password: String,
+        host: String,
+        port: Int,
     ) {
         if (username.isBlank() || password.isBlank()) {
             logger.warn("sign up username and password can not be empty")
-            updateDialogUiState {
-                copy(effect = DialogUiEffect.LoginAndSignupFailure("sign up username and password can not be empty"))
-            }
+            updateDialogUiState { copy(effect = DialogUiEffect.LoginAndSignupFailure("sign up username and password can not be empty")) }
+            updateWindowUiState { copy(uiScreen = UiScreen.Signup) }
             return
         }
+
+        try {
+            HttpClientObj.forceUpdateHttpClient(host, port)
+        } catch (e: Throwable) {
+            logger.warn("(loginByPassword) warn, ${e.message}")
+            updateDialogUiState { copy(effect = DialogUiEffect.LoginAndSignupFailure(e.message)) }
+            updateWindowUiState { copy(uiScreen = UiScreen.Signup) }
+            return
+        }
+
         repository.signup(
             username = username,
             password = password,
@@ -364,6 +388,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         username: String,
         password: String,
         secretKey: String,
+        host: String,
+        port: Int,
         accessToken: String,
         saved: Boolean,
         silentlyLogin: Boolean
@@ -373,6 +399,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             username = username,
             password = if (saved) password else "",
             secretKey = secretKey,
+            host = host,
+            port = port,
             accessToken = accessToken,
             saved = saved,
             silentlyLogin = silentlyLogin
@@ -434,6 +462,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                             username = username,
                             password = password,
                             secretKey = secretKey,
+                            host = host,
+                            port = port,
                             saved = saved,
                             silentlyLogin = silentlyLogin
                         )
@@ -444,7 +474,9 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     launch(Dispatchers.IO) {
                         signup(
                             username = username,
-                            password = password
+                            password = password,
+                            host = host,
+                            port = port
                         )
                     }
                 }
@@ -535,6 +567,10 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                         val json = Gson().toJson(repository.getAllGroupsWithPasswds())
                         FileUtils.exportDataToFile(filePath, json)
                     }
+                }
+
+                is UiAction.InitHost -> {
+                    // TODO: host valid check
                 }
 
             }

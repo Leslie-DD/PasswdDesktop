@@ -33,7 +33,8 @@ internal class DataBase {
         createSqlDriver(),
         HistoryAdapter = History.Adapter(
             idAdapter = longOfIntAdapter,
-            userIdAdapter = longOfIntAdapter
+            userIdAdapter = longOfIntAdapter,
+            portAdapter = longOfIntAdapter
         )
     )
 
@@ -107,6 +108,8 @@ internal class DataBase {
             username,
             password,
             secretKey,
+            host,
+            port,
             accessToken,
             saved,
             silentlyLogin,
@@ -120,6 +123,8 @@ internal class DataBase {
         username: String?,
         password: String?,
         secretKey: String?,
+        host: String?,
+        port: Int?,
         accessToken: String?,
         saved: Boolean?,
         silentlyLogin: Boolean?,
@@ -132,6 +137,8 @@ internal class DataBase {
             password = password ?: "",
             secretKey = secretKey ?: "",
             accessToken = accessToken ?: "",
+            host = host ?: "",
+            port = port ?: 8080,
             saved = saved ?: false,
             silentlyLogin = silentlyLogin ?: false,
             createTime = createTime ?: 0
