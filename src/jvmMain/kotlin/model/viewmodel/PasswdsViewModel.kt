@@ -1,5 +1,6 @@
 package model.viewmodel
 
+import com.google.gson.Gson
 import database.DataBase
 import database.entity.HistoryData
 import database.entity.HistoryData.Companion.defaultHistoryData
@@ -11,10 +12,15 @@ import kotlinx.coroutines.flow.*
 import model.UiAction
 import model.UiScreen
 import model.uieffect.DialogUiEffect
-import model.uistate.*
+import model.uistate.DialogUiState
+import model.uistate.LoginUiState
+import model.uistate.PasswdUiState
+import model.uistate.WindowUiState
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import repository.PasswdRepository
+import utils.FileUtils
+
 
 @OptIn(FlowPreview::class)
 class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
@@ -521,6 +527,13 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                      */
                     updateGroupUiState {
                         copy(groups = reorderedGroupList)
+                    }
+                }
+
+                is UiAction.ExportPasswdsToFile -> {
+                    launch {
+                        val json = Gson().toJson(repository.getAllGroupsWithPasswds())
+                        FileUtils.exportDataToFile(filePath, json)
                     }
                 }
 

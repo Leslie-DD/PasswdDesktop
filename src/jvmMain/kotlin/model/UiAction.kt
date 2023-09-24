@@ -50,4 +50,6 @@ sealed class UiAction {
 
     class ReorderGroupDragEnd(val reorderedGroupList: MutableList<Group>) : UiAction()
 
+    class ExportPasswdsToFile(val filePath: String) : UiAction()
+
 }
