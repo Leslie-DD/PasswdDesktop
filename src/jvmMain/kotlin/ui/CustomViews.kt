@@ -160,10 +160,10 @@ fun EnabledOutlinedTextField(
                 overflow = TextOverflow.Ellipsis
             )
         },
-        leadingIcon = {
-            leadingIconImageVector?.let {
-                Icon(imageVector = leadingIconImageVector, contentDescription = null)
-            }
+        leadingIcon = if (leadingIconImageVector == null) {
+            null
+        } else {
+            { Icon(imageVector = leadingIconImageVector, contentDescription = null) }
         },
         visualTransformation = if (contentVisible) VisualTransformation.None else PasswordVisualTransformation(),
         trailingIcon = if (!disableContentEncrypt) {

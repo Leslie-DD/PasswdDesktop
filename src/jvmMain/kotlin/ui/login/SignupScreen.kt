@@ -29,14 +29,18 @@ fun SignupInfoBox(
     ) {
         UsernameTextField(value = username) { username = it }
         PasswdTextField(value = password) { password = it }
-        HostTextField(value = host) {
-            host = it
-            viewModel.onAction(UiAction.InitHost(Pair(host, port)))
-        }
-        PortTextField(value = port.toString()) {
-            port = Integer.valueOf(it)
-            viewModel.onAction(UiAction.InitHost(Pair(host, port)))
-        }
+        HostTextField(
+            hostValue = host,
+            portValue = port.toString(),
+            onHostChanged = {
+                host = it
+                viewModel.onAction(UiAction.InitHost(Pair(host, port)))
+            },
+            onPortChanged = {
+                port = Integer.valueOf(it)
+                viewModel.onAction(UiAction.InitHost(Pair(host, port)))
+            }
+        )
         Button(
             colors = ButtonDefaults.buttonColors(
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
