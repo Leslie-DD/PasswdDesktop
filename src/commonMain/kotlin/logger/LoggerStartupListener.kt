@@ -13,9 +13,13 @@ open class LoggerStartupListener : ContextAwareBase(), LoggerContextListener, Li
     private var started = false
 
     override fun start() {
-        val logFile = FileUtils.getFileInUserHome("passwd.log")
-        getContext().putProperty("logFilePath", logFile.absolutePath)
-        println("[logger.LoggerStartupListener] (start) logFilePath: " + logFile.absolutePath)
+        val logFilesFolder = FileUtils.getFileInUserHome("logFiles")
+        if (!logFilesFolder.isDirectory || !logFilesFolder.exists()) {
+            val mkdirResult = logFilesFolder.mkdir()
+            println("[logger.LoggerStartupListener] (start) create logFilesFolder: " + logFilesFolder.absolutePath + ", success? " + mkdirResult)
+        }
+        println("[logger.LoggerStartupListener] (start) logFilesFolder: " + logFilesFolder.absolutePath)
+        getContext().putProperty("logFilesFolder", logFilesFolder.absolutePath)
         started = true
     }
 
