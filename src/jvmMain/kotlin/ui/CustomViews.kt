@@ -132,6 +132,7 @@ fun EnabledOutlinedTextField(
     leadingIconImageVector: ImageVector? = null,
     disableContentEncrypt: Boolean = true,
     trailingIcon: @Composable (() -> Unit)? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
         textColor = MaterialTheme.colorScheme.onPrimaryContainer,
         focusedBorderColor = MaterialTheme.colorScheme.secondary,
@@ -191,6 +192,7 @@ fun EnabledOutlinedTextField(
         value = value,
         maxLines = maxLines,
         singleLine = singleLine,
+        keyboardOptions = keyboardOptions,
         onValueChange = {
             onValueChange(it)
         },

@@ -7,6 +7,8 @@ CREATE TABLE History (
     username TEXT,
     password TEXT,
     secretKey TEXT,
+    host TEXT,
+    port INTEGER AS Int,
     accessToken TEXT,
     saved INTEGER AS Boolean DEFAULT 0,
     silentlyLogin INTEGER AS Boolean DEFAULT 0,
@@ -23,7 +25,7 @@ getAllHistory:
 SELECT * FROM History;
 
 insertHistory:
-INSERT INTO History(userId, username, password, secretKey, accessToken, saved, silentlyLogin, updateTime)
+INSERT INTO History(userId, username, password, secretKey, host, port, accessToken, saved, silentlyLogin, updateTime)
 VALUES ?;
 
 latestLoginHistory:

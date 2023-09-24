@@ -19,6 +19,8 @@ fun SignupInfoBox(
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var host by remember { mutableStateOf("") }
+    var port by remember { mutableStateOf(8080) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -27,19 +29,20 @@ fun SignupInfoBox(
     ) {
         UsernameTextField(value = username) { username = it }
         PasswdTextField(value = password) { password = it }
+        HostTextField(value = host) {
+            host = it
+            viewModel.onAction(UiAction.InitHost(Pair(host, port)))
+        }
+        PortTextField(value = port.toString()) {
+            port = Integer.valueOf(it)
+            viewModel.onAction(UiAction.InitHost(Pair(host, port)))
+        }
         Button(
             colors = ButtonDefaults.buttonColors(
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 containerColor = MaterialTheme.colorScheme.secondaryContainer
             ),
-            onClick = {
-                viewModel.onAction(
-                    UiAction.Signup(
-                        username = username,
-                        password = password,
-                    )
-                )
-            }
+            onClick = { viewModel.onAction(UiAction.Signup(username, password, host, port)) }
         ) {
             Text(
                 text = "Sign up"

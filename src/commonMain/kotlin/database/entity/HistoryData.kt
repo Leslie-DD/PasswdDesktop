@@ -8,6 +8,8 @@ data class HistoryData(
     val username: String,
     val password: String,
     val secretKey: String,
+    val host: String,
+    val port: Int,
     val accessToken: String,
     val saved: Boolean = false,
     val silentlyLogin: Boolean = false,
@@ -19,6 +21,8 @@ data class HistoryData(
                 username = "",
                 password = "",
                 secretKey = "",
+                host = "",
+                port = 8080,
                 accessToken = ""
             )
         }

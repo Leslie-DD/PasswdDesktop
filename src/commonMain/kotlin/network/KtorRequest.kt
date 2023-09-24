@@ -46,6 +46,7 @@ object KtorRequest {
         params: List<Param<Any>>? = null
     ): Result<T> = runCatching {
         logger.info("postRequest ($api) params: $params, accessToken: $accessToken, userId: $userId")
+        val httpClient = HttpClientObj.httpClient ?: return Result.failure(Throwable("httpClient error"))
         return httpClient.post {
             url(api)
             setBody(MultiPartFormDataContent(formData {
