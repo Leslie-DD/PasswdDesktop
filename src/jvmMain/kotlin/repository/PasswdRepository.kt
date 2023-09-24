@@ -275,10 +275,7 @@ class PasswdRepository(
             localDataSource.passwdsMap
                 .flatMap { it.value }
                 .forEach { passwd ->
-                    if (passwd.title?.matches(pattern) == true || passwd.usernameString?.matches(
-                            pattern
-                        ) == true
-                    ) {
+                    if (passwd.title?.matches(pattern) == true || passwd.usernameString?.matches(pattern) == true) {
                         result.add(passwd)
                     }
                 }
@@ -290,19 +287,14 @@ class PasswdRepository(
         secretKeyBytes: ByteArray? = null,
         passwd: Passwd
     ): Passwd {
-//        logger.debug("fetchGroupPasswd decode before: passwd: {}", passwd)
         try {
-            passwd.title =
-                AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.title)
-            passwd.usernameString =
-                AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.usernameString)
-            passwd.passwordString =
-                AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.passwordString)
+            passwd.title = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.title)
+            passwd.usernameString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.usernameString)
+            passwd.passwordString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.passwordString)
         } catch (e: Exception) {
             logger.error("fetchGroupPasswd error " + e.message)
             e.printStackTrace()
         }
-//        logger.debug("fetchGroupPasswd decode after: passwd: {}", passwd)
         return passwd
     }
 
@@ -318,6 +310,26 @@ class PasswdRepository(
         localDataSource.updateGroupPasswds(groupId, convert).let {
             onUpdated?.invoke()
         }
+    }
+
+    fun getAllGroupsWithPasswds(): MutableMap<String, MutableList<Passwd>> {
+        val passwdsMap = localDataSource.passwdsMap
+        val resultMap: MutableMap<String, MutableList<Passwd>> = mutableMapOf()
+        localDataSource.groups.value.forEach { group ->
+            passwdsMap[group.id]?.let {
+                val keyString: String = if (group.groupName.isNullOrEmpty()) {
+                    if (group.groupComment.isNullOrEmpty()) {
+                        group.id.toString()
+                    } else {
+                        group.groupComment!!
+                    }
+                } else {
+                    group.groupName!!
+                }
+                resultMap[keyString] = it
+            }
+        }
+        return resultMap
     }
 
     private suspend fun clearGroupAndGroupPasswds() {
