@@ -1,3 +1,5 @@
+package logger
+
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.LoggerContext
@@ -13,7 +15,7 @@ open class LoggerStartupListener : ContextAwareBase(), LoggerContextListener, Li
     override fun start() {
         val logFile = FileUtils.getFileInUserHome("passwd.log")
         getContext().putProperty("logFilePath", logFile.absolutePath)
-        println("[LoggerStartupListener] (start) logFilePath: " + logFile.absolutePath)
+        println("[logger.LoggerStartupListener] (start) logFilePath: " + logFile.absolutePath)
         started = true
     }
 
