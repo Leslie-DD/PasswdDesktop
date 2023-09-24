@@ -1,7 +1,6 @@
 package ui.login
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
@@ -29,6 +28,7 @@ import model.UiScreen
 import model.uieffect.DialogUiEffect
 import model.viewmodel.PasswdsViewModel
 import ui.EnabledOutlinedTextField
+import ui.HistoriesDropDownMenu
 import ui.NoRippleInteractionSource
 import ui.TipsDialog
 
@@ -141,8 +141,15 @@ fun UsernameTextField(
                         histories = histories,
                         expanded = menuVisible,
                         offset = DpOffset((-200).dp, 0.dp),
-                        onHistorySelected = onHistorySelected
-                    ) { menuVisible = it }
+                        onHistorySelected = onHistorySelected,
+                        onMenuVisibleChanged = { menuVisible = it }
+                    ) { item, selected, onItemSelected ->
+                        UsernameHistoryMenuItem(
+                            item = item,
+                            selected = selected,
+                            onItemSelected = onItemSelected
+                        )
+                    }
 
                     IconButton(
                         colors = IconButtonDefaults.iconButtonColors(
@@ -241,36 +248,7 @@ fun PortTextField(
 }
 
 @Composable
-private fun HistoriesDropDownMenu(
-    histories: List<HistoryData>,
-    expanded: Boolean,
-    offset: DpOffset = DpOffset(0.dp, 0.dp),
-    onHistorySelected: (HistoryData) -> Unit,
-    onMenuVisibleChanged: (Boolean) -> Unit
-) {
-    var selectedMenuIndex by remember { mutableStateOf(-1) }
-    DropdownMenu(
-        modifier = Modifier.padding(10.dp).width(200.dp).background(color = MaterialTheme.colorScheme.surface),
-        offset = offset,
-        expanded = expanded,
-        onDismissRequest = { onMenuVisibleChanged(false) },
-    ) {
-        histories.forEachIndexed { index, item ->
-            HistoryMenuItem(
-                item = item,
-                selected = selectedMenuIndex == index,
-                onItemSelected = {
-                    onHistorySelected(item)
-                    selectedMenuIndex = index
-                    onMenuVisibleChanged(false)
-                }
-            )
-        }
-    }
-}
-
-@Composable
-private fun HistoryMenuItem(
+private fun UsernameHistoryMenuItem(
     item: HistoryData,
     selected: Boolean,
     onItemSelected: () -> Unit,

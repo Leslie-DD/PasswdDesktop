@@ -27,6 +27,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -388,6 +389,32 @@ fun GlobalDialog(
                     }
                 }
 
+            }
+        }
+    }
+}
+
+@Composable
+fun <T> HistoriesDropDownMenu(
+    histories: List<T>,
+    expanded: Boolean,
+    offset: DpOffset = DpOffset(0.dp, 0.dp),
+    onHistorySelected: (T) -> Unit,
+    onMenuVisibleChanged: (Boolean) -> Unit,
+    menuItem: @Composable (item: T, selected: Boolean, onItemSelected: () -> Unit) -> Unit
+) {
+    var selectedMenuIndex by remember { mutableStateOf(-1) }
+    DropdownMenu(
+        modifier = Modifier.padding(10.dp).width(200.dp).background(color = MaterialTheme.colorScheme.surface),
+        offset = offset,
+        expanded = expanded,
+        onDismissRequest = { onMenuVisibleChanged(false) },
+    ) {
+        histories.forEachIndexed { index, item ->
+            menuItem(item, selectedMenuIndex == index) {
+                onHistorySelected(item)
+                selectedMenuIndex = index
+                onMenuVisibleChanged(false)
             }
         }
     }
