@@ -216,32 +216,34 @@ fun SecretKeyTextField(
 
 @Composable
 fun HostTextField(
-    value: String,
-    onSecretKeyChanged: (String) -> Unit
+    hostValue: String,
+    portValue: String,
+    onHostChanged: (String) -> Unit,
+    onPortChanged: (String) -> Unit,
 ) {
-    EnabledOutlinedTextField(
-        value = value,
-        labelValue = "Host",
-        leadingIconImageVector = Icons.Outlined.DoorFront,
+    Row(
+        modifier = Modifier.width(300.dp),
     ) {
-        onSecretKeyChanged(it)
-    }
+        EnabledOutlinedTextField(
+            modifier = Modifier.width(210.dp),
+            value = hostValue,
+            labelValue = "Host",
+            leadingIconImageVector = Icons.Outlined.Computer,
+            trailingIcon = {}
+        ) {
+            onHostChanged(it)
+        }
 
-    Spacer(modifier = Modifier.height(10.dp))
-}
+        Spacer(modifier = Modifier.width(8.dp))
 
-@Composable
-fun PortTextField(
-    value: String,
-    onSecretKeyChanged: (String) -> Unit
-) {
-    EnabledOutlinedTextField(
-        value = value,
-        labelValue = "Port",
-        leadingIconImageVector = Icons.Outlined.Portrait,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-    ) {
-        onSecretKeyChanged(it)
+        EnabledOutlinedTextField(
+            modifier = Modifier.width(82.dp),
+            value = portValue,
+            labelValue = "Port",
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        ) {
+            onPortChanged(it)
+        }
     }
 
     Spacer(modifier = Modifier.height(10.dp))
