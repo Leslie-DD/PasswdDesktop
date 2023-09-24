@@ -29,14 +29,17 @@ fun LoginInfoBox(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        val histories = viewModel.loginUiState.collectAsState().value.historyDataList
         UsernameTextField(
             enabledDropMenu = true,
             value = username,
-            histories = viewModel.loginUiState.collectAsState().value.historyDataList,
+            histories = histories,
             onHistorySelected = { item ->
                 username = item.username
                 password = item.password
                 secretKey = item.secretKey
+                host = item.host
+                port = item.port
                 saved = item.saved
                 silentlyLogin = item.silentlyLogin
             },
@@ -47,6 +50,7 @@ fun LoginInfoBox(
         HostTextField(
             hostValue = host,
             portValue = port.toString(),
+            histories = histories,
             onHostChanged = {
                 host = it
                 viewModel.onAction(UiAction.InitHost(Pair(host, port)))
@@ -54,7 +58,11 @@ fun LoginInfoBox(
             onPortChanged = {
                 port = Integer.valueOf(it)
                 viewModel.onAction(UiAction.InitHost(Pair(host, port)))
-            }
+            },
+            onHistorySelected = { item ->
+                host = item.host
+                port = item.port
+            },
         )
 
         LoginSelections(

@@ -27,11 +27,13 @@ fun SignupInfoBox(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        val histories = viewModel.loginUiState.collectAsState().value.historyDataList
         UsernameTextField(value = username) { username = it }
         PasswdTextField(value = password) { password = it }
         HostTextField(
             hostValue = host,
             portValue = port.toString(),
+            histories = histories,
             onHostChanged = {
                 host = it
                 viewModel.onAction(UiAction.InitHost(Pair(host, port)))
@@ -39,6 +41,10 @@ fun SignupInfoBox(
             onPortChanged = {
                 port = Integer.valueOf(it)
                 viewModel.onAction(UiAction.InitHost(Pair(host, port)))
+            },
+            onHistorySelected = {
+                host = it.host
+                port = it.port
             }
         )
         Button(

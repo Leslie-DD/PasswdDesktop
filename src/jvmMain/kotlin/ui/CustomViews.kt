@@ -125,7 +125,7 @@ private fun cursorColor(): State<Color> {
 @Composable
 fun EnabledOutlinedTextField(
     enabled: Boolean = true,
-    modifier: Modifier = Modifier.width(300.dp),
+    modifier: Modifier = Modifier.width(330.dp),
     value: String,
     labelValue: String,
     maxLines: Int = 1,

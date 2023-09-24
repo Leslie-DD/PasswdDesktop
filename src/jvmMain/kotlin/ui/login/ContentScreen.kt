@@ -8,7 +8,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.outlined.Computer
+import androidx.compose.material.icons.outlined.Key
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.People
 import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.ArrowDropUp
 import androidx.compose.material3.*
@@ -218,18 +221,54 @@ fun SecretKeyTextField(
 fun HostTextField(
     hostValue: String,
     portValue: String,
+    histories: List<HistoryData> = arrayListOf(),
     onHostChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
+    onHistorySelected: (HistoryData) -> Unit = {},
 ) {
     Row(
-        modifier = Modifier.width(300.dp),
+        modifier = Modifier.width(330.dp),
     ) {
+        var menuVisible by remember { mutableStateOf(false) }
         EnabledOutlinedTextField(
-            modifier = Modifier.width(210.dp),
+            modifier = Modifier.width(240.dp),
             value = hostValue,
             labelValue = "Host",
             leadingIconImageVector = Icons.Outlined.Computer,
-            trailingIcon = {}
+            trailingIcon = {
+                Box(
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .padding(end = 10.dp)
+                        .focusProperties { canFocus = false }
+                ) {
+                    HistoriesDropDownMenu(
+                        histories = histories.distinctBy { "${it.host}:${it.port}" },
+                        expanded = menuVisible,
+                        offset = DpOffset((-100).dp, 0.dp),
+                        onHistorySelected = onHistorySelected,
+                        onMenuVisibleChanged = { menuVisible = it }
+                    ) { item, selected, onItemSelected ->
+                        HostAndPortHistoryMenuItem(
+                            item = item,
+                            selected = selected,
+                            onItemSelected = onItemSelected
+                        )
+                    }
+
+                    IconButton(
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
+                        onClick = { menuVisible = !menuVisible }
+                    ) {
+                        Icon(
+                            imageVector = if (menuVisible) Icons.Rounded.ArrowDropUp else Icons.Rounded.ArrowDropDown,
+                            contentDescription = if (menuVisible) "collapse menu list" else "expand menu list"
+                        )
+                    }
+                }
+            }
         ) {
             onHostChanged(it)
         }
@@ -275,6 +314,40 @@ private fun UsernameHistoryMenuItem(
     ) {
         Text(
             text = item.username,
+            modifier = Modifier.fillMaxWidth(),
+            fontSize = 16.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@Composable
+private fun HostAndPortHistoryMenuItem(
+    item: HistoryData,
+    selected: Boolean,
+    onItemSelected: () -> Unit,
+) {
+    TextButton(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20),
+        interactionSource = remember { NoRippleInteractionSource() },
+        onClick = { onItemSelected() },
+        colors = ButtonDefaults.textButtonColors(
+            containerColor = if (selected) {
+                MaterialTheme.colorScheme.tertiaryContainer
+            } else {
+                MaterialTheme.colorScheme.primaryContainer
+            },
+            contentColor = if (selected) {
+                Color.White
+            } else {
+                MaterialTheme.colorScheme.onPrimaryContainer
+            }
+        )
+    ) {
+        Text(
+            text = "${item.host}:${item.port}",
             modifier = Modifier.fillMaxWidth(),
             fontSize = 16.sp,
             maxLines = 1,
