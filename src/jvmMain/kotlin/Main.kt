@@ -3,13 +3,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Tray
 import androidx.compose.ui.window.Window
@@ -19,8 +17,6 @@ import model.Res
 import model.UiAction
 import model.viewmodel.ConfigViewModel
 import model.viewmodel.PasswdsViewModel
-import theme.LocalSpacing
-import theme.Spacing
 import ui.App
 
 fun main() = application {
@@ -52,27 +48,18 @@ fun main() = application {
             rootPane.putClientProperty("apple.awt.windowTitleVisible", false)
         }
 
-        CompositionLocalProvider(LocalSpacing provides Spacing()) {
-            val theme by configViewModel.theme.collectAsState()
-            MaterialTheme(colorScheme = theme.materialColorScheme) {
-                Surface(
-                    modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary)
-                ) {
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        App(
-                            passwdsViewModel = passwdsViewModel,
-                            configViewModel = configViewModel
-                        )
-                    }
+        val theme by configViewModel.theme.collectAsState()
+        MaterialTheme(colorScheme = theme.materialColorScheme) {
+            Surface(
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary)
+            ) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    App(
+                        passwdsViewModel = passwdsViewModel,
+                        configViewModel = configViewModel
+                    )
                 }
             }
         }
-
     }
 }
-
-/**
- * 认为 4:3 是区分横竖屏的分界点
- */
-private val DpSize.isLandscape: Boolean
-    get() = (height / width) > (4f / 3f)
