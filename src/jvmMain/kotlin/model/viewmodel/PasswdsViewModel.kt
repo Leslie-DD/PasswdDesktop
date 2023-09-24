@@ -583,7 +583,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     private fun getGroup(groupId: Int): Group? =
         passwdUiState.value.groups.find { group: Group -> group.id == groupId }
 
-
     /**
      * 更新页面状态
      * 调用时在函数块中用 data class 的 copy函数就行
@@ -592,8 +591,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         _windowUiState.update { update(it) }
     }
 
-    private val _reorderableGroupList = MutableStateFlow<MutableList<Group>>(arrayListOf())
-    val reorderGroupList = _reorderableGroupList.asStateFlow()
+    private val _reorderableGroupList: MutableStateFlow<MutableList<Group>> by lazy {
+        MutableStateFlow(arrayListOf())
+    }
+    val reorderGroupList: StateFlow<MutableList<Group>> by lazy {
+        _reorderableGroupList.asStateFlow()
+    }
 
     fun updateReorderGroupList(groups: MutableList<Group>) {
         _reorderableGroupList.tryEmit(groups)
