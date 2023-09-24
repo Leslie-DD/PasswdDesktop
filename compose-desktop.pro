@@ -7,6 +7,10 @@
 
 -keep class org.sqlite.** { *; }
 
+# fix error while log to file
+-keep class logger.** { *; }
+-keep class ch.qos.logback.** { *; }
+
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt # core serialization annotations
 

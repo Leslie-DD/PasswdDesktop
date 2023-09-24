@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <contextListener class="LoggerStartupListener"/>
+    <contextListener class="logger.LoggerStartupListener"/>
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <file>${logFilePath}</file>
@@ -26,10 +26,4 @@
     </root>
     <logger name="io.netty" level="INFO"/>
 
-    <Loggers>
-        <Root level="debug">
-            <AppenderRef ref="FILE"/>
-            <AppenderRef ref="STDOUT"/>
-        </Root>
-    </Loggers>
 </configuration>
