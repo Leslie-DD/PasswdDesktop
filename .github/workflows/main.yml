@@ -2,7 +2,7 @@ name: Run Gradle on PRs
 on:
   push:
     branches:
-      - main
+      - release
 jobs:
   gradle:
     strategy:
