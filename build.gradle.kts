@@ -86,6 +86,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+
             packageName = "Passwd"
             packageVersion = "1.0.0"
 
