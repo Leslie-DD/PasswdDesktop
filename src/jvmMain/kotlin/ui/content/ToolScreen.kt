@@ -80,7 +80,11 @@ private fun SearchBox(viewModel: PasswdsViewModel, modifier: Modifier) {
                 fontSize = 14.sp
             )
         },
-        onValueChange = { viewModel.onAction(UiAction.SearchPasswds(it)) }
+        onValueChange = {
+            if (it.isNotBlank()) {
+                viewModel.onAction(UiAction.SearchPasswds(it))
+            }
+        }
     )
     Spacer(modifier = modifier.fillMaxHeight().width(10.dp))
 }
