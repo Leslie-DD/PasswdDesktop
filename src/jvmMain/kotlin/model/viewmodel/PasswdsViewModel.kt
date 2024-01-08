@@ -460,6 +460,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
                 is UiAction.Login -> {
                     launch(Dispatchers.IO) {
+                        delay(200)
                         loginByPassword(
                             username = username,
                             password = password,

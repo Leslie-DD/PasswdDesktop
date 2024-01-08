@@ -1,6 +1,8 @@
 package ui
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,7 +14,8 @@ import model.UiScreen
 import model.uieffect.DialogUiEffect
 import model.viewmodel.ConfigViewModel
 import model.viewmodel.PasswdsViewModel
-import ui.content.ContentScreen
+import ui.content.LoggedInScreen
+import ui.content.PasswdsScreen
 import ui.login.LoginAndSignupScreen
 
 @Composable
@@ -24,14 +27,6 @@ fun App(
         modifier = Modifier.fillMaxSize()
     ) {
         val windowUiState = passwdsViewModel.windowUiState.collectAsState().value
-        when (windowUiState.uiScreen) {
-            UiScreen.Passwds, UiScreen.Settings -> {
-                SideMenuScreen(passwdsViewModel, configViewModel)
-            }
-
-            else -> {}
-        }
-
         val modifier = Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.primaryContainer)
@@ -40,10 +35,9 @@ fun App(
             targetState = windowUiState.uiScreen,
             content = {
                 when (it) {
-                    UiScreen.Passwds -> ContentScreen(passwdsViewModel, modifier)
-                    UiScreen.Settings -> SettingsScreen(passwdsViewModel, modifier)
-                    UiScreen.Loading -> LoadingScreen(modifier)
+                    in UiScreen.LoggedInScreen -> LoggedInScreen(it, passwdsViewModel, configViewModel, modifier)
                     in UiScreen.LoginAndSignup -> LoginAndSignupScreen(passwdsViewModel, modifier)
+                    UiScreen.Loading -> LoadingScreen(modifier)
 
                     else -> {}
                 }

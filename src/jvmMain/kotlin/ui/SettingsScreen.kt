@@ -18,23 +18,28 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import database.DataBase
+import model.viewmodel.ConfigViewModel
 import model.viewmodel.PasswdsViewModel
 
 @Composable
 fun SettingsScreen(
-    viewModel: PasswdsViewModel,
+    passwdsViewModel: PasswdsViewModel,
+    configViewModel: ConfigViewModel,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier.padding(top = 20.dp),
-        contentAlignment = Alignment.TopCenter
-    ) {
-        Column(
-            modifier = Modifier.wrapContentSize(), horizontalAlignment = Alignment.Start
+    Row(modifier = modifier) {
+        SideMenuScreen(passwdsViewModel, configViewModel)
+        Box(
+            modifier = modifier.padding(top = 20.dp),
+            contentAlignment = Alignment.TopCenter
         ) {
-            UsernameView(DataBase.instance.globalUsername.value)
-            Spacer(modifier = Modifier.height(10.dp))
-            SecretKeyView(DataBase.instance.globalSecretKey.value)
+            Column(
+                modifier = Modifier.wrapContentSize(), horizontalAlignment = Alignment.Start
+            ) {
+                UsernameView(DataBase.instance.globalUsername.value)
+                Spacer(modifier = Modifier.height(10.dp))
+                SecretKeyView(DataBase.instance.globalSecretKey.value)
+            }
         }
     }
 }

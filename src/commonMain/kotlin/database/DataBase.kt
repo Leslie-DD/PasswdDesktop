@@ -101,49 +101,6 @@ internal class DataBase {
         dbQuery.updateHistoryUpdateTimeById(updateTime = Clock.System.now().epochSeconds, id = id)
     }
 
-    private fun HistoryData.mapToHistory(): History {
-        return History(
-            id,
-            userId,
-            username,
-            password,
-            secretKey,
-            host,
-            port,
-            accessToken,
-            saved,
-            silentlyLogin,
-            createTime
-        )
-    }
-
-    private fun mapHistoryList(
-        id: Int,
-        userId: Int?,
-        username: String?,
-        password: String?,
-        secretKey: String?,
-        host: String?,
-        port: Int?,
-        accessToken: String?,
-        saved: Boolean?,
-        silentlyLogin: Boolean?,
-        createTime: Long?,
-    ): HistoryData {
-        return HistoryData(
-            id = id,
-            userId = userId ?: 0,
-            username = username ?: "",
-            password = password ?: "",
-            secretKey = secretKey ?: "",
-            accessToken = accessToken ?: "",
-            host = host ?: "",
-            port = port ?: 8080,
-            saved = saved ?: false,
-            silentlyLogin = silentlyLogin ?: false,
-            createTime = createTime ?: 0
-        )
-    }
 
     companion object {
         val instance by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {

@@ -133,7 +133,7 @@ private fun LazyListScope.UiScreenList(
     viewModel: PasswdsViewModel,
     expand: Boolean
 ) {
-    items(UiScreen.Screens) { screen ->
+    items(UiScreen.LoggedInScreen) { screen ->
         val isSelected = screen == viewModel.windowUiState.collectAsState().value.uiScreen
         TextButton(
             modifier = Modifier.fillMaxWidth(),

@@ -13,10 +13,9 @@ sealed interface UiScreen {
     companion object {
         val Default = Loading
 
-        val Screens = listOf(Passwds, Settings)
-
-
         val LoginAndSignup = listOf(Login, Signup)
+
+        val LoggedInScreen = listOf(Passwds, Settings)
     }
 
     object Passwds : UiScreen {
