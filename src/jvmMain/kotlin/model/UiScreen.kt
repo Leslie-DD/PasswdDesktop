@@ -4,6 +4,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
 
+typealias UiScreens = List<UiScreen>
+
 sealed interface UiScreen {
 
     val name: String
@@ -13,10 +15,11 @@ sealed interface UiScreen {
     companion object {
         val Default = Loading
 
-        val Screens = listOf(Passwds, Settings)
+        val Loadings: UiScreens = listOf(Loading)
 
+        val LoginAndSignup: UiScreens = listOf(Login, Signup)
 
-        val LoginAndSignup = listOf(Login, Signup)
+        val LoggedInScreen: UiScreens = listOf(Passwds, Settings)
     }
 
     object Passwds : UiScreen {

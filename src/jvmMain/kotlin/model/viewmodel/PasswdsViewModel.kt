@@ -11,6 +11,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import model.UiAction
 import model.UiScreen
+import model.UiScreens
 import model.uieffect.DialogUiEffect
 import model.uistate.DialogUiState
 import model.uistate.LoginUiState
@@ -110,7 +111,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     private suspend fun silentlyLogin() {
         val savedHistoryData = dataBase.latestSavedLoginHistoryData()
         if (savedHistoryData == null) {
-            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
+            updateWindowUiState {
+                copy(
+                    uiScreen = UiScreen.Login,
+                    uiScreens = UiScreen.LoginAndSignup
+                )
+            }
             return
         }
         if (savedHistoryData.silentlyLogin) {
@@ -132,7 +138,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     copy(historyData = savedHistoryData)
                 }
             }
-            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
+            updateWindowUiState {
+                copy(
+                    uiScreen = UiScreen.Login,
+                    uiScreens = UiScreen.LoginAndSignup
+                )
+            }
         }
     }
 
@@ -148,7 +159,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         if (username.isBlank() || password.isBlank() || secretKey.isBlank()) {
             logger.warn("(loginByPassword) warn, $username, $password, $secretKey")
             updateDialogUiState { copy(effect = DialogUiEffect.LoginAndSignupFailure("username, password and secret key can not be null")) }
-            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
+            updateWindowUiState {
+                copy(
+                    uiScreen = UiScreen.Login,
+                    uiScreens = UiScreen.LoginAndSignup
+                )
+            }
             return
         }
 
@@ -157,7 +173,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         } catch (e: Throwable) {
             logger.warn("(loginByPassword) warn, ${e.message}")
             updateDialogUiState { copy(effect = DialogUiEffect.LoginAndSignupFailure(e.message)) }
-            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
+            updateWindowUiState {
+                copy(
+                    uiScreen = UiScreen.Login,
+                    uiScreens = UiScreen.LoginAndSignup
+                )
+            }
             return
         }
 
@@ -174,13 +195,23 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             updateDialogUiState {
                 copy(effect = DialogUiEffect.LoginAndSignupFailure(it.message))
             }
-            updateWindowUiState { copy(uiScreen = UiScreen.Login) }
+            updateWindowUiState {
+                copy(
+                    uiScreen = UiScreen.Login,
+                    uiScreens = UiScreen.LoginAndSignup
+                )
+            }
             it.printStackTrace()
         }
     }
 
     private suspend fun onLoginSuccess(host: String, port: Int, secretKey: String, loginResult: LoginResult) {
-        updateWindowUiState { copy(uiScreen = UiScreen.Passwds) }
+        updateWindowUiState {
+            copy(
+                uiScreen = UiScreen.Passwds,
+                uiScreens = UiScreen.LoggedInScreen
+            )
+        }
         coroutineScope {
             withContext(Dispatchers.IO) {
                 dataBase.globalSecretKey.emit(secretKey)
@@ -206,7 +237,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         if (username.isBlank() || password.isBlank()) {
             logger.warn("sign up username and password can not be empty")
             updateDialogUiState { copy(effect = DialogUiEffect.LoginAndSignupFailure("sign up username and password can not be empty")) }
-            updateWindowUiState { copy(uiScreen = UiScreen.Signup) }
+            updateWindowUiState {
+                copy(
+                    uiScreen = UiScreen.Signup,
+                    uiScreens = UiScreen.LoginAndSignup
+                )
+            }
             return
         }
 
@@ -215,7 +251,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         } catch (e: Throwable) {
             logger.warn("(loginByPassword) warn, ${e.message}")
             updateDialogUiState { copy(effect = DialogUiEffect.LoginAndSignupFailure(e.message)) }
-            updateWindowUiState { copy(uiScreen = UiScreen.Signup) }
+            updateWindowUiState {
+                copy(
+                    uiScreen = UiScreen.Signup,
+                    uiScreens = UiScreen.LoginAndSignup
+                )
+            }
             return
         }
 
@@ -428,8 +469,23 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         with(action) {
             when (this) {
                 is UiAction.GoScreen -> {
-                    updateWindowUiState {
-                        copy(uiScreen = screen)
+                    val uiScreens: UiScreens? = when (screen) {
+                        in UiScreen.LoginAndSignup -> UiScreen.LoginAndSignup
+                        in UiScreen.LoggedInScreen -> UiScreen.LoggedInScreen
+                        in UiScreen.Loadings -> UiScreen.Loadings
+                        else -> null
+                    }
+                    if (uiScreens == null) {
+                        updateWindowUiState {
+                            copy(uiScreen = screen)
+                        }
+                    } else {
+                        updateWindowUiState {
+                            copy(
+                                uiScreen = screen,
+                                uiScreens = uiScreens
+                            )
+                        }
                     }
                 }
 
@@ -460,6 +516,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
                 is UiAction.Login -> {
                     launch(Dispatchers.IO) {
+                        delay(200)
                         loginByPassword(
                             username = username,
                             password = password,

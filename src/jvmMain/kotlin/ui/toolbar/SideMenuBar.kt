@@ -1,4 +1,4 @@
-package ui
+package ui.toolbar
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -31,7 +31,7 @@ import model.viewmodel.ConfigViewModel
 import model.viewmodel.PasswdsViewModel
 
 @Composable
-fun SideMenuScreen(
+fun SideMenuBar(
     passwdsViewModel: PasswdsViewModel,
     configViewModel: ConfigViewModel,
     modifier: Modifier = Modifier
@@ -133,7 +133,7 @@ private fun LazyListScope.UiScreenList(
     viewModel: PasswdsViewModel,
     expand: Boolean
 ) {
-    items(UiScreen.Screens) { screen ->
+    items(UiScreen.LoggedInScreen) { screen ->
         val isSelected = screen == viewModel.windowUiState.collectAsState().value.uiScreen
         TextButton(
             modifier = Modifier.fillMaxWidth(),

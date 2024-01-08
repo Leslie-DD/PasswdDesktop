@@ -15,7 +15,9 @@ import model.viewmodel.PasswdsViewModel
 
 @Composable
 fun SignupInfoBox(
-    viewModel: PasswdsViewModel
+    viewModel: PasswdsViewModel,
+    enabled: Boolean,
+    setEnabled: (Boolean) -> Unit
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -28,9 +30,16 @@ fun SignupInfoBox(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val histories = viewModel.loginUiState.collectAsState().value.historyDataList
-        UsernameTextField(value = username) { username = it }
-        PasswdTextField(value = password) { password = it }
+        UsernameTextField(
+            enabled = enabled,
+            value = username
+        ) { username = it }
+        PasswdTextField(
+            enabled = enabled,
+            value = password
+        ) { password = it }
         HostTextField(
+            enabled = enabled,
             hostValue = host,
             portValue = port.toString(),
             histories = histories,
@@ -52,7 +61,11 @@ fun SignupInfoBox(
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 containerColor = MaterialTheme.colorScheme.secondaryContainer
             ),
-            onClick = { viewModel.onAction(UiAction.Signup(username, password, host, port)) }
+            enabled = enabled,
+            onClick = {
+                setEnabled(false)
+                viewModel.onAction(UiAction.Signup(username, password, host, port))
+            }
         ) {
             Text(
                 text = "Sign up"

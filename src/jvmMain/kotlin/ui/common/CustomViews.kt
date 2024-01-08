@@ -1,4 +1,4 @@
-package ui
+package ui.common
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -125,6 +125,7 @@ private fun cursorColor(): State<Color> {
 @Composable
 fun EnabledOutlinedTextField(
     enabled: Boolean = true,
+    trailingIconEnabled: Boolean = true,
     modifier: Modifier = Modifier.width(330.dp),
     value: String,
     labelValue: String,
@@ -175,6 +176,7 @@ fun EnabledOutlinedTextField(
                         .focusProperties { canFocus = false }
                 ) {
                     IconButton(
+                        enabled = trailingIconEnabled,
                         colors = IconButtonDefaults.iconButtonColors(
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                         ),

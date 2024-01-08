@@ -13,6 +13,8 @@ import model.viewmodel.PasswdsViewModel
 @Composable
 fun LoginInfoBox(
     viewModel: PasswdsViewModel,
+    enabled: Boolean,
+    setEnabled: (Boolean) -> Unit
 ) {
     val loginUiState = viewModel.loginUiState.collectAsState().value
 
@@ -27,10 +29,11 @@ fun LoginInfoBox(
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         val histories = viewModel.loginUiState.collectAsState().value.historyDataList
         UsernameTextField(
+            enabled = enabled,
             enabledDropMenu = true,
             value = username,
             histories = histories,
@@ -45,9 +48,16 @@ fun LoginInfoBox(
             },
             onUsernameChanged = { username = it },
         )
-        PasswdTextField(value = password) { password = it }
-        SecretKeyTextField(value = secretKey) { secretKey = it }
+        PasswdTextField(
+            enabled = enabled,
+            value = password
+        ) { password = it }
+        SecretKeyTextField(
+            enabled = enabled,
+            value = secretKey
+        ) { secretKey = it }
         HostTextField(
+            enabled = enabled,
             hostValue = host,
             portValue = port.toString(),
             histories = histories,
@@ -66,6 +76,7 @@ fun LoginInfoBox(
         )
 
         LoginSelections(
+            enabled = enabled,
             save = saved,
             onSaveClick = { save ->
                 saved = save
@@ -87,7 +98,9 @@ fun LoginInfoBox(
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 containerColor = MaterialTheme.colorScheme.secondaryContainer
             ),
+            enabled = enabled,
             onClick = {
+                setEnabled(false)
                 viewModel.onAction(
                     UiAction.Login(
                         username = username,
@@ -110,6 +123,7 @@ fun LoginInfoBox(
 
 @Composable
 private fun LoginSelections(
+    enabled: Boolean,
     save: Boolean,
     onSaveClick: (Boolean) -> Unit,
     silentlyLogin: Boolean,
@@ -119,6 +133,7 @@ private fun LoginSelections(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         RadioButton(
+            enabled = enabled,
             selected = save,
             onClick = { onSaveClick(!save) },
             colors = RadioButtonDefaults.colors(
@@ -135,6 +150,7 @@ private fun LoginSelections(
         Spacer(modifier = Modifier.width(20.dp))
 
         RadioButton(
+            enabled = enabled,
             selected = silentlyLogin,
             onClick = { onSilentlyLoginClick(!silentlyLogin) },
             colors = RadioButtonDefaults.colors(

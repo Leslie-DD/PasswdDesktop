@@ -1,4 +1,4 @@
-package ui.content
+package ui.toolbar
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.TooltipArea
@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.AwtWindow
 import model.UiAction
 import model.viewmodel.PasswdsViewModel
-import ui.CustomOutlinedTextField
+import ui.common.CustomOutlinedTextField
 import java.awt.FileDialog
 import java.awt.Frame
 import java.io.File
@@ -30,7 +30,7 @@ import java.io.FilenameFilter
 
 
 @Composable
-fun ToolBar(
+fun TopToolBar(
     modifier: Modifier = Modifier,
     viewModel: PasswdsViewModel
 ) {

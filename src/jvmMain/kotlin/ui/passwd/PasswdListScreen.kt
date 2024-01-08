@@ -1,4 +1,4 @@
-package ui.content
+package ui.passwd
 
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.*
@@ -26,9 +26,9 @@ import kotlinx.coroutines.launch
 import model.UiAction
 import model.uieffect.DialogUiEffect
 import model.viewmodel.PasswdsViewModel
-import ui.AddPasswdDialog
-import ui.DeletePasswdConfirmDialog
-import ui.NoRippleInteractionSource
+import ui.common.AddPasswdDialog
+import ui.common.DeletePasswdConfirmDialog
+import ui.toolbar.NoRippleInteractionSource
 
 
 /**

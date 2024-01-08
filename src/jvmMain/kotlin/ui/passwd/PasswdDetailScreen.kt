@@ -1,4 +1,4 @@
-package ui.content
+package ui.passwd
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -18,9 +18,9 @@ import entity.Passwd
 import model.UiAction
 import model.uieffect.DialogUiEffect
 import model.viewmodel.PasswdsViewModel
-import ui.EditPasswdDialog
-import ui.ReadableTextField
-import ui.copyToClipboard
+import ui.common.EditPasswdDialog
+import ui.common.ReadableTextField
+import ui.common.copyToClipboard
 
 /**
  * 密码详情

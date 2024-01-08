@@ -1,4 +1,4 @@
-package ui.content
+package ui.passwd
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.VerticalScrollbar
@@ -32,10 +32,10 @@ import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorderAfterLongPress
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
-import ui.AddGroupDialog
-import ui.DeleteGroupConfirmDialog
-import ui.EditGroupDialog
-import ui.NoRippleInteractionSource
+import ui.common.AddGroupDialog
+import ui.common.DeleteGroupConfirmDialog
+import ui.common.EditGroupDialog
+import ui.toolbar.NoRippleInteractionSource
 
 
 /**

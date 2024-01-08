@@ -30,10 +30,10 @@ import model.UiAction
 import model.UiScreen
 import model.uieffect.DialogUiEffect
 import model.viewmodel.PasswdsViewModel
-import ui.EnabledOutlinedTextField
-import ui.HistoriesDropDownMenu
-import ui.NoRippleInteractionSource
-import ui.TipsDialog
+import ui.common.EnabledOutlinedTextField
+import ui.common.HistoriesDropDownMenu
+import ui.toolbar.NoRippleInteractionSource
+import ui.common.TipsDialog
 
 @Composable
 fun LoginAndSignupScreen(
@@ -60,6 +60,8 @@ fun LoginAndSignupScreen(
 
 @Composable
 private fun LoginAndSignupBox(viewModel: PasswdsViewModel) {
+    val isLoading = remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -70,7 +72,8 @@ private fun LoginAndSignupBox(viewModel: PasswdsViewModel) {
         LazyRow(modifier = Modifier.wrapContentSize()) {
             screensListMenu(
                 screens = UiScreen.LoginAndSignup,
-                currentScreen = currentScreen
+                currentScreen = currentScreen,
+                enabled = !isLoading.value,
             ) { currentScreen = it }
         }
         Crossfade(
@@ -78,9 +81,17 @@ private fun LoginAndSignupBox(viewModel: PasswdsViewModel) {
             targetState = currentScreen,
             content = {
                 if (it is UiScreen.Login) {
-                    LoginInfoBox(viewModel = viewModel)
+                    LoginInfoBox(
+                        viewModel = viewModel,
+                        enabled = !isLoading.value,
+                        setEnabled = { enabled -> isLoading.value = !enabled }
+                    )
                 } else if (it is UiScreen.Signup) {
-                    SignupInfoBox(viewModel = viewModel)
+                    SignupInfoBox(
+                        viewModel = viewModel,
+                        enabled = !isLoading.value,
+                        setEnabled = { enabled -> isLoading.value = !enabled }
+                    )
                 }
             }
         )
@@ -113,6 +124,7 @@ private fun LoginAndSignupBox(viewModel: PasswdsViewModel) {
                     "Please make sure WRITE DOWN your secret key, or there will be severe problem while encrypting/decrypting passwords."
                 isImportantTipsDialogOpen.value = true
             }
+            is DialogUiEffect.LoginAndSignupFailure -> isLoading.value = false
 
             else -> {}
         }
@@ -121,6 +133,7 @@ private fun LoginAndSignupBox(viewModel: PasswdsViewModel) {
 
 @Composable
 fun UsernameTextField(
+    enabled: Boolean,
     enabledDropMenu: Boolean = false,
     value: String,
     histories: List<HistoryData> = arrayListOf(),
@@ -129,6 +142,8 @@ fun UsernameTextField(
 ) {
     var menuVisible by remember { mutableStateOf(false) }
     EnabledOutlinedTextField(
+        enabled = enabled,
+        trailingIconEnabled = enabled,
         value = value,
         labelValue = "Username",
         leadingIconImageVector = Icons.Outlined.People,
@@ -155,6 +170,7 @@ fun UsernameTextField(
                     }
 
                     IconButton(
+                        enabled = enabled,
                         colors = IconButtonDefaults.iconButtonColors(
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                         ),
@@ -185,10 +201,13 @@ fun UsernameTextField(
 
 @Composable
 fun PasswdTextField(
+    enabled: Boolean,
     value: String,
     onPasswordChanged: (String) -> Unit
 ) {
     EnabledOutlinedTextField(
+        enabled = enabled,
+        trailingIconEnabled = enabled,
         value = value,
         labelValue = "Password",
         leadingIconImageVector = Icons.Outlined.Lock,
@@ -202,10 +221,13 @@ fun PasswdTextField(
 
 @Composable
 fun SecretKeyTextField(
+    enabled: Boolean,
     value: String,
     onSecretKeyChanged: (String) -> Unit
 ) {
     EnabledOutlinedTextField(
+        enabled = enabled,
+        trailingIconEnabled = enabled,
         value = value,
         labelValue = "SecretKey",
         leadingIconImageVector = Icons.Outlined.Key,
@@ -219,6 +241,7 @@ fun SecretKeyTextField(
 
 @Composable
 fun HostTextField(
+    enabled: Boolean,
     hostValue: String,
     portValue: String,
     histories: List<HistoryData> = arrayListOf(),
@@ -231,6 +254,7 @@ fun HostTextField(
     ) {
         var menuVisible by remember { mutableStateOf(false) }
         EnabledOutlinedTextField(
+            enabled = enabled,
             modifier = Modifier.width(240.dp),
             value = hostValue,
             labelValue = "Host",
@@ -257,6 +281,7 @@ fun HostTextField(
                     }
 
                     IconButton(
+                        enabled = enabled,
                         colors = IconButtonDefaults.iconButtonColors(
                             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                         ),
@@ -276,6 +301,7 @@ fun HostTextField(
         Spacer(modifier = Modifier.width(8.dp))
 
         EnabledOutlinedTextField(
+            enabled = enabled,
             modifier = Modifier.width(82.dp),
             value = portValue,
             labelValue = "Port",
@@ -359,6 +385,7 @@ private fun HostAndPortHistoryMenuItem(
 fun LazyListScope.screensListMenu(
     screens: List<UiScreen>,
     currentScreen: UiScreen,
+    enabled: Boolean = true,
     onChoice: (screen: UiScreen) -> Unit
 ) {
     items(screens) { screen ->
@@ -366,6 +393,7 @@ fun LazyListScope.screensListMenu(
         TextButton(
             interactionSource = remember { NoRippleInteractionSource() },
             onClick = { onChoice(screen) },
+            enabled = enabled,
             colors = ButtonDefaults.textButtonColors(
                 containerColor = if (isSelected) {
                     MaterialTheme.colorScheme.tertiaryContainer

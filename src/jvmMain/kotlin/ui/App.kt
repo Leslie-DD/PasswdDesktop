@@ -12,7 +12,7 @@ import model.UiScreen
 import model.uieffect.DialogUiEffect
 import model.viewmodel.ConfigViewModel
 import model.viewmodel.PasswdsViewModel
-import ui.content.ContentScreen
+import ui.common.TipsDialog
 import ui.login.LoginAndSignupScreen
 
 @Composable
@@ -24,26 +24,17 @@ fun App(
         modifier = Modifier.fillMaxSize()
     ) {
         val windowUiState = passwdsViewModel.windowUiState.collectAsState().value
-        when (windowUiState.uiScreen) {
-            UiScreen.Passwds, UiScreen.Settings -> {
-                SideMenuScreen(passwdsViewModel, configViewModel)
-            }
-
-            else -> {}
-        }
-
         val modifier = Modifier
             .fillMaxSize()
             .background(color = MaterialTheme.colorScheme.primaryContainer)
         Crossfade(
             modifier = Modifier.fillMaxSize(),
-            targetState = windowUiState.uiScreen,
+            targetState = windowUiState.uiScreens,
             content = {
                 when (it) {
-                    UiScreen.Passwds -> ContentScreen(passwdsViewModel, modifier)
-                    UiScreen.Settings -> SettingsScreen(passwdsViewModel, modifier)
-                    UiScreen.Loading -> LoadingScreen(modifier)
-                    in UiScreen.LoginAndSignup -> LoginAndSignupScreen(passwdsViewModel, modifier)
+                    UiScreen.LoggedInScreen -> LoggedInScreen(windowUiState.uiScreen, passwdsViewModel, configViewModel, modifier)
+                    UiScreen.LoginAndSignup -> LoginAndSignupScreen(passwdsViewModel, modifier)
+                    UiScreen.Loadings -> LoadingScreen(modifier)
 
                     else -> {}
                 }
