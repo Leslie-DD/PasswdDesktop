@@ -17,11 +17,11 @@ import model.uistate.LoginUiState
 import model.uistate.PasswdUiState
 import model.uistate.WindowUiState
 import network.HttpClientObj
+import network.WebSocketSyncUtil
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import repository.PasswdRepository
 import utils.FileUtils
-
 
 @OptIn(FlowPreview::class)
 class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
@@ -168,7 +168,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         ).onSuccess {
             logger.info("(loginByPassword) success")
             updateDB(username, password, secretKey, host, port, it.token, saved, silentlyLogin)
-            onLoginSuccess(secretKey, it)
+            onLoginSuccess(host, port, secretKey, it)
         }.onFailure {
             logger.error("(loginByPassword) error: ${it.message}")
             updateDialogUiState {
@@ -179,7 +179,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
     }
 
-    private suspend fun onLoginSuccess(secretKey: String, loginResult: LoginResult) {
+    private suspend fun onLoginSuccess(host: String, port: Int, secretKey: String, loginResult: LoginResult) {
         updateWindowUiState { copy(uiScreen = UiScreen.Passwds) }
         coroutineScope {
             withContext(Dispatchers.IO) {
@@ -193,6 +193,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 copy(effect = null)
             }
         }
+
+        WebSocketSyncUtil.startWebSocketListener(host, port, loginResult.userId)
     }
 
     private suspend fun signup(

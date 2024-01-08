@@ -6,8 +6,14 @@ import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.cookies.*
 import io.ktor.client.plugins.logging.*
+import io.ktor.client.plugins.websocket.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.websocket.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -56,10 +62,12 @@ object HttpClientObj {
                     ignoreUnknownKeys = true
                 })
             }
+            install(WebSockets)
         }
     }
 
 
+    @OptIn(DelicateCoroutinesApi::class)
     @Throws
     fun forceUpdateHttpClient(host: String, port: Int) {
         _httpClient = createHttpClient(host, port)
