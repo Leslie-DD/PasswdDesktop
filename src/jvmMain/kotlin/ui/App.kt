@@ -35,33 +35,29 @@ fun App(
                     UiScreen.LoggedInScreen -> LoggedInScreen(windowUiState.uiScreen, passwdsViewModel, configViewModel, modifier)
                     UiScreen.LoginAndSignup -> LoginAndSignupScreen(passwdsViewModel, modifier)
                     UiScreen.Loadings -> LoadingScreen(modifier)
-
                     else -> {}
-                }
-
-                var isTipsDialogOpen by remember { mutableStateOf(false) }
-                var tip by remember { mutableStateOf<String?>(null) }
-                if (isTipsDialogOpen) {
-                    TipsDialog(
-                        warn = tip
-                    ) {
-                        isTipsDialogOpen = false
-                        passwdsViewModel.onAction(UiAction.ClearEffect)
-                    }
-                }
-
-                val dialogUiState = passwdsViewModel.dialogUiState.collectAsState().value
-                with(dialogUiState.effect) {
-                    when (this) {
-                        is DialogUiEffect.LoginAndSignupFailure -> {
-                            tip = tipsMsg
-                            isTipsDialogOpen = true
-                        }
-
-                        else -> {}
-                    }
                 }
             }
         )
+
+        var isTipsDialogOpen by remember { mutableStateOf(false) }
+        var tip by remember { mutableStateOf<String?>(null) }
+        if (isTipsDialogOpen) {
+            TipsDialog(warn = tip) {
+                isTipsDialogOpen = false
+                passwdsViewModel.onAction(UiAction.ClearEffect)
+            }
+        }
+
+        val dialogUiState = passwdsViewModel.dialogUiState.collectAsState().value
+        with(dialogUiState.effect) {
+            when (this) {
+                is DialogUiEffect.LoginAndSignupFailure -> {
+                    tip = tipsMsg
+                    isTipsDialogOpen = true
+                }
+                else -> {}
+            }
+        }
     }
 }

@@ -66,7 +66,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     private val dataBase = DataBase.instance
 
     init {
-        launch(Dispatchers.IO) {
+        launch {
             silentlyLogin()
         }
 
@@ -207,12 +207,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private suspend fun onLoginSuccess(host: String, port: Int, secretKey: String, loginResult: LoginResult) {
-        updateWindowUiState {
-            copy(
-                uiScreen = UiScreen.Passwds,
-                uiScreens = UiScreen.LoggedInScreen
-            )
-        }
         coroutineScope {
             withContext(Dispatchers.IO) {
                 dataBase.globalSecretKey.emit(secretKey)
@@ -223,6 +217,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             repository.fetchGroups()
             updateDialogUiState {
                 copy(effect = null)
+            }
+            updateWindowUiState {
+                copy(
+                    uiScreen = UiScreen.Passwds,
+                    uiScreens = UiScreen.LoggedInScreen
+                )
             }
         }
 
