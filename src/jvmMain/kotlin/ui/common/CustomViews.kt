@@ -31,9 +31,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.WindowPosition
-import androidx.compose.ui.window.rememberDialogState
+import androidx.compose.ui.window.*
 import kotlinx.coroutines.launch
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
@@ -48,13 +46,15 @@ fun CustomOutlinedTextField(
     leadingIcon: @Composable (() -> Unit)? = null,
     placeholder: @Composable (() -> Unit)? = null,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
-        textColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    colors: TextFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+        unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+        disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
         cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        containerColor = MaterialTheme.colorScheme.secondaryContainer,
         focusedBorderColor = MaterialTheme.colorScheme.secondary,
         unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        placeholderColor = MaterialTheme.colorScheme.outline
+        focusedPlaceholderColor = MaterialTheme.colorScheme.outline,
     ),
     contentPadding: PaddingValues = PaddingValues(horizontal = 10.dp)
 ) {
@@ -80,26 +80,28 @@ fun CustomOutlinedTextField(
         singleLine = singleLine,
         maxLines = maxLines,
         decorationBox = @Composable { innerTextField ->
-            TextFieldDefaults.OutlinedTextFieldDecorationBox(
+            OutlinedTextFieldDefaults.DecorationBox(
                 value = text,
-                visualTransformation = VisualTransformation.None,
                 innerTextField = innerTextField,
-                placeholder = placeholder,
-                leadingIcon = leadingIcon,
                 enabled = true,
                 singleLine = singleLine,
+                visualTransformation = VisualTransformation.None,
                 interactionSource = interactionSource,
+                placeholder = placeholder,
+                leadingIcon = leadingIcon,
                 colors = colors,
                 contentPadding = contentPadding,
                 container = {
-                    TextFieldDefaults.OutlinedBorderContainerBox(
+                    OutlinedTextFieldDefaults.ContainerBox(
                         enabled = true,
                         isError = false,
-                        interactionSource,
-                        colors,
-                        RoundedCornerShape(30)
+                        interactionSource = interactionSource,
+                        colors = colors,
+                        shape = RoundedCornerShape(30),
+                        focusedBorderThickness = OutlinedTextFieldDefaults.FocusedBorderThickness,
+                        unfocusedBorderThickness = OutlinedTextFieldDefaults.UnfocusedBorderThickness,
                     )
-                }
+                },
             )
         }
     )
@@ -121,7 +123,6 @@ private fun cursorColor(): State<Color> {
     return rememberUpdatedState(MaterialTheme.colorScheme.onPrimaryContainer)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EnabledOutlinedTextField(
     enabled: Boolean = true,
@@ -135,16 +136,16 @@ fun EnabledOutlinedTextField(
     disableContentEncrypt: Boolean = true,
     trailingIcon: @Composable (() -> Unit)? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(
-        textColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        focusedBorderColor = MaterialTheme.colorScheme.secondary,
-        unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
-        focusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    colors: TextFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
         cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
         selectionColors = TextSelectionColors(
             handleColor = Color.White,
             backgroundColor = Color.Blue
-        )
+        ),
+        focusedBorderColor = MaterialTheme.colorScheme.secondary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        focusedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
     ),
     onFocusChanged: (Boolean) -> Unit = {},
     onValueChange: (String) -> Unit
@@ -203,7 +204,6 @@ fun EnabledOutlinedTextField(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReadableTextField(
     modifier: Modifier = Modifier.fillMaxWidth(),
@@ -231,15 +231,16 @@ fun ReadableTextField(
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
         trailingIcon = trailingIcon,
-        colors = TextFieldDefaults.textFieldColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        colors = TextFieldDefaults.colors(
             disabledTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
             disabledLabelColor = MaterialTheme.colorScheme.outline,
         )
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReadableOutlinedTextField(
     modifier: Modifier = Modifier.fillMaxWidth(),
@@ -267,15 +268,15 @@ fun ReadableOutlinedTextField(
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
         trailingIcon = trailingIcon,
-        colors = TextFieldDefaults.outlinedTextFieldColors(
+        colors = OutlinedTextFieldDefaults.colors(
             disabledTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            disabledBorderColor = MaterialTheme.colorScheme.secondary,
-            disabledLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
             cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
             selectionColors = TextSelectionColors(
                 handleColor = Color.White,
                 backgroundColor = Color.Blue
-            )
+            ),
+            disabledBorderColor = MaterialTheme.colorScheme.secondary,
+            disabledLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
         ),
     )
 }
@@ -312,88 +313,88 @@ fun GlobalDialog(
     content: @Composable BoxScope.() -> Unit
 ) {
 
-    Dialog(
-        title = title,
+    DialogWindow(
         onCloseRequest = { onCloseClick() },
-        state = rememberDialogState(position, size)
+        state = rememberDialogState(position, size),
+        title = title
     ) {
-        window.rootPane.apply {
-            rootPane.putClientProperty("apple.awt.fullWindowContent", true)
-            rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
-            rootPane.putClientProperty("apple.awt.windowTitleVisible", false)
-        }
+            window.rootPane.apply {
+                rootPane.putClientProperty("apple.awt.fullWindowContent", true)
+                rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
+                rootPane.putClientProperty("apple.awt.windowTitleVisible", false)
+            }
 
-        val enable = remember { mutableStateOf(true) }
+            val enable = remember { mutableStateOf(true) }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .padding(horizontal = 100.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Spacer(modifier = Modifier.height(28.dp))
-            Text(
-                text = title,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                fontSize = 18.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Box(content = content)
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .padding(horizontal = 100.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                onConfirmClick?.let {
-                    Button(
-                        colors = ButtonDefaults.buttonColors(
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        ),
-                        enabled = enable.value,
-                        onClick = {
-                            enable.value = false
-                            onConfirmClick(true)
-                        }
-                    ) {
-                        Text(
-                            text = confirmString,
-                            maxLines = 1,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(20.dp))
-                }
-                onCancelClick?.let {
-                    Button(
-                        colors = ButtonDefaults.buttonColors(
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        ),
-                        enabled = enable.value,
-                        onClick = {
-                            enable.value = false
-                            onCancelClick()
-                        }
-                    ) {
-                        Text(
-                            text = cancelString,
-                            maxLines = 1,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
+                Spacer(modifier = Modifier.height(28.dp))
+                Text(
+                    text = title,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontSize = 18.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(16.dp))
 
+                Box(content = content)
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    onConfirmClick?.let {
+                        Button(
+                            colors = ButtonDefaults.buttonColors(
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            ),
+                            enabled = enable.value,
+                            onClick = {
+                                enable.value = false
+                                onConfirmClick(true)
+                            }
+                        ) {
+                            Text(
+                                text = confirmString,
+                                maxLines = 1,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(20.dp))
+                    }
+                    onCancelClick?.let {
+                        Button(
+                            colors = ButtonDefaults.buttonColors(
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            ),
+                            enabled = enable.value,
+                            onClick = {
+                                enable.value = false
+                                onCancelClick()
+                            }
+                        ) {
+                            Text(
+                                text = cancelString,
+                                maxLines = 1,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+
+                }
             }
         }
-    }
 }
 
 @Composable

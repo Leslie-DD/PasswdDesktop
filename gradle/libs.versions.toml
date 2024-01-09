@@ -13,7 +13,7 @@ log4j12 = "1.7.36"
 
 sqldelight = "2.0.0-alpha05"
 jSystemThemeDetector = "3.6"
-reorderable = "0.9.6"
+drag-and-drop = "0.1.0"
 
 [libraries]
 
@@ -30,7 +30,7 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-coroutines-core-jvm = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 
-kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin"}
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
@@ -40,8 +40,8 @@ gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 log4j12 = { module = "org.slf4j:slf4j-log4j12", version.ref = "log4j12" }
 
-sqldelight = {module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight"}
-reorderable = {module = "org.burnoutcrew.composereorderable:reorderable", version.ref = "reorderable"}
-kotlinx-datetime = {module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime"}
-jSystemThemeDetector = {module = "com.github.Dansoftowner:jSystemThemeDetector", version.ref = "jSystemThemeDetector"}
+sqldelight = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+jSystemThemeDetector = { module = "com.github.Dansoftowner:jSystemThemeDetector", version.ref = "jSystemThemeDetector" }
+drag-and-drop = { module = "com.mohamedrejeb.dnd:compose-dnd", version.ref = "drag-and-drop" }
 

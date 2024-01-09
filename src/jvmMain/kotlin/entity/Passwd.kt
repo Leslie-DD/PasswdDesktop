@@ -15,4 +15,4 @@ data class Passwd(
     val userId: Int?,
     @SerialName("updateTimeExpose")
     var updateTime: Long? = 0L
-)
+): IDragAndDrop

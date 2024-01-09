@@ -9,7 +9,7 @@ data class Group(
     val userId: Int,
     var groupName: String?,
     var groupComment: String?
-) {
+): IDragAndDrop {
 
     override fun toString(): String {
         return "[$groupName]"

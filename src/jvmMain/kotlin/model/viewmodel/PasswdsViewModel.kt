@@ -5,6 +5,7 @@ import database.DataBase
 import database.entity.HistoryData
 import database.entity.HistoryData.Companion.defaultHistoryData
 import entity.Group
+import entity.IDragAndDrop
 import entity.LoginResult
 import entity.Passwd
 import kotlinx.coroutines.*
@@ -636,6 +637,63 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
     }
 
+    fun onPasswdListItemDragEnter(item: Passwd, dynamicItem: IDragAndDrop) {
+        if (dynamicItem is Passwd) {
+            val passwdList = passwdUiState.value.groupPasswds.toMutableList().apply {
+                val index = indexOf(item)
+                if (index == -1) {
+                    return
+                }
+                remove(dynamicItem)
+                add(index, dynamicItem)
+            }
+            updateGroupUiState {
+                copy(groupPasswds = passwdList)
+            }
+        }
+    }
+
+    fun onGroupListDragEnter(dynamicItem: IDragAndDrop) {
+        if (dynamicItem is Passwd) {
+            val passwdList = passwdUiState.value.groupPasswds.toMutableList().apply {
+                if (!remove(dynamicItem)) {
+                    return
+                }
+            }
+            updateGroupUiState {
+                copy(groupPasswds = passwdList)
+            }
+        }
+
+        // TODO: 往Group中添加Passwd
+    }
+
+    fun onGroupListItemDragEnter(item: Group, dynamicItem: IDragAndDrop) {
+        if (dynamicItem is Passwd) {
+            val passwdList = passwdUiState.value.groupPasswds.toMutableList().apply {
+                remove(dynamicItem)
+            }
+            updateGroupUiState {
+                copy(groupPasswds = passwdList)
+            }
+
+            logger.info("will put the passwd into the groups[${passwdUiState.value.groups.indexOf(item)}]")
+            // TODO: 往Group中添加Passwd
+        } else if (dynamicItem is Group) {
+            val groupList = passwdUiState.value.groups.toMutableList().apply {
+                val index = indexOf(item)
+                if (index == -1) {
+                    return
+                }
+                remove(dynamicItem)
+                add(index, dynamicItem)
+            }
+            updateGroupUiState {
+                copy(groups = groupList)
+            }
+        }
+    }
+
     private fun getGroupPasswd(passwdId: Int): Passwd? =
         passwdUiState.value.groupPasswds.find { passwd: Passwd -> passwd.id == passwdId }
 
@@ -650,22 +708,10 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         _windowUiState.update { update(it) }
     }
 
-    private val _reorderableGroupList: MutableStateFlow<MutableList<Group>> by lazy {
-        MutableStateFlow(arrayListOf())
-    }
-    val reorderGroupList: StateFlow<MutableList<Group>> by lazy {
-        _reorderableGroupList.asStateFlow()
-    }
-
-    fun updateReorderGroupList(groups: MutableList<Group>) {
-        _reorderableGroupList.tryEmit(groups)
-    }
-
     private fun updateGroupUiState(update: PasswdUiState.() -> PasswdUiState) {
         _passwdUiState.update {
             update(it)
         }
-        updateReorderGroupList(_passwdUiState.value.groups)
     }
 
     private fun updateDialogUiState(update: DialogUiState.() -> DialogUiState) {

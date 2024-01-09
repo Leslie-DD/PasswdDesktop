@@ -1,10 +1,10 @@
 package ui.passwd
 
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,19 +19,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mohamedrejeb.compose.dnd.annotation.ExperimentalDndApi
+import com.mohamedrejeb.compose.dnd.drop.dropTarget
+import com.mohamedrejeb.compose.dnd.reorder.ReorderState
+import com.mohamedrejeb.compose.dnd.reorder.ReorderableItem
 import entity.Group
+import entity.IDragAndDrop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import model.UiAction
 import model.uieffect.DialogUiEffect
 import model.viewmodel.PasswdsViewModel
-import org.burnoutcrew.reorderable.ReorderableItem
-import org.burnoutcrew.reorderable.detectReorderAfterLongPress
-import org.burnoutcrew.reorderable.rememberReorderableLazyListState
-import org.burnoutcrew.reorderable.reorderable
 import ui.common.AddGroupDialog
 import ui.common.DeleteGroupConfirmDialog
 import ui.common.EditGroupDialog
@@ -41,24 +43,16 @@ import ui.toolbar.NoRippleInteractionSource
 /**
  * 密码分组 List
  */
+@OptIn(ExperimentalDndApi::class)
 @Composable
 fun GroupList(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    reorderState: ReorderState<IDragAndDrop>
 ) {
+    val listState = rememberLazyListState()
     val dialogUiState = viewModel.dialogUiState.collectAsState().value
-    val groupUiState = viewModel.passwdUiState.collectAsState().value
-
-    val reorderableGroups = viewModel.reorderGroupList.collectAsState()
-    val state = rememberReorderableLazyListState(
-        onMove = { from, to ->
-            viewModel.updateReorderGroupList(reorderableGroups.value.toMutableList().apply {
-                add(to.index, removeAt(from.index))
-            })
-        },
-        onDragEnd = { _, _ -> viewModel.onAction(UiAction.ReorderGroupDragEnd(reorderableGroups.value)) }
-    )
 
     val isNewGroupDialogOpen = remember { mutableStateOf(false) }
     val isUpdateGroupDialogOpen = remember { mutableStateOf(false) }
@@ -70,9 +64,9 @@ fun GroupList(
             viewModel.onAction(UiAction.ClearEffect)
 
             coroutineScope.launch {
-                val size = reorderableGroups.value.size
+                val size = viewModel.passwdUiState.value.groups.size
                 if (size > 0) {
-                    state.listState.animateScrollToItem(index = size - 1)
+                    listState.animateScrollToItem(index = size - 1)
                 }
             }
         }
@@ -90,10 +84,10 @@ fun GroupList(
         else -> {}
     }
 
-
     Column(
         modifier = modifier.fillMaxSize()
     ) {
+        val groupUiState = viewModel.passwdUiState.collectAsState().value
         val selectGroup = groupUiState.selectGroup
         Row(
             modifier = Modifier.weight(1f).padding(4.dp)
@@ -102,31 +96,50 @@ fun GroupList(
                 modifier = Modifier
                     .weight(1f)
                     .padding(10.dp)
-                    .reorderable(state)
-                    .detectReorderAfterLongPress(state),
-                state = state.listState,
+                    .dropTarget(
+                        key = "listOne",
+                        state = reorderState.dndState,
+                        dropAnimationEnabled = false,
+                        onDragEnter = { state ->
+                            viewModel.onGroupListDragEnter(state.data)
+                        },
+                    ),
+                state = listState,
             ) {
-                items(reorderableGroups.value, { it }) { group ->
+                items(groupUiState.groups, { it }) { group ->
                     ReorderableItem(
-                        reorderableState = state,
-                        key = group
-                    ) { isDragging ->
-                        val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
+                        state = reorderState,
+                        key = group,
+                        data = group,
+                        zIndex = 1f,
+                        onDragEnter = { state ->
+                            viewModel.onGroupListItemDragEnter(group, state.data)
+                        },
+                        draggableContent = {
+                            GroupItem(
+                                modifier = Modifier.shadow(elevation = 20.dp),
+                                group = group,
+                                isSelected = group.id == selectGroup?.id,
+                            )
+                        }
+                    ) {
                         GroupItem(
-                            modifier = Modifier.shadow(elevation.value),
+                            modifier = Modifier
+                                .graphicsLayer {
+                                    alpha = if (isDragging) 0f else 1f
+                                },
                             group = group,
                             isSelected = group.id == selectGroup?.id,
                         ) {
                             viewModel.onAction(UiAction.ShowGroupPasswds(groupId = it))
                         }
                     }
-
                 }
             }
             VerticalScrollbar(
                 modifier = Modifier.fillMaxHeight(),
                 adapter = rememberScrollbarAdapter(
-                    scrollState = state.listState
+                    scrollState = listState
                 )
             )
         }

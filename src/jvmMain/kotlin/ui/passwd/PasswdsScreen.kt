@@ -7,6 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.mohamedrejeb.compose.dnd.reorder.ReorderContainer
+import com.mohamedrejeb.compose.dnd.reorder.rememberReorderState
+import entity.IDragAndDrop
 import model.viewmodel.ConfigViewModel
 import model.viewmodel.PasswdsViewModel
 import ui.common.RowSpacer
@@ -25,6 +28,8 @@ fun PasswdsScreen(
     Row(modifier = modifier) {
         SideMenuBar(passwdsViewModel, configViewModel)
         val coroutineScope = rememberCoroutineScope()
+        val reorderState = rememberReorderState<IDragAndDrop>()
+
         Column(
             modifier = modifier.background(color = MaterialTheme.colorScheme.primaryContainer)
         ) {
@@ -32,10 +37,16 @@ fun PasswdsScreen(
             Row(
                 modifier = Modifier.fillMaxWidth().padding(end = 10.dp)
             ) {
-                GroupList(passwdsViewModel, Modifier.width(250.dp), coroutineScope)
-                RowSpacer()
-                PasswdList(passwdsViewModel, Modifier.width(250.dp), coroutineScope)
-                RowSpacer()
+                ReorderContainer(
+                    state = reorderState,
+                ) {
+                    Row(modifier = Modifier) {
+                        GroupList(passwdsViewModel, Modifier.width(250.dp), coroutineScope, reorderState)
+                        RowSpacer()
+                        PasswdList(passwdsViewModel, Modifier.width(250.dp), coroutineScope, reorderState)
+                        RowSpacer()
+                    }
+                }
                 PasswdDetailWrapper(viewModel = passwdsViewModel)
             }
         }

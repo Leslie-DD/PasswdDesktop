@@ -16,10 +16,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mohamedrejeb.compose.dnd.annotation.ExperimentalDndApi
+import com.mohamedrejeb.compose.dnd.drop.dropTarget
+import com.mohamedrejeb.compose.dnd.reorder.ReorderState
+import com.mohamedrejeb.compose.dnd.reorder.ReorderableItem
+import entity.IDragAndDrop
 import entity.Passwd
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -34,11 +41,13 @@ import ui.toolbar.NoRippleInteractionSource
 /**
  * 密码 List（显示指定分组下的所有密码，每条 item 只显示 title 和 username）
  */
+@OptIn(ExperimentalDndApi::class)
 @Composable
 fun PasswdList(
     viewModel: PasswdsViewModel,
     modifier: Modifier = Modifier,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    reorderState: ReorderState<IDragAndDrop>
 ) {
     val listState = rememberLazyListState()
     val dialogUiState = viewModel.dialogUiState.collectAsState().value
@@ -73,19 +82,47 @@ fun PasswdList(
             modifier = Modifier.weight(1f)
         ) {
             val passwdUiState = viewModel.passwdUiState.collectAsState().value
+            val selectPasswd = passwdUiState.selectPasswd
             Row(
                 modifier = Modifier.weight(1f)
             ) {
                 LazyColumn(
-                    modifier = modifier.weight(1f).padding(10.dp),
+                    modifier = modifier.weight(1f).padding(10.dp)
+                        .dropTarget(
+                            key = "listTwo",
+                            state = reorderState.dndState,
+                            dropAnimationEnabled = false,
+                        ),
                     state = listState
                 ) {
-                    items(passwdUiState.groupPasswds) { passwd ->
-                        PasswdItem(
-                            passwd = passwd,
-                            isSelected = passwd.id == passwdUiState.selectPasswd?.id
+                    items(passwdUiState.groupPasswds, { it }) { passwd ->
+                        ReorderableItem(
+                            state = reorderState,
+                            key = passwd,
+                            data = passwd,
+                            zIndex = 1f,
+                            onDragEnter = { state ->
+                                viewModel.onPasswdListItemDragEnter(passwd, state.data)
+                            },
+                            draggableContent = {
+                                PasswdItem(
+                                    modifier = Modifier.shadow(elevation = 20.dp),
+                                    passwd = passwd,
+                                    isSelected = passwd.id == selectPasswd?.id
+                                )
+                            },
+                            modifier = Modifier
                         ) {
-                            viewModel.onAction(UiAction.ShowPasswd(passwdId = it))
+                            PasswdItem(
+                                modifier = Modifier
+                                    .graphicsLayer {
+                                        alpha = if (isDragging) 0f else 1f
+                                    },
+                                passwd = passwd,
+                                isSelected = passwd.id == selectPasswd?.id
+                            ) {
+                                viewModel.onAction(UiAction.ShowPasswd(passwdId = it))
+                            }
                         }
                     }
                 }
@@ -141,7 +178,7 @@ fun PasswdList(
                 }
 
                 IconButton(
-                    enabled = passwdUiState.selectPasswd != null,
+                    enabled = selectPasswd != null,
                     colors = IconButtonDefaults.iconButtonColors(
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     ),
@@ -169,12 +206,13 @@ fun PasswdList(
 
 @Composable
 fun PasswdItem(
+    modifier: Modifier = Modifier,
     passwd: Passwd,
     isSelected: Boolean,
-    onClick: (Int) -> Unit
+    onClick: (Int) -> Unit = {}
 ) {
     TextButton(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20),
         interactionSource = remember { NoRippleInteractionSource() },
         onClick = { onClick(passwd.id) },

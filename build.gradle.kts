@@ -42,9 +42,9 @@ kotlin {
                 api(compose.materialIconsExtended)
 
                 implementation(libs.sqldelight)
-                implementation(libs.reorderable)
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.jSystemThemeDetector)
+                implementation(libs.drag.and.drop)
             }
         }
         val jvmTest by getting
