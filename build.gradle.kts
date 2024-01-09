@@ -96,6 +96,7 @@ compose.desktop {
                 iconFile.set(project.file("icons/app_icon_round_corner.icns"))
             }
             windows {
+                shortcut = true
                 iconFile.set(project.file("icons/app_icon_round_corner.ico"))
             }
             linux {
