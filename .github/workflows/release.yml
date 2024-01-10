@@ -44,6 +44,10 @@ jobs:
         with:
           gradle-version: 7.5.1
 
+      # FIX: `./gradlew: Permission denied`
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
       - name: Execute Gradle build
         id: gradle-build
         run: ./gradlew packageReleaseDistributionForCurrentOS
