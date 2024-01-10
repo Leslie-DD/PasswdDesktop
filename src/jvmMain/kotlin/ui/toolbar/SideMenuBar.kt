@@ -29,6 +29,7 @@ import model.UiAction
 import model.UiScreen
 import model.viewmodel.ConfigViewModel
 import model.viewmodel.PasswdsViewModel
+import ui.common.defaultIconButtonColors
 
 @Composable
 fun SideMenuBar(
@@ -115,9 +116,7 @@ private fun LazyListScope.Symbol(
                 )
             }
             IconButton(
-                colors = IconButtonDefaults.iconButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
+                colors = defaultIconButtonColors(),
                 onClick = { viewModel.onAction(UiAction.MenuOpenOrClose(!expand)) }
             ) {
                 Icon(

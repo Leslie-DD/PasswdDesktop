@@ -9,7 +9,7 @@ val Material3LightTheme = lightColorScheme(
     onSurface = Color(0xFFC6C7C7),
 
     primary = Color(0xFFFFFFFF),
-    onPrimary = Color(0xFF2F2525),
+    onPrimary = Color(0xFF000000),
     primaryContainer = Color(0xFFFFFFFF),
     onPrimaryContainer = Color(0xFF2F2525),
     secondary = Color(0xFF81AEF4),
@@ -30,7 +30,7 @@ val Material3DarkTheme = darkColorScheme(
     onSurface = Color(0xFF424345),
 
     primary = Color(0xFF353940),
-    onPrimary = Color(0xFF373737),
+    onPrimary = Color(0xFFFFFFFF),
     primaryContainer = Color(0xFF1D1F20),
     onPrimaryContainer = Color(0xFFBBBEBC),
     secondary = Color(0xFF3477A2),

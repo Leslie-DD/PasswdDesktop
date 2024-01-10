@@ -81,89 +81,6 @@ fun AddPasswdDialog(
 }
 
 @Composable
-fun EditPasswdDialog(
-    onEditConfirmClick: (Passwd) -> Unit,
-    onCloseClick: () -> Unit,
-    passwd: Passwd,
-) {
-    val title = remember { mutableStateOf(passwd.title ?: "") }
-    val username = remember { mutableStateOf(passwd.usernameString ?: "") }
-    val password = remember { mutableStateOf(passwd.passwordString ?: "") }
-    val link = remember { mutableStateOf(passwd.link ?: "") }
-    val comment = remember { mutableStateOf(passwd.comment ?: "") }
-
-    val textFieldEditEnable = remember { mutableStateOf(true) }
-
-    GlobalDialog(
-        title = "Edit the Passwd",
-        size = DpSize(600.dp, 600.dp),
-        onCloseClick = { onCloseClick() },
-        onConfirmClick = {
-            textFieldEditEnable.value = false
-            onEditConfirmClick(
-                passwd.copy(
-                    title = title.value,
-                    usernameString = username.value,
-                    passwordString = password.value,
-                    link = link.value,
-                    comment = comment.value
-                )
-            )
-        },
-        onCancelClick = {
-            textFieldEditEnable.value = false
-            onCloseClick()
-        }
-
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            EnabledOutlinedTextField(
-                enabled = textFieldEditEnable.value,
-                modifier = Modifier.fillMaxWidth(),
-                labelValue = "title",
-                leadingIconImageVector = Icons.Default.Title,
-                value = title.value,
-                onValueChange = { newValue -> title.value = newValue },
-            )
-            EnabledOutlinedTextField(
-                enabled = textFieldEditEnable.value,
-                modifier = Modifier.fillMaxWidth(),
-                labelValue = "username",
-                leadingIconImageVector = Icons.Default.People,
-                value = username.value,
-                onValueChange = { username.value = it },
-            )
-            EnabledOutlinedTextField(
-                enabled = textFieldEditEnable.value,
-                modifier = Modifier.fillMaxWidth(),
-                labelValue = "password",
-                leadingIconImageVector = Icons.Default.Lock,
-                value = password.value,
-                onValueChange = { password.value = it },
-            )
-            EnabledOutlinedTextField(
-                enabled = textFieldEditEnable.value,
-                modifier = Modifier.fillMaxWidth(),
-                labelValue = "link",
-                leadingIconImageVector = Icons.Default.Link,
-                value = link.value,
-                onValueChange = { link.value = it },
-            )
-            EnabledOutlinedTextField(
-                enabled = textFieldEditEnable.value,
-                modifier = Modifier.wrapContentHeight().fillMaxWidth().align(Alignment.Start),
-                value = comment.value,
-                labelValue = "comment",
-                maxLines = 10,
-                singleLine = false,
-            ) { comment.value = it }
-        }
-    }
-}
-
-@Composable
 fun DeletePasswdConfirmDialog(
     onDeleteConfirmOrCancelClick: (Boolean) -> Unit
 ) {
@@ -326,9 +243,7 @@ fun TipsDialog(
                     trailingIcon = {
                         Row(modifier = Modifier.wrapContentSize().padding(end = 10.dp)) {
                             IconButton(
-                                colors = IconButtonDefaults.iconButtonColors(
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                ),
+                                colors = defaultIconButtonColors(),
                                 onClick = {
                                     info.copyToClipboard()
                                 }

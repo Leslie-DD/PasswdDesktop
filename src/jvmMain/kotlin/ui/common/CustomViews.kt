@@ -178,9 +178,7 @@ fun EnabledOutlinedTextField(
                 ) {
                     IconButton(
                         enabled = trailingIconEnabled,
-                        colors = IconButtonDefaults.iconButtonColors(
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ),
+                        colors = defaultIconButtonColors(),
                         onClick = {
                             contentVisible = !contentVisible
                         }
@@ -205,17 +203,20 @@ fun EnabledOutlinedTextField(
 }
 
 @Composable
-fun ReadableTextField(
+fun EditLimitTextField(
+    enabled: Boolean = false,
     modifier: Modifier = Modifier.fillMaxWidth(),
     label: String,
     leadingIcon: ImageVector,
     value: String,
+    onValueChange: (String) -> Unit = {},
+    colors: TextFieldColors = defaultEditableTextFieldColors(),
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
     TextField(
-        enabled = false,
+        enabled = enabled,
         modifier = modifier,
         label = { Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         leadingIcon = {
@@ -227,17 +228,11 @@ fun ReadableTextField(
         },
         value = value,
         maxLines = 1,
-        onValueChange = { },
+        onValueChange = onValueChange,
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
         trailingIcon = trailingIcon,
-        colors = TextFieldDefaults.colors(
-            disabledTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-            unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-            disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
-            disabledLabelColor = MaterialTheme.colorScheme.outline,
-        )
+        colors = colors
     )
 }
 
@@ -422,3 +417,33 @@ fun <T> HistoriesDropDownMenu(
         }
     }
 }
+
+@Composable
+fun defaultIconButtonColors(): IconButtonColors = IconButtonDefaults.iconButtonColors(
+    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+)
+
+@Composable
+fun defaultEditableTextFieldColors(): TextFieldColors = OutlinedTextFieldDefaults.colors(
+    focusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    unfocusedTextColor = MaterialTheme.colorScheme.outline,
+    disabledTextColor = MaterialTheme.colorScheme.outline,
+
+    focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+    unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+    disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
+
+    focusedLabelColor = MaterialTheme.colorScheme.outline,
+    unfocusedLabelColor = MaterialTheme.colorScheme.onPrimary,
+    disabledLabelColor = MaterialTheme.colorScheme.outline,
+
+    focusedBorderColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
+    disabledBorderColor = MaterialTheme.colorScheme.onSecondaryContainer,
+
+    cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    selectionColors = TextSelectionColors(
+        handleColor = Color.White,
+        backgroundColor = MaterialTheme.colorScheme.tertiaryContainer
+    )
+)

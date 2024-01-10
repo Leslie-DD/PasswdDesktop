@@ -287,8 +287,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
     }
 
-    private suspend fun fetchGroupPasswds(groupId: Int) {
-        repository.updateGroupPasswds(groupId)
+    private suspend fun refreshGroupPasswds(groupId: Int) {
+        repository.refreshGroupPasswds(groupId)
     }
 
     private suspend fun newGroup(
@@ -397,6 +397,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             link = updatePasswd.link,
             comment = updatePasswd.comment
         ).onSuccess { passwd ->
+            logger.info("updatePasswd onSuccess $passwd")
             updateDialogUiState {
                 copy(effect = DialogUiEffect.UpdatePasswdResult(passwd))
             }
@@ -504,7 +505,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                         )
                     }
                     launch(Dispatchers.IO) {
-                        fetchGroupPasswds(groupId)
+                        refreshGroupPasswds(groupId)
                     }
                 }
 

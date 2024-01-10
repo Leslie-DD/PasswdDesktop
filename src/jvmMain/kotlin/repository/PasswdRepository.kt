@@ -32,17 +32,16 @@ class PasswdRepository(
         val secretKeyByteArray = Base64.getDecoder().decode(secretKey)
         val passwdsMapResult: MutableMap<Int, MutableList<Passwd>> = hashMapOf()
         forEach { passwd ->
-            decodePasswd(secretKeyByteArray, passwd)
             if (passwdsMapResult[passwd.groupId] == null) {
                 passwdsMapResult[passwd.groupId] = arrayListOf()
             }
-            passwdsMapResult[passwd.groupId]?.add(passwd)
+            passwdsMapResult[passwd.groupId]?.add(decodePasswd(secretKeyByteArray, passwd))
         }
         return passwdsMapResult
     }
 
-    suspend fun updateGroupPasswds(groupId: Int) {
-        localDataSource.updateGroupPasswds(groupId)
+    suspend fun refreshGroupPasswds(groupId: Int) {
+        localDataSource.emitGroupPasswds(groupId)
     }
 
     suspend fun loginByPassword(
@@ -64,20 +63,14 @@ class PasswdRepository(
 
     suspend fun fetchGroups() {
         remoteDataSource.fetchGroups()
-            .onSuccess { fetchedGroups ->
-                localDataSource.updateGroups(fetchedGroups)
-                fetchedGroups.forEach { group ->
-                    if (localDataSource.passwdsMap[group.id] == null) {
-                        localDataSource.passwdsMap[group.id] = arrayListOf()
-                    }
-                }
-                if (fetchedGroups.isNotEmpty()) {
-                    localDataSource.updateGroupPasswds(fetchedGroups.first().id)
+            .onSuccess { remoteGroups ->
+                localDataSource.emitGroups(remoteGroups)
+                if (remoteGroups.isNotEmpty()) {
+                    localDataSource.emitGroupPasswds(remoteGroups.first().id)
                 }
             }.onFailure {
-                localDataSource.updateGroups(arrayListOf())
-                localDataSource.updateGroupPasswds(arrayListOf())
-                it.printStackTrace()
+                clearGroupAndGroupPasswds()
+                logger.error("(fetchGroups) error", it)
             }
     }
 
@@ -112,14 +105,7 @@ class PasswdRepository(
                 groupName = groupName,
                 groupComment = groupComment
             )
-            localDataSource.passwdsMap[it] = mutableListOf()
-            val originGroups = localDataSource.groups.value
-            localDataSource.updateGroups(
-                originGroups.apply {
-                    add(newGroup)
-                }
-            )
-            localDataSource.updateGroupPasswds(arrayListOf())
+            localDataSource.newGroup(newGroup)
             result = Result.success(newGroup)
         }.onFailure {
             result = Result.failure(it)
@@ -134,14 +120,12 @@ class PasswdRepository(
         remoteDataSource.deleteGroup(
             groupId = groupId
         ).onSuccess {
-            localDataSource.passwdsMap.remove(groupId)
-            val originGroups = localDataSource.groups.value
-            originGroups.find { group: Group -> group.id == groupId }?.let {
-                originGroups.remove(it)
-                result = Result.success(it)
+            val deleteGroup = localDataSource.deleteGroup(groupId)
+            result = if (deleteGroup == null) {
+                Result.failure(Throwable("no such group"))
+            } else {
+                Result.success(deleteGroup)
             }
-            localDataSource.updateGroups(originGroups)
-            localDataSource.updateGroupPasswds(arrayListOf())
         }.onFailure {
             result = Result.failure(it)
         }
@@ -159,12 +143,12 @@ class PasswdRepository(
             groupName = groupName,
             groupComment = groupComment
         ).onSuccess {
-            val originGroups = localDataSource.groups.value
-            originGroups.find { group: Group -> group.id == groupId }?.let {
-                it.groupName = groupName
-                it.groupComment = groupComment
+            val updateGroup = localDataSource.updateGroup(groupId, groupName, groupComment)
+            result = if (updateGroup == null) {
+                Result.failure(Throwable("no such group"))
+            } else {
+                Result.success(updateGroup)
             }
-            localDataSource.updateGroups(originGroups)
         }.onFailure {
             result = Result.failure(it)
         }
@@ -199,13 +183,27 @@ class PasswdRepository(
                 usernameString = usernameString,
                 passwordString = passwordString
             )
-            localDataSource.passwdsMap[groupId]?.add(newPasswd)
-            localDataSource.updateGroupPasswds(groupId)
-
+            localDataSource.newPasswd(newPasswd)
             result = Result.success(newPasswd)
         }.onFailure {
             result = Result.failure(it)
         }
+        return result
+    }
+
+    suspend fun deletePasswd(id: Int): Result<Passwd> {
+        var result = Result.failure<Passwd>(Throwable())
+        remoteDataSource.deletePasswd(id = id)
+            .onSuccess {
+                val deletePasswd = localDataSource.deletePasswd(id)
+                result = if (deletePasswd == null) {
+                    Result.failure(Throwable("no such passwd"))
+                } else {
+                    Result.success(deletePasswd)
+                }
+            }.onFailure {
+                result = Result.failure(it)
+            }
         return result
     }
 
@@ -227,16 +225,18 @@ class PasswdRepository(
             link = link,
             comment = comment
         ).onSuccess {
-            getPasswdById(id)?.let { originPasswd ->
-                originPasswd.apply {
-                    this.title = title
-                    this.usernameString = usernameString
-                    this.passwordString = passwordString
-                    this.link = link
-                    this.comment = comment
-                }
-                updateGroupPasswdsByGroupId(originPasswd.groupId)
-                result = Result.success(originPasswd)
+            val updatePasswd = localDataSource.updatePasswd(
+                id = id,
+                title = title,
+                usernameString = usernameString,
+                passwordString = passwordString,
+                link = link,
+                comment = comment
+            )
+            result = if (updatePasswd == null) {
+                Result.failure(Throwable("no such passwd"))
+            } else {
+                Result.success(updatePasswd)
             }
         }.onFailure {
             result = Result.failure(it)
@@ -244,31 +244,9 @@ class PasswdRepository(
         return result
     }
 
-    suspend fun deletePasswd(id: Int): Result<Passwd> {
-        var result = Result.failure<Passwd>(Throwable())
-        remoteDataSource.deletePasswd(id = id)
-            .onSuccess {
-                getPasswdById(id)?.let { passwd ->
-                    updateGroupPasswdsByGroupId(
-                        groupId = passwd.groupId,
-                        onUpdated = {
-                            result = Result.success(passwd)
-                        }
-                    ) { groupPasswdsss ->
-                        groupPasswdsss.apply {
-                            remove(passwd)
-                        }
-                    }
-                }
-            }.onFailure {
-                result = Result.failure(it)
-            }
-        return result
-    }
-
     suspend fun searchLikePasswdsAndUpdate(value: String) {
         if (value.isBlank()) {
-            localDataSource.updateGroupPasswds(arrayListOf())
+            localDataSource.emitGroupPasswds(arrayListOf())
         } else {
             val pattern = Regex(PATTERN_PREFIX + value + PATTERN_SUFFIX)
             val result = arrayListOf<Passwd>()
@@ -279,7 +257,7 @@ class PasswdRepository(
                         result.add(passwd)
                     }
                 }
-            localDataSource.updateGroupPasswds(result)
+            localDataSource.emitGroupPasswds(result)
         }
     }
 
@@ -287,28 +265,15 @@ class PasswdRepository(
         secretKeyBytes: ByteArray? = null,
         passwd: Passwd
     ): Passwd {
-        try {
-            passwd.title = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.title)
-            passwd.usernameString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.usernameString)
-            passwd.passwordString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.passwordString)
+        return try {
+            passwd.copy(
+                title = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.title),
+                usernameString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.usernameString),
+                passwordString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.passwordString)
+            )
         } catch (e: Exception) {
-            logger.error("fetchGroupPasswd error " + e.message)
-            e.printStackTrace()
-        }
-        return passwd
-    }
-
-    private fun getPasswdById(id: Int): Passwd? {
-        return localDataSource.passwdsMap.flatMap { it.value }.find { passwd -> passwd.id == id }
-    }
-
-    private suspend fun updateGroupPasswdsByGroupId(
-        groupId: Int,
-        onUpdated: (() -> Unit)? = null,
-        convert: (MutableList<Passwd>) -> MutableList<Passwd> = { passwds -> passwds }
-    ) {
-        localDataSource.updateGroupPasswds(groupId, convert).let {
-            onUpdated?.invoke()
+            logger.error("(decodePasswd) error ", e)
+            passwd
         }
     }
 
@@ -333,8 +298,8 @@ class PasswdRepository(
     }
 
     private suspend fun clearGroupAndGroupPasswds() {
-        localDataSource.updateGroups(mutableListOf())
-        localDataSource.updateGroupPasswds(arrayListOf())
+        localDataSource.emitGroups(arrayListOf())
+        localDataSource.emitGroupPasswds(arrayListOf())
     }
 
     companion object {

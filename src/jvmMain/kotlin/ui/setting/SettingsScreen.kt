@@ -20,8 +20,9 @@ import androidx.compose.ui.unit.dp
 import database.DataBase
 import model.viewmodel.ConfigViewModel
 import model.viewmodel.PasswdsViewModel
-import ui.common.ReadableTextField
+import ui.common.EditLimitTextField
 import ui.common.copyToClipboard
+import ui.common.defaultIconButtonColors
 import ui.toolbar.SideMenuBar
 
 @Composable
@@ -49,7 +50,7 @@ fun SettingsScreen(
 
 @Composable
 fun UsernameView(username: String) {
-    ReadableTextField(
+    EditLimitTextField(
         modifier = Modifier.width(300.dp),
         label = "Username",
         leadingIcon = Icons.Outlined.People,
@@ -60,7 +61,7 @@ fun UsernameView(username: String) {
 @Composable
 fun SecretKeyView(secretKey: String) {
     var secretKeyVisible by remember { mutableStateOf(false) }
-    ReadableTextField(
+    EditLimitTextField(
         modifier = Modifier.width(300.dp),
         label = "Secret Key",
         leadingIcon = Icons.Default.Key,
@@ -69,9 +70,7 @@ fun SecretKeyView(secretKey: String) {
         trailingIcon = {
             Row(modifier = Modifier.wrapContentSize().padding(end = 10.dp)) {
                 IconButton(
-                    colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ),
+                    colors = defaultIconButtonColors(),
                     onClick = {
                         secretKeyVisible = !secretKeyVisible
                     }) {
@@ -82,9 +81,7 @@ fun SecretKeyView(secretKey: String) {
                 }
 
                 IconButton(
-                    colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ),
+                    colors = defaultIconButtonColors(),
                     onClick = {
                         secretKey.copyToClipboard()
                     }

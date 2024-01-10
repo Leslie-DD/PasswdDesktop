@@ -27,19 +27,14 @@ fun PasswdsScreen(
 ) {
     Row(modifier = modifier) {
         SideMenuBar(passwdsViewModel, configViewModel)
-        val coroutineScope = rememberCoroutineScope()
-        val reorderState = rememberReorderState<IDragAndDrop>()
 
-        Column(
-            modifier = modifier.background(color = MaterialTheme.colorScheme.primaryContainer)
-        ) {
+        Column(modifier = modifier.background(color = MaterialTheme.colorScheme.primaryContainer)) {
             TopToolBar(viewModel = passwdsViewModel)
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(end = 10.dp)
-            ) {
-                ReorderContainer(
-                    state = reorderState,
-                ) {
+
+            Row(modifier = Modifier.fillMaxWidth().padding(end = 10.dp)) {
+                val reorderState = rememberReorderState<IDragAndDrop>()
+                val coroutineScope = rememberCoroutineScope()
+                ReorderContainer(state = reorderState) {
                     Row(modifier = Modifier) {
                         GroupList(passwdsViewModel, Modifier.width(250.dp), coroutineScope, reorderState)
                         RowSpacer()
@@ -47,7 +42,7 @@ fun PasswdsScreen(
                         RowSpacer()
                     }
                 }
-                PasswdDetailWrapper(viewModel = passwdsViewModel)
+                PasswdDetailScreen(viewModel = passwdsViewModel)
             }
         }
     }

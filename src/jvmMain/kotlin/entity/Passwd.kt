@@ -16,3 +16,15 @@ data class Passwd(
     @SerialName("updateTimeExpose")
     var updateTime: Long? = 0L
 ): IDragAndDrop
+
+
+fun defaultPasswd(): Passwd = Passwd(
+    comment = null,
+    groupId = -1,
+    id = -1,
+    link = null,
+    usernameString = null,
+    passwordString = null,
+    title = null,
+    userId = -1
+)

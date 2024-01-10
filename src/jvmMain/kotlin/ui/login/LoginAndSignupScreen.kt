@@ -34,6 +34,7 @@ import ui.common.EnabledOutlinedTextField
 import ui.common.HistoriesDropDownMenu
 import ui.toolbar.NoRippleInteractionSource
 import ui.common.TipsDialog
+import ui.common.defaultIconButtonColors
 
 @Composable
 fun LoginAndSignupScreen(
@@ -171,9 +172,7 @@ fun UsernameTextField(
 
                     IconButton(
                         enabled = enabled,
-                        colors = IconButtonDefaults.iconButtonColors(
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ),
+                        colors = defaultIconButtonColors(),
                         onClick = { menuVisible = !menuVisible }
                     ) {
                         Icon(
@@ -282,9 +281,7 @@ fun HostTextField(
 
                     IconButton(
                         enabled = enabled,
-                        colors = IconButtonDefaults.iconButtonColors(
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ),
+                        colors = defaultIconButtonColors(),
                         onClick = { menuVisible = !menuVisible }
                     ) {
                         Icon(

@@ -35,6 +35,7 @@ import model.uieffect.DialogUiEffect
 import model.viewmodel.PasswdsViewModel
 import ui.common.AddPasswdDialog
 import ui.common.DeletePasswdConfirmDialog
+import ui.common.defaultIconButtonColors
 import ui.toolbar.NoRippleInteractionSource
 
 
@@ -145,9 +146,7 @@ fun PasswdList(
                 val groupUiState = viewModel.passwdUiState.collectAsState().value
                 IconButton(
                     enabled = groupUiState.selectGroup != null,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ),
+                    colors = defaultIconButtonColors(),
                     onClick = {
                         isNewPasswdDialogOpened.value = true
                     }
@@ -179,9 +178,7 @@ fun PasswdList(
 
                 IconButton(
                     enabled = selectPasswd != null,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ),
+                    colors = defaultIconButtonColors(),
                     onClick = {
                         isDeletePasswdConfirmDialogOpened.value = true
                     }

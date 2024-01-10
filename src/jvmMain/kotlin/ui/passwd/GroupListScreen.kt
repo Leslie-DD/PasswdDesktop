@@ -37,6 +37,7 @@ import model.viewmodel.PasswdsViewModel
 import ui.common.AddGroupDialog
 import ui.common.DeleteGroupConfirmDialog
 import ui.common.EditGroupDialog
+import ui.common.defaultIconButtonColors
 import ui.toolbar.NoRippleInteractionSource
 
 
@@ -150,9 +151,7 @@ fun GroupList(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             IconButton(
-                colors = IconButtonDefaults.iconButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
+                colors = defaultIconButtonColors(),
                 onClick = { isNewGroupDialogOpen.value = true }
             ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
@@ -170,9 +169,7 @@ fun GroupList(
 
             IconButton(
                 enabled = selectGroup != null,
-                colors = IconButtonDefaults.iconButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
+                colors = defaultIconButtonColors(),
                 onClick = { isUpdateGroupDialogOpen.value = true }
             ) {
                 Icon(imageVector = Icons.Default.Edit, contentDescription = null)
@@ -193,9 +190,7 @@ fun GroupList(
 
             IconButton(
                 enabled = selectGroup != null,
-                colors = IconButtonDefaults.iconButtonColors(
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
+                colors = defaultIconButtonColors(),
                 onClick = { isDeleteGroupConfirmDialogOpen.value = true }
             ) {
                 Icon(imageVector = Icons.Default.Delete, contentDescription = null)
