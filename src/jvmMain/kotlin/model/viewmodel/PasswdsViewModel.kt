@@ -634,6 +634,18 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     // TODO: host valid check
                 }
 
+                is UiAction.UpdateEditEnabled -> {
+                    _passwdUiState.update {
+                        it.copy(editEnabled = editEnabled)
+                    }
+                }
+
+                is UiAction.UpdateEditIconButtonEnabled -> {
+                    _passwdUiState.update {
+                        it.copy(editIconButtonEnabled = editIconButtonEnabled)
+                    }
+                }
+
             }
         }
     }
@@ -712,6 +724,9 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     private fun updateGroupUiState(update: PasswdUiState.() -> PasswdUiState) {
         _passwdUiState.update {
             update(it)
+        }
+        _passwdUiState.update {
+            it.copy(editEnabled = false, editIconButtonEnabled = true)
         }
     }
 

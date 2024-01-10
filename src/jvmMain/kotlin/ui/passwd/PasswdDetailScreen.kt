@@ -38,7 +38,8 @@ fun PasswdDetailScreen(
 ) {
     var passwd by remember { mutableStateOf(defaultPasswd()) }
     Box(modifier.fillMaxSize()) {
-        viewModel.passwdUiState.collectAsState().value.selectPasswd?.let {
+        val passwdUiState = viewModel.passwdUiState.collectAsState().value
+        passwdUiState.selectPasswd?.let {
             passwd = it
 
             var title by remember { mutableStateOf(passwd.title ?: "") }
@@ -47,15 +48,12 @@ fun PasswdDetailScreen(
             var link by remember { mutableStateOf(passwd.link ?: "") }
             var comment by remember { mutableStateOf(passwd.comment ?: "") }
 
-            var editEnabled by remember { mutableStateOf(false) }
-            var editIconButtonEnabled by remember { mutableStateOf(true) }
-
             Column(
                 modifier = modifier.fillMaxSize()
             ) {
                 Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     PasswdDetails(
-                        enabled = editEnabled,
+                        enabled = passwdUiState.editEnabled,
                         passwd = passwd,
                         title = title,
                         username = username,
@@ -75,10 +73,10 @@ fun PasswdDetailScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     IconButton(
-                        enabled = !editEnabled && editIconButtonEnabled,
+                        enabled = !passwdUiState.editEnabled && passwdUiState.editIconButtonEnabled,
                         colors = defaultIconButtonColors(),
                         onClick = {
-                            editEnabled = true
+                            viewModel.onAction(UiAction.UpdateEditEnabled(true))
                             title = passwd.title ?: ""
                             username = passwd.usernameString ?: ""
                             password = passwd.passwordString ?: ""
@@ -91,12 +89,11 @@ fun PasswdDetailScreen(
 
                     Row(modifier = Modifier.padding(start = 20.dp)) {
                         IconButton(
-                            enabled = editEnabled,
+                            enabled = passwdUiState.editEnabled,
                             colors = defaultIconButtonColors(),
                             onClick = {
-                                editEnabled = false
-                                editIconButtonEnabled = false
-
+                                viewModel.onAction(UiAction.UpdateEditEnabled(false))
+                                viewModel.onAction(UiAction.UpdateEditIconButtonEnabled(false))
                                 viewModel.onAction(
                                     UiAction.UpdatePasswd(
                                         passwd.copy(
@@ -114,10 +111,10 @@ fun PasswdDetailScreen(
                         }
 
                         IconButton(
-                            enabled = editEnabled,
+                            enabled = passwdUiState.editEnabled,
                             colors = defaultIconButtonColors(),
                             onClick = {
-                                editEnabled = false
+                                viewModel.onAction(UiAction.UpdateEditEnabled(false))
 
                                 title = passwd.title ?: ""
                                 username = passwd.usernameString ?: ""
@@ -137,8 +134,8 @@ fun PasswdDetailScreen(
             val dialogUiState = viewModel.dialogUiState.collectAsState().value
             when (dialogUiState.effect) {
                 is DialogUiEffect.UpdatePasswdResult -> {
-                    editEnabled = false
-                    editIconButtonEnabled = true
+                    viewModel.onAction(UiAction.UpdateEditEnabled(false))
+                    viewModel.onAction(UiAction.UpdateEditIconButtonEnabled(true))
                     viewModel.onAction(UiAction.ClearEffect)
                 }
 

@@ -8,6 +8,8 @@ data class PasswdUiState(
     val selectGroup: Group? = null,
     val groupPasswds: MutableList<Passwd>,
     val selectPasswd: Passwd? = null,
+    val editEnabled: Boolean = false,
+    val editIconButtonEnabled: Boolean = true
 ) {
     companion object {
         fun defaultPasswdUiState(): PasswdUiState = PasswdUiState(

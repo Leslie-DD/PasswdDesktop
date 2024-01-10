@@ -61,4 +61,8 @@ sealed class UiAction {
 
     class InitHost(val host: Pair<String, Int>) : UiAction()
 
+    class UpdateEditEnabled(val editEnabled: Boolean) : UiAction()
+
+    class UpdateEditIconButtonEnabled(val editIconButtonEnabled: Boolean) : UiAction()
+
 }
