@@ -179,7 +179,7 @@ fun PasswdDetails(
                 Row(modifier = Modifier.wrapContentSize().padding(end = 10.dp)) {
                     IconButton(
                         colors = defaultIconButtonColors(),
-                        onClick = { username.copyToClipboard() }
+                        onClick = { (passwd.usernameString ?: "").copyToClipboard() }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.ContentCopy,
@@ -212,7 +212,7 @@ fun PasswdDetails(
 
                     IconButton(
                         colors = defaultIconButtonColors(),
-                        onClick = { password.copyToClipboard() }
+                        onClick = { (passwd.passwordString ?: "").copyToClipboard() }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.ContentCopy,
