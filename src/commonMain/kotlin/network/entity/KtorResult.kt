@@ -20,7 +20,7 @@ data class KtorResult<T>(
 
     fun result(): Result<T> {
         return if (success) {
-            logger.info("($api) success $this")
+            logger.debug("($api) success")
             Result.success(data)
         } else {
             logger.error("($api) failure $this")

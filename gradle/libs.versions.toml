@@ -15,6 +15,9 @@ sqldelight = "2.0.0-alpha05"
 jSystemThemeDetector = "3.6"
 drag-and-drop = "0.1.0"
 
+# Jewel: a Compose for Desktop theme https://github.com/JetBrains/jewel
+jewel = "0.12.0"
+
 [libraries]
 
 # ktor-client-websocket = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor" }
@@ -44,4 +47,7 @@ sqldelight = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqld
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 jSystemThemeDetector = { module = "com.github.Dansoftowner:jSystemThemeDetector", version.ref = "jSystemThemeDetector" }
 drag-and-drop = { module = "com.mohamedrejeb.dnd:compose-dnd", version.ref = "drag-and-drop" }
+
+jewel-init-ui-standalone = { module = "org.jetbrains.jewel:jewel-int-ui-standalone", version.ref = "jewel" }
+jewel-init-ui-decorated-window = { module = "org.jetbrains.jewel:jewel-int-ui-decorated-window", version.ref = "jewel" }
 

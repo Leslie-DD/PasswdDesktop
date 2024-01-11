@@ -104,8 +104,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
 
         launch {
-            val all = dataBase.getAll()
-            logger.info("database.all: $all")
+//            val all = dataBase.getAll()
         }
     }
 
@@ -463,7 +462,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 historyDataList = dataBase.getSavedHistories()
             )
         }
-        logger.info("(saveLoginInfo) insertResultId: $insertResultId, ${loginUiState.value}")
+        logger.info("(saveLoginInfo) insertResultId: $insertResultId")
     }
 
     fun onAction(action: UiAction) {

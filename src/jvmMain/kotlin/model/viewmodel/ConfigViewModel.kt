@@ -10,7 +10,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.swing.SwingUtilities
 
-
 class ConfigViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
@@ -18,6 +17,7 @@ class ConfigViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     val theme = MutableStateFlow<Theme>(Theme.Default)
 
     private var systemDark = false
+
     private val detector: OsThemeDetector = OsThemeDetector.getDetector()
 
     init {

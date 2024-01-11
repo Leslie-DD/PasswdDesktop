@@ -7,14 +7,12 @@ plugins {
     id("app.cash.sqldelight") version "2.0.0-alpha05"
 }
 
-//group = "com.leslie"
-//version = "1.0-SNAPSHOT"
-
 repositories {
     google()
     mavenCentral()
     maven("https://jitpack.io")
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    maven("https://packages.jetbrains.team/maven/p/kpm/public/") // fo
 }
 
 sqldelight {
@@ -45,6 +43,8 @@ kotlin {
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.jSystemThemeDetector)
                 implementation(libs.drag.and.drop)
+                implementation(libs.jewel.init.ui.standalone)
+                implementation(libs.jewel.init.ui.decorated.window)
             }
         }
         val jvmTest by getting

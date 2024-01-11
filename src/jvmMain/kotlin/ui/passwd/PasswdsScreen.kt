@@ -1,7 +1,10 @@
 package ui.passwd
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -14,7 +17,6 @@ import model.viewmodel.ConfigViewModel
 import model.viewmodel.PasswdsViewModel
 import ui.common.RowSpacer
 import ui.toolbar.SideMenuBar
-import ui.toolbar.TopToolBar
 
 /**
  * 密码界面主要内容的显示区域
@@ -28,22 +30,24 @@ fun PasswdsScreen(
     Row(modifier = modifier) {
         SideMenuBar(passwdsViewModel, configViewModel)
 
-        Column(modifier = modifier.background(color = MaterialTheme.colorScheme.primaryContainer)) {
-            TopToolBar(viewModel = passwdsViewModel)
-
-            Row(modifier = Modifier.fillMaxWidth().padding(end = 10.dp)) {
-                val reorderState = rememberReorderState<IDragAndDrop>()
-                val coroutineScope = rememberCoroutineScope()
-                ReorderContainer(state = reorderState) {
-                    Row(modifier = Modifier) {
-                        GroupList(passwdsViewModel, Modifier.width(250.dp), coroutineScope, reorderState)
-                        RowSpacer()
-                        PasswdList(passwdsViewModel, Modifier.width(250.dp), coroutineScope, reorderState)
-                        RowSpacer()
-                    }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 10.dp)
+                .background(color = MaterialTheme.colorScheme.primaryContainer)
+        ) {
+            val reorderState = rememberReorderState<IDragAndDrop>()
+            val coroutineScope = rememberCoroutineScope()
+            ReorderContainer(state = reorderState) {
+                Row(modifier = Modifier) {
+                    GroupList(passwdsViewModel, Modifier.width(250.dp), coroutineScope, reorderState)
+                    RowSpacer()
+                    PasswdList(passwdsViewModel, Modifier.width(250.dp), coroutineScope, reorderState)
+                    RowSpacer()
                 }
-                PasswdDetailScreen(viewModel = passwdsViewModel)
             }
+            PasswdDetailScreen(viewModel = passwdsViewModel)
         }
     }
+
 }

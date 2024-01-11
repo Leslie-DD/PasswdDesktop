@@ -49,7 +49,7 @@ fun SideMenuBar(
             modifier = Modifier
                 .width(if (expand) 170.dp else 68.dp)
                 .fillMaxHeight()
-                .padding(top = 30.dp, bottom = 20.dp, start = 10.dp, end = 10.dp),
+                .padding(top = 10.dp, bottom = 20.dp, start = 10.dp, end = 10.dp),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
