@@ -639,13 +639,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                         it.copy(editEnabled = editEnabled)
                     }
                 }
-
-                is UiAction.UpdateEditIconButtonEnabled -> {
-                    _passwdUiState.update {
-                        it.copy(editIconButtonEnabled = editIconButtonEnabled)
-                    }
-                }
-
             }
         }
     }
@@ -726,7 +719,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             update(it)
         }
         _passwdUiState.update {
-            it.copy(editEnabled = false, editIconButtonEnabled = true)
+            it.copy(editEnabled = false)
         }
     }
 

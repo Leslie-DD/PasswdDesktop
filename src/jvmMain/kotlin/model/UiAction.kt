@@ -63,6 +63,4 @@ sealed class UiAction {
 
     class UpdateEditEnabled(val editEnabled: Boolean) : UiAction()
 
-    class UpdateEditIconButtonEnabled(val editIconButtonEnabled: Boolean) : UiAction()
-
 }

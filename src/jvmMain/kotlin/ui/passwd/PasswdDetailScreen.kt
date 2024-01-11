@@ -6,7 +6,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material.icons.rounded.Backspace
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -70,13 +70,12 @@ fun PasswdDetailScreen(
 
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     IconButton(
-                        enabled = !passwdUiState.editEnabled && passwdUiState.editIconButtonEnabled,
+                        enabled = true,
                         colors = defaultIconButtonColors(),
                         onClick = {
-                            viewModel.onAction(UiAction.UpdateEditEnabled(true))
+                            viewModel.onAction(UiAction.UpdateEditEnabled(editEnabled = !passwdUiState.editEnabled))
                             title = passwd.title ?: ""
                             username = passwd.usernameString ?: ""
                             password = passwd.passwordString ?: ""
@@ -84,49 +83,32 @@ fun PasswdDetailScreen(
                             comment = passwd.comment ?: ""
                         }
                     ) {
-                        Icon(imageVector = Icons.Default.Edit, contentDescription = null)
+                        Icon(
+                            imageVector = if (!passwdUiState.editEnabled) Icons.Default.Edit else Icons.Rounded.Close,
+                            contentDescription = if (!passwdUiState.editEnabled) "Edit" else "Close"
+                        )
                     }
 
-                    Row(modifier = Modifier.padding(start = 20.dp)) {
-                        IconButton(
-                            enabled = passwdUiState.editEnabled,
-                            colors = defaultIconButtonColors(),
-                            onClick = {
-                                viewModel.onAction(UiAction.UpdateEditEnabled(false))
-                                viewModel.onAction(UiAction.UpdateEditIconButtonEnabled(false))
-                                viewModel.onAction(
-                                    UiAction.UpdatePasswd(
-                                        passwd.copy(
-                                            title = title,
-                                            usernameString = username,
-                                            passwordString = password,
-                                            link = link,
-                                            comment = comment
-                                        )
+                    IconButton(
+                        enabled = passwdUiState.editEnabled,
+                        colors = defaultIconButtonColors(),
+                        onClick = {
+                            viewModel.onAction(UiAction.UpdateEditEnabled(false))
+                            viewModel.onAction(
+                                UiAction.UpdatePasswd(
+                                    passwd.copy(
+                                        title = title,
+                                        usernameString = username,
+                                        passwordString = password,
+                                        link = link,
+                                        comment = comment
                                     )
                                 )
-                            }
-                        ) {
-                            Icon(imageVector = Icons.Default.Check, contentDescription = null)
+                            )
                         }
-
-                        IconButton(
-                            enabled = passwdUiState.editEnabled,
-                            colors = defaultIconButtonColors(),
-                            onClick = {
-                                viewModel.onAction(UiAction.UpdateEditEnabled(false))
-
-                                title = passwd.title ?: ""
-                                username = passwd.usernameString ?: ""
-                                password = passwd.passwordString ?: ""
-                                link = passwd.link ?: ""
-                                comment = passwd.comment ?: ""
-                            }
-                        ) {
-                            Icon(imageVector = Icons.Rounded.Backspace, contentDescription = null)
-                        }
+                    ) {
+                        Icon(imageVector = Icons.Default.Check, contentDescription = "submit")
                     }
-
                 }
             }
 
@@ -135,7 +117,6 @@ fun PasswdDetailScreen(
             when (dialogUiState.effect) {
                 is DialogUiEffect.UpdatePasswdResult -> {
                     viewModel.onAction(UiAction.UpdateEditEnabled(false))
-                    viewModel.onAction(UiAction.UpdateEditIconButtonEnabled(true))
                     viewModel.onAction(UiAction.ClearEffect)
                 }
 
