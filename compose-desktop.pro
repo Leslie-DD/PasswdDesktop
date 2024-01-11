@@ -44,3 +44,7 @@
 -keep class * implements com.sun.jna.** { *; }
 
 -keep interface entity.IDragAndDrop { *; }
+
+-keep interface org.jetbrains.jewel.ui.painter.PainterHint { *; }
+-keep class * implements org.jetbrains.jewel.ui.painter.PainterHint { *; }
+-keep class com.jetbrains.** { *; }
