@@ -48,3 +48,6 @@
 -keep interface org.jetbrains.jewel.ui.painter.PainterHint { *; }
 -keep class * implements org.jetbrains.jewel.ui.painter.PainterHint { *; }
 -keep class com.jetbrains.** { *; }
+
+-keep class com.jthemedetecor.** { *; }
+-keep class oshi.** { *; }
