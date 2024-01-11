@@ -2,7 +2,7 @@ name: Run Gradle on PRs
 on:
   push:
     branches:
-      - 'release*'
+      - 'version*'
 jobs:
   create_release:
     name: Create release
@@ -50,7 +50,7 @@ jobs:
 
       - name: Execute Gradle build
         id: gradle-build
-        run: ./gradlew packageReleaseDistributionForCurrentOS
+        run: ./gradlew packageDistributionForCurrentOS
 
       - run: pwd
 
@@ -62,7 +62,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PUBLISH_PACKAGE }}
         with:
           upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: build/compose/binaries/main-release/deb/passwd_1.0.0-1_amd64.deb
+          asset_path: build/compose/binaries/main/deb/passwd_1.0.0-1_amd64.deb
           asset_name: ${{ github.event.repository.name }} ${{ github.ref_name }}.deb
           asset_content_type: application/zip
 
@@ -74,7 +74,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PUBLISH_PACKAGE }}
         with:
           upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: build\compose\binaries\main-release\msi\Passwd-1.0.0.msi
+          asset_path: build\compose\binaries\main\msi\Passwd-1.0.0.msi
           asset_name: ${{ github.event.repository.name }} ${{ github.ref_name }}.msi
           asset_content_type: application/zip
 
@@ -86,6 +86,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PUBLISH_PACKAGE }}
         with:
           upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: build/compose/binaries/main-release/dmg/Passwd-1.0.0.dmg
+          asset_path: build/compose/binaries/main/dmg/Passwd-1.0.0.dmg
           asset_name: ${{ github.event.repository.name }} ${{ github.ref_name }}.dmg
           asset_content_type: application/zip
