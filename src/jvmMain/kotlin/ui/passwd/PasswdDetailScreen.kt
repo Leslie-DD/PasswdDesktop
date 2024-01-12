@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.Details
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material.icons.rounded.Close
@@ -27,6 +28,8 @@ import ui.common.EditLimitTextField
 import ui.common.copyToClipboard
 import ui.common.defaultEditableTextFieldColors
 import ui.common.defaultIconButtonColors
+import java.awt.Desktop
+import java.net.URI
 
 /**
  * 密码详情
@@ -37,91 +40,89 @@ fun PasswdDetailScreen(
     modifier: Modifier = Modifier
 ) {
     var passwd by remember { mutableStateOf(defaultPasswd()) }
-    Box(modifier.fillMaxSize()) {
-        val passwdUiState = viewModel.passwdUiState.collectAsState().value
-        passwdUiState.selectPasswd?.let {
-            passwd = it
+    val passwdUiState = viewModel.passwdUiState.collectAsState().value
+    passwdUiState.selectPasswd?.let {
+        passwd = it
 
-            var title by remember { mutableStateOf(passwd.title ?: "") }
-            var username by remember { mutableStateOf(passwd.usernameString ?: "") }
-            var password by remember { mutableStateOf(passwd.passwordString ?: "") }
-            var link by remember { mutableStateOf(passwd.link ?: "") }
-            var comment by remember { mutableStateOf(passwd.comment ?: "") }
+        var title by remember { mutableStateOf(passwd.title ?: "") }
+        var username by remember { mutableStateOf(passwd.usernameString ?: "") }
+        var password by remember { mutableStateOf(passwd.passwordString ?: "") }
+        var link by remember { mutableStateOf(passwd.link ?: "") }
+        var comment by remember { mutableStateOf(passwd.comment ?: "") }
 
-            Column(
-                modifier = modifier.fillMaxSize()
+        Column(
+            modifier = modifier.fillMaxSize()
+        ) {
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                PasswdDetails(
+                    enabled = passwdUiState.editEnabled,
+                    passwd = passwd,
+                    title = title,
+                    username = username,
+                    password = password,
+                    link = link,
+                    comment = comment,
+                    onTitleChange = { newValue -> title = newValue },
+                    onUsernameChange = { newValue -> username = newValue },
+                    onPasswordChange = { newValue -> password = newValue },
+                    onLinkChange = { newValue -> link = newValue },
+                    onCommentChange = { newValue -> comment = newValue }
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
             ) {
-                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                    PasswdDetails(
-                        enabled = passwdUiState.editEnabled,
-                        passwd = passwd,
-                        title = title,
-                        username = username,
-                        password = password,
-                        link = link,
-                        comment = comment,
-                        onTitleChange = { newValue -> title = newValue },
-                        onUsernameChange = { newValue -> username = newValue },
-                        onPasswordChange = { newValue -> password = newValue },
-                        onLinkChange = { newValue -> link = newValue },
-                        onCommentChange = { newValue -> comment = newValue }
+                IconButton(
+                    enabled = true,
+                    colors = defaultIconButtonColors(),
+                    onClick = {
+                        viewModel.onAction(UiAction.UpdateEditEnabled(editEnabled = !passwdUiState.editEnabled))
+                        title = passwd.title ?: ""
+                        username = passwd.usernameString ?: ""
+                        password = passwd.passwordString ?: ""
+                        link = passwd.link ?: ""
+                        comment = passwd.comment ?: ""
+                    }
+                ) {
+                    Icon(
+                        imageVector = if (!passwdUiState.editEnabled) Icons.Default.Edit else Icons.Rounded.Close,
+                        contentDescription = if (!passwdUiState.editEnabled) "Edit" else "Close"
                     )
                 }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-                ) {
-                    IconButton(
-                        enabled = true,
-                        colors = defaultIconButtonColors(),
-                        onClick = {
-                            viewModel.onAction(UiAction.UpdateEditEnabled(editEnabled = !passwdUiState.editEnabled))
-                            title = passwd.title ?: ""
-                            username = passwd.usernameString ?: ""
-                            password = passwd.passwordString ?: ""
-                            link = passwd.link ?: ""
-                            comment = passwd.comment ?: ""
-                        }
-                    ) {
-                        Icon(
-                            imageVector = if (!passwdUiState.editEnabled) Icons.Default.Edit else Icons.Rounded.Close,
-                            contentDescription = if (!passwdUiState.editEnabled) "Edit" else "Close"
-                        )
-                    }
-
-                    IconButton(
-                        enabled = passwdUiState.editEnabled,
-                        colors = defaultIconButtonColors(),
-                        onClick = {
-                            viewModel.onAction(UiAction.UpdateEditEnabled(false))
-                            viewModel.onAction(
-                                UiAction.UpdatePasswd(
-                                    passwd.copy(
-                                        title = title,
-                                        usernameString = username,
-                                        passwordString = password,
-                                        link = link,
-                                        comment = comment
-                                    )
+                IconButton(
+                    enabled = passwdUiState.editEnabled,
+                    colors = defaultIconButtonColors(),
+                    onClick = {
+                        viewModel.onAction(UiAction.UpdateEditEnabled(false))
+                        viewModel.onAction(
+                            UiAction.UpdatePasswd(
+                                passwd.copy(
+                                    title = title,
+                                    usernameString = username,
+                                    passwordString = password,
+                                    link = link,
+                                    comment = comment
                                 )
                             )
-                        }
-                    ) {
-                        Icon(imageVector = Icons.Default.Check, contentDescription = "submit")
+                        )
                     }
+                ) {
+                    Icon(imageVector = Icons.Default.Check, contentDescription = "submit")
                 }
             }
+        }
 
 
-            val dialogUiState = viewModel.dialogUiState.collectAsState().value
-            when (dialogUiState.effect) {
-                is DialogUiEffect.UpdatePasswdResult -> {
-                    viewModel.onAction(UiAction.UpdateEditEnabled(false))
-                    viewModel.onAction(UiAction.ClearEffect)
-                }
-
-                else -> {}
+        val dialogUiState = viewModel.dialogUiState.collectAsState().value
+        when (dialogUiState.effect) {
+            is DialogUiEffect.UpdatePasswdResult -> {
+                viewModel.onAction(UiAction.UpdateEditEnabled(false))
+                viewModel.onAction(UiAction.ClearEffect)
             }
+
+            else -> {}
         }
     }
 }
@@ -150,17 +151,19 @@ fun PasswdDetails(
             value = if (enabled) title else passwd.title ?: "",
             onValueChange = { onTitleChange(it) },
         )
+        val usernameStr = if (enabled) username else passwd.usernameString ?: ""
         EditLimitTextField(
             enabled = enabled,
             label = "username",
             leadingIcon = Icons.Default.People,
-            value = if (enabled) username else passwd.usernameString ?: "",
+            value = usernameStr,
             onValueChange = { onUsernameChange(it) },
             trailingIcon = {
-                Row(modifier = Modifier.wrapContentSize().padding(end = 10.dp)) {
+                Row(modifier = Modifier.wrapContentSize()) {
                     IconButton(
+                        enabled = username.isNotBlank(),
                         colors = defaultIconButtonColors(),
-                        onClick = { (passwd.usernameString ?: "").copyToClipboard() }
+                        onClick = { usernameStr.copyToClipboard() }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.ContentCopy,
@@ -171,17 +174,19 @@ fun PasswdDetails(
             }
         )
         var passwordVisible by remember { mutableStateOf(false) }
+        val passwordStr = if (enabled) password else passwd.passwordString ?: ""
         EditLimitTextField(
             enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
             label = "password",
             leadingIcon = Icons.Default.Lock,
-            value = if (enabled) password else passwd.passwordString ?: "",
+            value = passwordStr,
             onValueChange = { onPasswordChange(it) },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
-                Row(modifier = Modifier.wrapContentSize().padding(end = 10.dp)) {
+                Row(modifier = Modifier.wrapContentSize()) {
                     IconButton(
+                        enabled = passwordStr.isNotBlank(),
                         colors = defaultIconButtonColors(),
                         onClick = { passwordVisible = !passwordVisible }
                     ) {
@@ -192,8 +197,9 @@ fun PasswdDetails(
                     }
 
                     IconButton(
+                        enabled = passwordStr.isNotBlank(),
                         colors = defaultIconButtonColors(),
-                        onClick = { (passwd.passwordString ?: "").copyToClipboard() }
+                        onClick = { passwordStr.copyToClipboard() }
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.ContentCopy,
@@ -204,13 +210,45 @@ fun PasswdDetails(
             }
         )
 
+        val linkStr = if (enabled) link else passwd.link ?: ""
         EditLimitTextField(
             enabled = enabled,
             modifier = Modifier.fillMaxWidth(),
             label = "link",
             leadingIcon = Icons.Default.Link,
-            value = if (enabled) link else passwd.link ?: "",
+            value = linkStr,
             onValueChange = { onLinkChange(it) },
+            trailingIcon = {
+                Row(modifier = Modifier.wrapContentSize()) {
+                    IconButton(
+                        enabled = linkStr.isNotBlank(),
+                        colors = defaultIconButtonColors(),
+                        onClick = {
+                            try {
+                                Desktop.getDesktop().browse(URI.create(linkStr))
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Details,
+                            contentDescription = "go to this site"
+                        )
+                    }
+
+                    IconButton(
+                        enabled = linkStr.isNotBlank(),
+                        colors = defaultIconButtonColors(),
+                        onClick = { linkStr.copyToClipboard() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.ContentCopy,
+                            contentDescription = "copy link to clipboard"
+                        )
+                    }
+                }
+            }
         )
         OutlinedTextField(
             enabled = enabled,

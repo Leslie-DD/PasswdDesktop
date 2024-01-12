@@ -91,7 +91,7 @@ fun GroupList(
         val groupUiState = viewModel.passwdUiState.collectAsState().value
         val selectGroup = groupUiState.selectGroup
         Row(
-            modifier = Modifier.weight(1f).padding(4.dp)
+            modifier = Modifier.weight(1f)
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -217,7 +217,7 @@ fun GroupItem(
     onClick: (Int) -> Unit = {}
 ) {
     TextButton(
-        modifier = modifier.fillMaxWidth().height(40.dp).padding(end = 10.dp),
+        modifier = modifier.fillMaxWidth().height(40.dp),
         shape = RoundedCornerShape(20),
         interactionSource = remember { NoRippleInteractionSource() },
         onClick = { onClick(group.id) },

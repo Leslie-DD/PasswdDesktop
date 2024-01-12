@@ -30,7 +30,7 @@ import ui.App
 import ui.toolbar.TitleBarView
 
 fun main() = application {
-    val state = rememberWindowState(width = 1200.dp, height = 800.dp)
+    val state = rememberWindowState(width = 1100.dp, height = 800.dp)
 
     val passwdsViewModel = remember { PasswdsViewModel() }
     val configViewModel = remember { ConfigViewModel() }
