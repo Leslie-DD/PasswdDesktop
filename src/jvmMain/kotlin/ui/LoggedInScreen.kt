@@ -1,9 +1,8 @@
 package ui
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.*
 import model.UiScreen
 import model.viewmodel.ConfigViewModel
 import model.viewmodel.PasswdsViewModel

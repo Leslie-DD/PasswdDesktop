@@ -32,9 +32,9 @@ import model.uieffect.DialogUiEffect
 import model.viewmodel.PasswdsViewModel
 import ui.common.EnabledOutlinedTextField
 import ui.common.HistoriesDropDownMenu
-import ui.toolbar.NoRippleInteractionSource
 import ui.common.TipsDialog
 import ui.common.defaultIconButtonColors
+import ui.toolbar.NoRippleInteractionSource
 
 @Composable
 fun LoginAndSignupScreen(
@@ -125,6 +125,7 @@ private fun LoginAndSignupBox(viewModel: PasswdsViewModel) {
                     "Please make sure WRITE DOWN your secret key, or there will be severe problem while encrypting/decrypting passwords."
                 isImportantTipsDialogOpen.value = true
             }
+
             is DialogUiEffect.LoginAndSignupFailure -> isLoading.value = false
 
             else -> {}

@@ -56,6 +56,7 @@ fun App(
                     tip = tipsMsg
                     isTipsDialogOpen = true
                 }
+
                 else -> {}
             }
         }

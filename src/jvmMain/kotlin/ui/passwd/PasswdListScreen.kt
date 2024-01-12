@@ -277,6 +277,7 @@ private fun SearchBox(viewModel: PasswdsViewModel) {
                     }
                     true
                 }
+
                 else -> false
             }
         },

@@ -31,7 +31,9 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.*
+import androidx.compose.ui.window.DialogWindow
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.rememberDialogState
 import kotlinx.coroutines.launch
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
@@ -318,83 +320,83 @@ fun GlobalDialog(
         state = rememberDialogState(position, size),
         title = title
     ) {
-            window.rootPane.apply {
-                rootPane.putClientProperty("apple.awt.fullWindowContent", true)
-                rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
-                rootPane.putClientProperty("apple.awt.windowTitleVisible", false)
-            }
+        window.rootPane.apply {
+            rootPane.putClientProperty("apple.awt.fullWindowContent", true)
+            rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
+            rootPane.putClientProperty("apple.awt.windowTitleVisible", false)
+        }
 
-            val enable = remember { mutableStateOf(true) }
+        val enable = remember { mutableStateOf(true) }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .padding(horizontal = 100.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.primaryContainer)
+                .padding(horizontal = 100.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Spacer(modifier = Modifier.height(28.dp))
+            Text(
+                text = title,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                fontSize = 18.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(content = content)
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
-                Spacer(modifier = Modifier.height(28.dp))
-                Text(
-                    text = title,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    fontSize = 18.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Box(content = content)
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    onConfirmClick?.let {
-                        Button(
-                            colors = ButtonDefaults.buttonColors(
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer
-                            ),
-                            enabled = enable.value,
-                            onClick = {
-                                enable.value = false
-                                onConfirmClick(true)
-                            }
-                        ) {
-                            Text(
-                                text = confirmString,
-                                maxLines = 1,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
+                onConfirmClick?.let {
+                    Button(
+                        colors = ButtonDefaults.buttonColors(
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        ),
+                        enabled = enable.value,
+                        onClick = {
+                            enable.value = false
+                            onConfirmClick(true)
                         }
-                        Spacer(modifier = Modifier.width(20.dp))
+                    ) {
+                        Text(
+                            text = confirmString,
+                            maxLines = 1,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     }
-                    onCancelClick?.let {
-                        Button(
-                            colors = ButtonDefaults.buttonColors(
-                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer
-                            ),
-                            enabled = enable.value,
-                            onClick = {
-                                enable.value = false
-                                onCancelClick()
-                            }
-                        ) {
-                            Text(
-                                text = cancelString,
-                                maxLines = 1,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                    }
-
+                    Spacer(modifier = Modifier.width(20.dp))
                 }
+                onCancelClick?.let {
+                    Button(
+                        colors = ButtonDefaults.buttonColors(
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        ),
+                        enabled = enable.value,
+                        onClick = {
+                            enable.value = false
+                            onCancelClick()
+                        }
+                    ) {
+                        Text(
+                            text = cancelString,
+                            maxLines = 1,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+
             }
         }
+    }
 }
 
 @Composable

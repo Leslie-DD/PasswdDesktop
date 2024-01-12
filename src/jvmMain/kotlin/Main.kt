@@ -41,7 +41,7 @@ fun main() = application {
     Tray(
         icon = painterResource(Res.Drawable.APP_ICON_ROUND_CORNER),
         onAction = { passwdsViewModel.onAction(UiAction.WindowVisible(true)) },
-        tooltip = "双击(windows)\\右击(mac)打开翻译器",
+        tooltip = "双击(windows)\\右击(mac)打开密码管理器",
     ) {
         Item("Open Window", onClick = { passwdsViewModel.onAction(UiAction.WindowVisible(true)) })
         Separator()
