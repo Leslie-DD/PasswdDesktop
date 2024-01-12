@@ -10,15 +10,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,10 +34,10 @@ import model.UiAction
 import model.uieffect.DialogUiEffect
 import model.viewmodel.PasswdsViewModel
 import ui.common.AddPasswdDialog
+import ui.common.CustomOutlinedTextField
 import ui.common.DeletePasswdConfirmDialog
 import ui.common.defaultIconButtonColors
 import ui.toolbar.NoRippleInteractionSource
-
 
 /**
  * 密码 List（显示指定分组下的所有密码，每条 item 只显示 title 和 username）
@@ -82,6 +82,13 @@ fun PasswdList(
         Column(
             modifier = Modifier.weight(1f)
         ) {
+            val windowUiState = viewModel.windowUiState.collectAsState().value
+            if (windowUiState.searchFocus) {
+                Box(modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp, end = 20.dp)) {
+                    SearchBox(viewModel)
+                }
+            }
+
             val passwdUiState = viewModel.passwdUiState.collectAsState().value
             val selectPasswd = passwdUiState.selectPasswd
             Row(
@@ -134,7 +141,6 @@ fun PasswdList(
                     )
                 )
             }
-
 
             Row(
                 modifier = Modifier
@@ -251,4 +257,50 @@ fun PasswdItem(
             }
         }
     }
+}
+
+@Composable
+private fun SearchBox(viewModel: PasswdsViewModel) {
+    val windowUiState by viewModel.windowUiState.collectAsState()
+    CustomOutlinedTextField(
+        requestFocus = true,
+        onFocusChanged = {
+            if (it) {
+                viewModel.onAction(UiAction.FocusOnSearch(true))
+            }
+        },
+        modifier = Modifier.height(32.dp).fillMaxWidth().onPreviewKeyEvent {
+            when {
+                (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyDown) -> {
+                    if (windowUiState.searchFocus) {
+                        viewModel.onAction(UiAction.FocusOnSearch(false))
+                    }
+                    true
+                }
+                else -> false
+            }
+        },
+        leadingIcon = {
+            Icon(
+                modifier = Modifier.size(20.dp),
+                imageVector = Icons.Default.Search,
+                contentDescription = null
+            )
+        },
+        placeholder = {
+            Text(
+                text = "Search",
+                fontWeight = FontWeight.Light,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontSize = 14.sp
+            )
+        },
+        onValueChange = {
+            if (it.isNotBlank()) {
+                viewModel.onAction(UiAction.SearchPasswds(it))
+            }
+        }
+    )
+    Spacer(modifier = Modifier.width(10.dp))
 }

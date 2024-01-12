@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Tray
@@ -35,6 +36,7 @@ fun main() = application {
     val configViewModel = remember { ConfigViewModel() }
 
     val theme by configViewModel.theme.collectAsState()
+    val windowUiState by passwdsViewModel.windowUiState.collectAsState()
 
     Tray(
         icon = painterResource(Res.Drawable.APP_ICON_ROUND_CORNER),
@@ -63,9 +65,19 @@ fun main() = application {
     ) {
         DecoratedWindow(
             onCloseRequest = { passwdsViewModel.onAction(UiAction.WindowVisible(false)) },
-            visible = passwdsViewModel.windowUiState.collectAsState().value.windowVisible,
+            visible = windowUiState.windowVisible,
             title = "Passwd",
             state = state,
+            onKeyEvent = {
+                when {
+                    (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyDown) -> {
+                        passwdsViewModel.onAction(UiAction.FocusOnSearch(!windowUiState.searchFocus))
+                        true
+                    }
+
+                    else -> false
+                }
+            }
         ) {
             window.rootPane.apply {
                 rootPane.putClientProperty("apple.awt.fullWindowContent", true)
@@ -74,7 +86,6 @@ fun main() = application {
             }
 
             MaterialTheme(colorScheme = theme.materialColorScheme) {
-                val windowUiState = passwdsViewModel.windowUiState.collectAsState().value
                 var titleBarVisible by remember { mutableStateOf(false) }
                 titleBarVisible = when (windowUiState.uiScreen) {
                     is UiScreen.Loading -> false

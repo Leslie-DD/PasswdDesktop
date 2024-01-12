@@ -638,6 +638,12 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                         it.copy(editEnabled = editEnabled)
                     }
                 }
+
+                is UiAction.FocusOnSearch -> {
+                    _windowUiState.update {
+                        it.copy(searchFocus = focus)
+                    }
+                }
             }
         }
     }

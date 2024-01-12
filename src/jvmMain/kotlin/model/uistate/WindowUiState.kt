@@ -5,6 +5,7 @@ import model.UiScreens
 
 data class WindowUiState(
     val windowVisible: Boolean,
+    val searchFocus: Boolean,
     val uiScreen: UiScreen,
     val uiScreens: UiScreens,
 
@@ -13,8 +14,9 @@ data class WindowUiState(
     companion object {
         val Default = WindowUiState(
             windowVisible = true,
+            searchFocus = true,
             uiScreen = UiScreen.Default,
-            uiScreens = UiScreen.Loadings
+            uiScreens = UiScreen.Loadings,
         )
     }
 }

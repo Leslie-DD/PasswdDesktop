@@ -39,6 +39,8 @@ import java.awt.datatransfer.StringSelection
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomOutlinedTextField(
+    requestFocus: Boolean = false,
+    onFocusChanged: (Boolean) -> Unit = {},
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     singleLine: Boolean = true,
@@ -69,6 +71,7 @@ fun CustomOutlinedTextField(
             .onFocusChanged {
                 text = ""
                 onValueChange("")
+                onFocusChanged(it.hasFocus)
             },
         onValueChange = {
             text = it
@@ -106,9 +109,11 @@ fun CustomOutlinedTextField(
         }
     )
 
-    LaunchedEffect(Unit) {
-        coroutineScope.launch {
-            focusRequester.requestFocus()
+    if (requestFocus) {
+        LaunchedEffect(Unit) {
+            coroutineScope.launch {
+                focusRequester.requestFocus()
+            }
         }
     }
 }

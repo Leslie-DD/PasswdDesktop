@@ -63,4 +63,6 @@ sealed class UiAction {
 
     class UpdateEditEnabled(val editEnabled: Boolean) : UiAction()
 
+    class FocusOnSearch(val focus: Boolean) : UiAction()
+
 }

@@ -101,12 +101,16 @@ fun DecoratedWindowScope.TitleBarView(
             modifier = Modifier.align(Alignment.End),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (pluginVisible) {
-                // TODO: fix 'could not input'
-                SearchBox(passwdsViewModel, Modifier)
-//                var searchValue by remember { mutableStateOf("") }
-//                TextField(value = searchValue, onValueChange = {searchValue = it})
+            Tooltip({
+                Text("Search passwds (Ctrl + F)")
+            }) {
+                IconButton({
+                    passwdsViewModel.onAction(UiAction.FocusOnSearch(!windowUiState.searchFocus))
+                }, Modifier.size(40.dp).padding(5.dp)) {
+                    Icon("icons/search-f.svg", "Github", StandaloneSampleIcons::class.java)
+                }
             }
+
             Tooltip({
                 Text("Open Jewel Github repository")
             }) {
@@ -119,35 +123,6 @@ fun DecoratedWindowScope.TitleBarView(
             }
         }
     }
-}
-
-@Composable
-private fun SearchBox(viewModel: PasswdsViewModel, modifier: Modifier) {
-    CustomOutlinedTextField(
-        modifier = Modifier.height(32.dp),
-        leadingIcon = {
-            Icon(
-                modifier = Modifier.size(20.dp),
-                imageVector = Icons.Default.Search,
-                contentDescription = null
-            )
-        },
-        placeholder = {
-            Text(
-                text = "Search",
-                fontWeight = FontWeight.Light,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 14.sp
-            )
-        },
-        onValueChange = {
-            if (it.isNotBlank()) {
-                viewModel.onAction(UiAction.SearchPasswds(it))
-            }
-        }
-    )
-    Spacer(modifier = modifier.fillMaxHeight().width(10.dp))
 }
 
 @Composable
