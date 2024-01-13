@@ -10,7 +10,7 @@ import entity.LoginResult
 import entity.Passwd
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import model.UiAction
+import model.action.PasswdAction
 import model.UiScreen
 import model.UiScreens
 import model.uieffect.DialogUiEffect
@@ -465,11 +465,11 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         logger.info("(saveLoginInfo) insertResultId: $insertResultId")
     }
 
-    fun onAction(action: UiAction) {
+    fun onAction(action: PasswdAction) {
         logger.debug("onAction: {}", action)
         with(action) {
             when (this) {
-                is UiAction.GoScreen -> {
+                is PasswdAction.GoScreen -> {
                     val uiScreens: UiScreens? = when (screen) {
                         in UiScreen.LoginAndSignup -> UiScreen.LoginAndSignup
                         in UiScreen.LoggedInScreen -> UiScreen.LoggedInScreen
@@ -490,13 +490,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     }
                 }
 
-                is UiAction.WindowVisible -> {
-                    updateWindowUiState {
-                        copy(windowVisible = visible)
-                    }
-                }
-
-                is UiAction.ShowGroupPasswds -> {
+                is PasswdAction.ShowGroupPasswds -> {
                     updateGroupUiState {
                         copy(
                             selectGroup = getGroup(groupId),
@@ -508,14 +502,14 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     }
                 }
 
-                is UiAction.ShowPasswd -> {
+                is PasswdAction.ShowPasswd -> {
                     val passwd = getGroupPasswd(passwdId)
                     updateGroupUiState {
                         copy(selectPasswd = passwd)
                     }
                 }
 
-                is UiAction.Login -> {
+                is PasswdAction.Login -> {
                     launch(Dispatchers.IO) {
                         delay(200)
                         loginByPassword(
@@ -530,7 +524,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     }
                 }
 
-                is UiAction.Signup -> {
+                is PasswdAction.Signup -> {
                     launch(Dispatchers.IO) {
                         signup(
                             username = username,
@@ -541,7 +535,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     }
                 }
 
-                is UiAction.NewGroup -> {
+                is PasswdAction.NewGroup -> {
                     launch(Dispatchers.IO) {
                         newGroup(
                             groupName = groupName,
@@ -550,14 +544,14 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     }
                 }
 
-                is UiAction.DeleteGroup -> {
+                is PasswdAction.DeleteGroup -> {
                     val selectGroupId = passwdUiState.value.selectGroup?.id ?: return
                     launch(Dispatchers.IO) {
                         deleteGroup(selectGroupId)
                     }
                 }
 
-                is UiAction.UpdateGroup -> {
+                is PasswdAction.UpdateGroup -> {
                     val selectGroupId = passwdUiState.value.selectGroup?.id ?: return
                     launch(Dispatchers.IO) {
                         updateGroup(
@@ -568,13 +562,13 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     }
                 }
 
-                is UiAction.ClearEffect -> {
+                is PasswdAction.ClearEffect -> {
                     updateDialogUiState {
                         copy(effect = null)
                     }
                 }
 
-                is UiAction.NewPasswd -> {
+                is PasswdAction.NewPasswd -> {
                     launch(Dispatchers.IO) {
                         newPasswd(
                             groupId = groupId,
@@ -587,30 +581,30 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     }
                 }
 
-                is UiAction.UpdatePasswd -> {
+                is PasswdAction.UpdatePasswd -> {
                     launch(Dispatchers.IO) {
                         updatePasswd(passwd)
                     }
                 }
 
-                is UiAction.DeletePasswd -> {
+                is PasswdAction.DeletePasswd -> {
                     val selectGroupId = passwdUiState.value.selectPasswd?.id ?: return
                     launch(Dispatchers.IO) {
                         deletePasswd(selectGroupId)
                     }
                 }
 
-                is UiAction.MenuOpenOrClose -> {
+                is PasswdAction.MenuOpenOrClose -> {
                     updateWindowUiState {
                         copy(menuOpen = open)
                     }
                 }
 
-                is UiAction.SearchPasswds -> {
+                is PasswdAction.SearchPasswds -> {
                     _searchFlow.tryEmit(content)
                 }
 
-                is UiAction.ReorderGroupDragEnd -> {
+                is PasswdAction.ReorderGroupDragEnd -> {
                     /**
                      * TODO: 服务端实现。
                      * 暂时服务端未实现，所以直接更新GroupUiState，
@@ -622,26 +616,20 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     }
                 }
 
-                is UiAction.ExportPasswdsToFile -> {
+                is PasswdAction.ExportPasswdsToFile -> {
                     launch {
                         val json = Gson().toJson(repository.getAllGroupsWithPasswds())
                         FileUtils.exportDataToFile(filePath, json)
                     }
                 }
 
-                is UiAction.InitHost -> {
+                is PasswdAction.InitHost -> {
                     // TODO: host valid check
                 }
 
-                is UiAction.UpdateEditEnabled -> {
+                is PasswdAction.UpdateEditEnabled -> {
                     _passwdUiState.update {
                         it.copy(editEnabled = editEnabled)
-                    }
-                }
-
-                is UiAction.FocusOnSearch -> {
-                    _windowUiState.update {
-                        it.copy(searchFocus = focus)
                     }
                 }
             }

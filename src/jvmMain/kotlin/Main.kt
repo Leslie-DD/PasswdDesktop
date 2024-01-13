@@ -12,9 +12,10 @@ import androidx.compose.ui.window.Tray
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import model.Res
-import model.UiAction
+import model.action.PasswdAction
 import model.UiScreen
-import model.viewmodel.ConfigViewModel
+import model.action.UiAction
+import model.viewmodel.UiConfigViewModel
 import model.viewmodel.PasswdsViewModel
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.intui.standalone.theme.IntUiTheme
@@ -33,17 +34,17 @@ fun main() = application {
     val state = rememberWindowState(width = 1100.dp, height = 800.dp)
 
     val passwdsViewModel = remember { PasswdsViewModel() }
-    val configViewModel = remember { ConfigViewModel() }
+    val uiConfigViewModel = remember { UiConfigViewModel() }
 
-    val theme by configViewModel.theme.collectAsState()
+    val theme by uiConfigViewModel.theme.collectAsState()
     val windowUiState by passwdsViewModel.windowUiState.collectAsState()
 
     Tray(
         icon = painterResource(Res.Drawable.APP_ICON_ROUND_CORNER),
-        onAction = { passwdsViewModel.onAction(UiAction.WindowVisible(true)) },
+        onAction = { uiConfigViewModel.onAction(UiAction.WindowVisible(true)) },
         tooltip = "双击(windows)\\右击(mac)打开密码管理器",
     ) {
-        Item("Open Window", onClick = { passwdsViewModel.onAction(UiAction.WindowVisible(true)) })
+        Item("Open Window", onClick = { uiConfigViewModel.onAction(UiAction.WindowVisible(true)) })
         Separator()
         Item("Exit App", onClick = ::exitApplication)
     }
@@ -63,15 +64,16 @@ fun main() = application {
         ),
         swingCompatMode = false
     ) {
+        val windowVisible by uiConfigViewModel.windowVisible.collectAsState()
         DecoratedWindow(
-            onCloseRequest = { passwdsViewModel.onAction(UiAction.WindowVisible(false)) },
-            visible = windowUiState.windowVisible,
+            onCloseRequest = { uiConfigViewModel.onAction(UiAction.WindowVisible(false)) },
+            visible = windowVisible,
             title = "Passwd",
             state = state,
             onKeyEvent = {
                 when {
                     (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyDown) -> {
-                        passwdsViewModel.onAction(UiAction.FocusOnSearch(!windowUiState.searchFocus))
+                        uiConfigViewModel.onAction(UiAction.FocusOnSearch(!uiConfigViewModel.searchFocus.value))
                         true
                     }
 
@@ -92,14 +94,14 @@ fun main() = application {
                     else -> true
                 }
                 if (titleBarVisible) {
-                    TitleBarView(configViewModel, passwdsViewModel)
+                    TitleBarView(uiConfigViewModel, passwdsViewModel)
                 }
 
                 Surface(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary)) {
                     Column(modifier = Modifier.fillMaxSize()) {
                         App(
                             passwdsViewModel = passwdsViewModel,
-                            configViewModel = configViewModel
+                            uiConfigViewModel = uiConfigViewModel
                         )
                     }
                 }

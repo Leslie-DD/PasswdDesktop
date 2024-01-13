@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.mohamedrejeb.compose.dnd.reorder.ReorderContainer
 import com.mohamedrejeb.compose.dnd.reorder.rememberReorderState
 import entity.IDragAndDrop
-import model.viewmodel.ConfigViewModel
+import model.viewmodel.UiConfigViewModel
 import model.viewmodel.PasswdsViewModel
 import ui.common.RowSpacer
 import ui.toolbar.SideMenuBar
@@ -21,12 +21,12 @@ import ui.toolbar.SideMenuBar
 @Composable
 fun PasswdsScreen(
     passwdsViewModel: PasswdsViewModel,
-    configViewModel: ConfigViewModel,
+    uiConfigViewModel: UiConfigViewModel,
     modifier: Modifier = Modifier
 ) {
 
     Row(modifier = modifier.fillMaxSize()) {
-        SideMenuBar(passwdsViewModel, configViewModel)
+        SideMenuBar(passwdsViewModel, uiConfigViewModel)
 
         Row(
             modifier = Modifier
@@ -41,7 +41,8 @@ fun PasswdsScreen(
                     GroupList(passwdsViewModel, Modifier.width(250.dp), coroutineScope, reorderState)
                     RowSpacer()
                     PasswdList(
-                        viewModel = passwdsViewModel,
+                        passwdsViewModel = passwdsViewModel,
+                        uiConfigViewModel = uiConfigViewModel,
                         modifier = Modifier.width(250.dp),
                         coroutineScope = coroutineScope,
                         reorderState = reorderState

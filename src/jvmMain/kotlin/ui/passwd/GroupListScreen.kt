@@ -31,7 +31,7 @@ import entity.Group
 import entity.IDragAndDrop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import model.UiAction
+import model.action.PasswdAction
 import model.uieffect.DialogUiEffect
 import model.viewmodel.PasswdsViewModel
 import ui.common.AddGroupDialog
@@ -62,7 +62,7 @@ fun GroupList(
     when (dialogUiState.effect) {
         is DialogUiEffect.NewGroupResult -> {
             isNewGroupDialogOpen.value = false
-            viewModel.onAction(UiAction.ClearEffect)
+            viewModel.onAction(PasswdAction.ClearEffect)
 
             coroutineScope.launch {
                 val size = viewModel.passwdUiState.value.groups.size
@@ -74,12 +74,12 @@ fun GroupList(
 
         is DialogUiEffect.UpdateGroupResult -> {
             isUpdateGroupDialogOpen.value = false
-            viewModel.onAction(UiAction.ClearEffect)
+            viewModel.onAction(PasswdAction.ClearEffect)
         }
 
         is DialogUiEffect.DeleteGroupResult -> {
             isDeleteGroupConfirmDialogOpen.value = false
-            viewModel.onAction(UiAction.ClearEffect)
+            viewModel.onAction(PasswdAction.ClearEffect)
         }
 
         else -> {}
@@ -132,7 +132,7 @@ fun GroupList(
                             group = group,
                             isSelected = group.id == selectGroup?.id,
                         ) {
-                            viewModel.onAction(UiAction.ShowGroupPasswds(groupId = it))
+                            viewModel.onAction(PasswdAction.ShowGroupPasswds(groupId = it))
                         }
                     }
                 }
@@ -163,7 +163,7 @@ fun GroupList(
                         isNewGroupDialogOpen.value = false
                     }
                 ) { groupName, groupComment ->
-                    viewModel.onAction(UiAction.NewGroup(groupName, groupComment))
+                    viewModel.onAction(PasswdAction.NewGroup(groupName, groupComment))
                 }
             }
 
@@ -183,7 +183,7 @@ fun GroupList(
                             isUpdateGroupDialogOpen.value = false
                         }
                     ) { groupName, groupComment ->
-                        viewModel.onAction(UiAction.UpdateGroup(groupName, groupComment))
+                        viewModel.onAction(PasswdAction.UpdateGroup(groupName, groupComment))
                     }
                 }
             }
@@ -199,7 +199,7 @@ fun GroupList(
             if (isDeleteGroupConfirmDialogOpen.value) {
                 DeleteGroupConfirmDialog { delete ->
                     if (delete) {
-                        viewModel.onAction(UiAction.DeleteGroup)
+                        viewModel.onAction(PasswdAction.DeleteGroup)
                     } else {
                         isDeleteGroupConfirmDialogOpen.value = false
                     }

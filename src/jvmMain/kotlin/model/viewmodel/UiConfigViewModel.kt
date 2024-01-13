@@ -4,21 +4,31 @@ import com.jthemedetecor.OsThemeDetector
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import model.Theme
+import model.action.UiAction
 import model.next
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.swing.SwingUtilities
 
-class ConfigViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
+class UiConfigViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
-
-    val theme = MutableStateFlow<Theme>(Theme.Default)
 
     private var systemDark = false
 
     private val detector: OsThemeDetector = OsThemeDetector.getDetector()
+
+    private val _theme = MutableStateFlow<Theme>(Theme.Default)
+    val theme: StateFlow<Theme> = _theme.asStateFlow()
+
+    private val _windowVisible = MutableStateFlow(true)
+    val windowVisible: StateFlow<Boolean> = _windowVisible.asStateFlow()
+
+    private val _searchFocus = MutableStateFlow(true)
+    val searchFocus: StateFlow<Boolean> = _searchFocus.asStateFlow()
 
     init {
         updateSystemDark(detector.isDark)
@@ -31,6 +41,16 @@ class ConfigViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 SwingUtilities.invokeLater {
                     updateTheme(isDark, nextTheme = Theme.Auto())
                 }
+            }
+        }
+    }
+
+    fun onAction(action: UiAction) {
+        logger.debug("onAction: {}", action)
+        with(action) {
+            when (this) {
+                is UiAction.WindowVisible -> _windowVisible.value = visible
+                is UiAction.FocusOnSearch -> _searchFocus.value = focus
             }
         }
     }
@@ -48,6 +68,6 @@ class ConfigViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         if (nextTheme is Theme.Auto) {
             nextTheme.dark = forceDark || systemDark
         }
-        theme.tryEmit(nextTheme)
+        _theme.tryEmit(nextTheme)
     }
 }

@@ -16,7 +16,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import database.DataBase
-import model.viewmodel.ConfigViewModel
+import model.viewmodel.UiConfigViewModel
 import model.viewmodel.PasswdsViewModel
 import ui.common.EditLimitTextField
 import ui.common.copyToClipboard
@@ -26,11 +26,11 @@ import ui.toolbar.SideMenuBar
 @Composable
 fun SettingsScreen(
     passwdsViewModel: PasswdsViewModel,
-    configViewModel: ConfigViewModel,
+    uiConfigViewModel: UiConfigViewModel,
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier) {
-        SideMenuBar(passwdsViewModel, configViewModel)
+        SideMenuBar(passwdsViewModel, uiConfigViewModel)
         Box(
             modifier = modifier.padding(top = 20.dp),
             contentAlignment = Alignment.TopCenter

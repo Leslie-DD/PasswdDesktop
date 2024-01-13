@@ -21,7 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import entity.Passwd
 import entity.defaultPasswd
-import model.UiAction
+import model.action.PasswdAction
 import model.uieffect.DialogUiEffect
 import model.viewmodel.PasswdsViewModel
 import ui.common.EditLimitTextField
@@ -77,7 +77,7 @@ fun PasswdDetailScreen(
                     enabled = true,
                     colors = defaultIconButtonColors(),
                     onClick = {
-                        viewModel.onAction(UiAction.UpdateEditEnabled(editEnabled = !passwdUiState.editEnabled))
+                        viewModel.onAction(PasswdAction.UpdateEditEnabled(editEnabled = !passwdUiState.editEnabled))
                         title = passwd.title ?: ""
                         username = passwd.usernameString ?: ""
                         password = passwd.passwordString ?: ""
@@ -95,9 +95,9 @@ fun PasswdDetailScreen(
                     enabled = passwdUiState.editEnabled,
                     colors = defaultIconButtonColors(),
                     onClick = {
-                        viewModel.onAction(UiAction.UpdateEditEnabled(false))
+                        viewModel.onAction(PasswdAction.UpdateEditEnabled(false))
                         viewModel.onAction(
-                            UiAction.UpdatePasswd(
+                            PasswdAction.UpdatePasswd(
                                 passwd.copy(
                                     title = title,
                                     usernameString = username,
@@ -118,8 +118,8 @@ fun PasswdDetailScreen(
         val dialogUiState = viewModel.dialogUiState.collectAsState().value
         when (dialogUiState.effect) {
             is DialogUiEffect.UpdatePasswdResult -> {
-                viewModel.onAction(UiAction.UpdateEditEnabled(false))
-                viewModel.onAction(UiAction.ClearEffect)
+                viewModel.onAction(PasswdAction.UpdateEditEnabled(false))
+                viewModel.onAction(PasswdAction.ClearEffect)
             }
 
             else -> {}

@@ -10,7 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import model.UiAction
+import model.action.PasswdAction
 import model.viewmodel.PasswdsViewModel
 
 @Composable
@@ -45,11 +45,11 @@ fun SignupInfoBox(
             histories = histories,
             onHostChanged = {
                 host = it
-                viewModel.onAction(UiAction.InitHost(Pair(host, port)))
+                viewModel.onAction(PasswdAction.InitHost(Pair(host, port)))
             },
             onPortChanged = {
                 port = Integer.valueOf(it)
-                viewModel.onAction(UiAction.InitHost(Pair(host, port)))
+                viewModel.onAction(PasswdAction.InitHost(Pair(host, port)))
             },
             onHistorySelected = {
                 host = it.host
@@ -64,7 +64,7 @@ fun SignupInfoBox(
             enabled = enabled,
             onClick = {
                 setEnabled(false)
-                viewModel.onAction(UiAction.Signup(username, password, host, port))
+                viewModel.onAction(PasswdAction.Signup(username, password, host, port))
             }
         ) {
             Text(

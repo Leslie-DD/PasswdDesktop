@@ -7,7 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import model.UiAction
+import model.action.PasswdAction
 import model.viewmodel.PasswdsViewModel
 
 @Composable
@@ -63,11 +63,11 @@ fun LoginInfoBox(
             histories = histories,
             onHostChanged = {
                 host = it
-                viewModel.onAction(UiAction.InitHost(Pair(host, port)))
+                viewModel.onAction(PasswdAction.InitHost(Pair(host, port)))
             },
             onPortChanged = {
                 port = Integer.valueOf(it)
-                viewModel.onAction(UiAction.InitHost(Pair(host, port)))
+                viewModel.onAction(PasswdAction.InitHost(Pair(host, port)))
             },
             onHistorySelected = { item ->
                 host = item.host
@@ -102,7 +102,7 @@ fun LoginInfoBox(
             onClick = {
                 setEnabled(false)
                 viewModel.onAction(
-                    UiAction.Login(
+                    PasswdAction.Login(
                         username = username,
                         password = password,
                         secretKey = secretKey,

@@ -11,9 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.AwtWindow
-import model.UiAction
+import model.action.PasswdAction
 import model.UiScreen
-import model.viewmodel.ConfigViewModel
+import model.action.UiAction
+import model.viewmodel.UiConfigViewModel
 import model.viewmodel.PasswdsViewModel
 import org.jetbrains.jewel.intui.core.theme.IntUiDarkTheme
 import org.jetbrains.jewel.intui.core.theme.IntUiLightTheme
@@ -35,7 +36,7 @@ import java.net.URI
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DecoratedWindowScope.TitleBarView(
-    configViewModel: ConfigViewModel,
+    uiConfigViewModel: UiConfigViewModel,
     passwdsViewModel: PasswdsViewModel
 ) {
     var pluginVisible by remember { mutableStateOf(false) }
@@ -45,7 +46,7 @@ fun DecoratedWindowScope.TitleBarView(
         else -> false
     }
 
-    val theme = configViewModel.theme.collectAsState().value
+    val theme = uiConfigViewModel.theme.collectAsState().value
     TitleBar(
         modifier = Modifier.newFullscreenControls(),
         gradientStartColor = if (theme.isDark) {
@@ -74,7 +75,7 @@ fun DecoratedWindowScope.TitleBarView(
                         ) {
                             fileChooserOpen = false
                             println("Result $it")
-                            it?.let { passwdsViewModel.onAction(UiAction.ExportPasswdsToFile(it)) }
+                            it?.let { passwdsViewModel.onAction(PasswdAction.ExportPasswdsToFile(it)) }
                         }
                     }
                 }
@@ -100,7 +101,7 @@ fun DecoratedWindowScope.TitleBarView(
                 Text("Search passwds (Ctrl + F)")
             }) {
                 IconButton({
-                    passwdsViewModel.onAction(UiAction.FocusOnSearch(!windowUiState.searchFocus))
+                    uiConfigViewModel.onAction(UiAction.FocusOnSearch(!uiConfigViewModel.searchFocus.value))
                 }, Modifier.size(40.dp).padding(5.dp)) {
                     Icon("icons/search-f.svg", "Github", StandaloneSampleIcons::class.java)
                 }

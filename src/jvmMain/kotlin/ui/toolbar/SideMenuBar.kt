@@ -25,16 +25,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import model.UiAction
+import model.action.PasswdAction
 import model.UiScreen
-import model.viewmodel.ConfigViewModel
+import model.viewmodel.UiConfigViewModel
 import model.viewmodel.PasswdsViewModel
 import ui.common.defaultIconButtonColors
 
 @Composable
 fun SideMenuBar(
     passwdsViewModel: PasswdsViewModel,
-    configViewModel: ConfigViewModel,
+    uiConfigViewModel: UiConfigViewModel,
     modifier: Modifier = Modifier
 ) {
     val windowUiState = passwdsViewModel.windowUiState.collectAsState().value
@@ -60,7 +60,7 @@ fun SideMenuBar(
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                ThemeChoiceButton(configViewModel, expand)
+                ThemeChoiceButton(uiConfigViewModel, expand)
                 Spacer(modifier = modifier.height(15.dp))
                 LogoutButton(passwdsViewModel, expand)
             }
@@ -85,7 +85,7 @@ private fun LogoutButton(viewModel: PasswdsViewModel, expand: Boolean) {
             contentColor = Color.White
         ),
         onClick = {
-            viewModel.onAction(UiAction.GoScreen(UiScreen.Login))
+            viewModel.onAction(PasswdAction.GoScreen(UiScreen.Login))
         }
     ) {
         Icon(imageVector = Icons.Default.ExitToApp, contentDescription = null)
@@ -117,7 +117,7 @@ private fun LazyListScope.Symbol(
             }
             IconButton(
                 colors = defaultIconButtonColors(),
-                onClick = { viewModel.onAction(UiAction.MenuOpenOrClose(!expand)) }
+                onClick = { viewModel.onAction(PasswdAction.MenuOpenOrClose(!expand)) }
             ) {
                 Icon(
                     imageVector = if (expand) Icons.Default.MenuOpen else Icons.Default.Menu,
@@ -138,7 +138,7 @@ private fun LazyListScope.UiScreenList(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20),
             interactionSource = remember { NoRippleInteractionSource() },
-            onClick = { viewModel.onAction(UiAction.GoScreen(screen)) },
+            onClick = { viewModel.onAction(PasswdAction.GoScreen(screen)) },
             colors = ButtonDefaults.textButtonColors(
                 containerColor = if (isSelected) {
                     MaterialTheme.colorScheme.onSurface
@@ -165,7 +165,7 @@ private fun LazyListScope.UiScreenList(
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun ThemeChoiceButton(viewModel: ConfigViewModel, expand: Boolean) {
+fun ThemeChoiceButton(viewModel: UiConfigViewModel, expand: Boolean) {
     val theme by viewModel.theme.collectAsState()
 
     TextButton(

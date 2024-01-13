@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import database.entity.HistoryData
-import model.UiAction
+import model.action.PasswdAction
 import model.UiScreen
 import model.uieffect.DialogUiEffect
 import model.viewmodel.PasswdsViewModel
@@ -111,8 +111,8 @@ private fun LoginAndSignupBox(viewModel: PasswdsViewModel) {
             buttonValue = "Got it, I've written it down!"
         ) {
             isImportantTipsDialogOpen.value = false
-            viewModel.onAction(UiAction.ClearEffect)
-            viewModel.onAction(UiAction.GoScreen(UiScreen.Passwds))
+            viewModel.onAction(PasswdAction.ClearEffect)
+            viewModel.onAction(PasswdAction.GoScreen(UiScreen.Passwds))
         }
     }
     val dialogUiState = viewModel.dialogUiState.collectAsState().value

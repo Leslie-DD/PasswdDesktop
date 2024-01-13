@@ -7,10 +7,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import model.UiAction
+import model.action.PasswdAction
 import model.UiScreen
 import model.uieffect.DialogUiEffect
-import model.viewmodel.ConfigViewModel
+import model.viewmodel.UiConfigViewModel
 import model.viewmodel.PasswdsViewModel
 import ui.common.TipsDialog
 import ui.login.LoginAndSignupScreen
@@ -18,7 +18,7 @@ import ui.login.LoginAndSignupScreen
 @Composable
 fun App(
     passwdsViewModel: PasswdsViewModel,
-    configViewModel: ConfigViewModel
+    uiConfigViewModel: UiConfigViewModel
 ) {
     Row(
         modifier = Modifier.fillMaxSize()
@@ -32,7 +32,7 @@ fun App(
             targetState = windowUiState.uiScreens,
             content = {
                 when (it) {
-                    UiScreen.LoggedInScreen -> LoggedInScreen(windowUiState.uiScreen, passwdsViewModel, configViewModel, modifier)
+                    UiScreen.LoggedInScreen -> LoggedInScreen(windowUiState.uiScreen, passwdsViewModel, uiConfigViewModel, modifier)
                     UiScreen.LoginAndSignup -> LoginAndSignupScreen(passwdsViewModel, modifier)
                     UiScreen.Loadings -> LoadingScreen(modifier)
                     else -> {}
@@ -45,7 +45,7 @@ fun App(
         if (isTipsDialogOpen) {
             TipsDialog(warn = tip) {
                 isTipsDialogOpen = false
-                passwdsViewModel.onAction(UiAction.ClearEffect)
+                passwdsViewModel.onAction(PasswdAction.ClearEffect)
             }
         }
 

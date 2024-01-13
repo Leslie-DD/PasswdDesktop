@@ -30,9 +30,11 @@ import entity.IDragAndDrop
 import entity.Passwd
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import model.UiAction
+import model.action.PasswdAction
+import model.action.UiAction
 import model.uieffect.DialogUiEffect
 import model.viewmodel.PasswdsViewModel
+import model.viewmodel.UiConfigViewModel
 import ui.common.AddPasswdDialog
 import ui.common.CustomOutlinedTextField
 import ui.common.DeletePasswdConfirmDialog
@@ -45,23 +47,24 @@ import ui.toolbar.NoRippleInteractionSource
 @OptIn(ExperimentalDndApi::class)
 @Composable
 fun PasswdList(
-    viewModel: PasswdsViewModel,
+    passwdsViewModel: PasswdsViewModel,
+    uiConfigViewModel: UiConfigViewModel,
     modifier: Modifier = Modifier,
     coroutineScope: CoroutineScope,
     reorderState: ReorderState<IDragAndDrop>
 ) {
     val listState = rememberLazyListState()
-    val dialogUiState = viewModel.dialogUiState.collectAsState().value
+    val dialogUiState = passwdsViewModel.dialogUiState.collectAsState().value
 
     val isNewPasswdDialogOpened = remember { mutableStateOf(false) }
     val isDeletePasswdConfirmDialogOpened = remember { mutableStateOf(false) }
     when (dialogUiState.effect) {
         is DialogUiEffect.NewPasswdResult -> {
             isNewPasswdDialogOpened.value = false
-            viewModel.onAction(UiAction.ClearEffect)
+            passwdsViewModel.onAction(PasswdAction.ClearEffect)
 
             coroutineScope.launch {
-                val size = viewModel.passwdUiState.value.groupPasswds.size
+                val size = passwdsViewModel.passwdUiState.value.groupPasswds.size
                 if (size > 0) {
                     listState.animateScrollToItem(index = size - 1)
                 }
@@ -70,7 +73,7 @@ fun PasswdList(
 
         is DialogUiEffect.DeletePasswdResult -> {
             isDeletePasswdConfirmDialogOpened.value = false
-            viewModel.onAction(UiAction.ClearEffect)
+            passwdsViewModel.onAction(PasswdAction.ClearEffect)
         }
 
         else -> {}
@@ -82,14 +85,14 @@ fun PasswdList(
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            val windowUiState = viewModel.windowUiState.collectAsState().value
-            if (windowUiState.searchFocus) {
+            val searchFocus by uiConfigViewModel.searchFocus.collectAsState()
+            if (searchFocus) {
                 Box(modifier = Modifier.fillMaxWidth().padding(start = 10.dp, top = 10.dp, end = 20.dp)) {
-                    SearchBox(viewModel)
+                    SearchBox(passwdsViewModel, uiConfigViewModel)
                 }
             }
 
-            val passwdUiState = viewModel.passwdUiState.collectAsState().value
+            val passwdUiState = passwdsViewModel.passwdUiState.collectAsState().value
             val selectPasswd = passwdUiState.selectPasswd
             Row(
                 modifier = Modifier.weight(1f)
@@ -110,7 +113,7 @@ fun PasswdList(
                             data = passwd,
                             zIndex = 1f,
                             onDragEnter = { state ->
-                                viewModel.onPasswdListItemDragEnter(passwd, state.data)
+                                passwdsViewModel.onPasswdListItemDragEnter(passwd, state.data)
                             },
                             draggableContent = {
                                 PasswdItem(
@@ -129,7 +132,7 @@ fun PasswdList(
                                 passwd = passwd,
                                 isSelected = passwd.id == selectPasswd?.id
                             ) {
-                                viewModel.onAction(UiAction.ShowPasswd(passwdId = it))
+                                passwdsViewModel.onAction(PasswdAction.ShowPasswd(passwdId = it))
                             }
                         }
                     }
@@ -149,7 +152,7 @@ fun PasswdList(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
 
-                val groupUiState = viewModel.passwdUiState.collectAsState().value
+                val groupUiState = passwdsViewModel.passwdUiState.collectAsState().value
                 IconButton(
                     enabled = groupUiState.selectGroup != null,
                     colors = defaultIconButtonColors(),
@@ -168,8 +171,8 @@ fun PasswdList(
                         }
                     ) { title, username, password, link, comment ->
                         selectGroupId?.let {
-                            viewModel.onAction(
-                                UiAction.NewPasswd(
+                            passwdsViewModel.onAction(
+                                PasswdAction.NewPasswd(
                                     groupId = it,
                                     title = title,
                                     usernameString = username,
@@ -197,7 +200,7 @@ fun PasswdList(
             if (isDeletePasswdConfirmDialogOpened.value) {
                 DeletePasswdConfirmDialog {
                     if (it) {
-                        viewModel.onAction(UiAction.DeletePasswd)
+                        passwdsViewModel.onAction(PasswdAction.DeletePasswd)
                     } else {
                         isDeletePasswdConfirmDialogOpened.value = false
                     }
@@ -260,20 +263,23 @@ fun PasswdItem(
 }
 
 @Composable
-private fun SearchBox(viewModel: PasswdsViewModel) {
-    val windowUiState by viewModel.windowUiState.collectAsState()
+private fun SearchBox(
+    passwdsViewModel: PasswdsViewModel,
+    uiConfigViewModel: UiConfigViewModel
+) {
+    val searchFocus by uiConfigViewModel.searchFocus.collectAsState()
     CustomOutlinedTextField(
         requestFocus = true,
         onFocusChanged = {
             if (it) {
-                viewModel.onAction(UiAction.FocusOnSearch(true))
+                uiConfigViewModel.onAction(UiAction.FocusOnSearch(true))
             }
         },
         modifier = Modifier.height(32.dp).fillMaxWidth().onPreviewKeyEvent {
             when {
                 (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyDown) -> {
-                    if (windowUiState.searchFocus) {
-                        viewModel.onAction(UiAction.FocusOnSearch(false))
+                    if (searchFocus) {
+                        uiConfigViewModel.onAction(UiAction.FocusOnSearch(false))
                     }
                     true
                 }
@@ -299,7 +305,7 @@ private fun SearchBox(viewModel: PasswdsViewModel) {
         },
         onValueChange = {
             if (it.isNotBlank()) {
-                viewModel.onAction(UiAction.SearchPasswds(it))
+                passwdsViewModel.onAction(PasswdAction.SearchPasswds(it))
             }
         }
     )
