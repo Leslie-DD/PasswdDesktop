@@ -10,12 +10,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import model.action.LoginAction
 import model.action.PasswdAction
 import model.viewmodel.PasswdsViewModel
+import model.viewmodel.UserViewModel
 
 @Composable
 fun SignupInfoBox(
-    viewModel: PasswdsViewModel,
+    userViewModel: UserViewModel,
+    passwdsViewModel: PasswdsViewModel,
     enabled: Boolean,
     setEnabled: (Boolean) -> Unit
 ) {
@@ -29,7 +32,7 @@ fun SignupInfoBox(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val histories = viewModel.loginUiState.collectAsState().value.historyDataList
+        val histories = userViewModel.loginUiState.collectAsState().value.historyDataList
         UsernameTextField(
             enabled = enabled,
             value = username
@@ -45,11 +48,11 @@ fun SignupInfoBox(
             histories = histories,
             onHostChanged = {
                 host = it
-                viewModel.onAction(PasswdAction.InitHost(Pair(host, port)))
+                passwdsViewModel.onAction(PasswdAction.InitHost(Pair(host, port)))
             },
             onPortChanged = {
                 port = Integer.valueOf(it)
-                viewModel.onAction(PasswdAction.InitHost(Pair(host, port)))
+                passwdsViewModel.onAction(PasswdAction.InitHost(Pair(host, port)))
             },
             onHistorySelected = {
                 host = it.host
@@ -64,7 +67,7 @@ fun SignupInfoBox(
             enabled = enabled,
             onClick = {
                 setEnabled(false)
-                viewModel.onAction(PasswdAction.Signup(username, password, host, port))
+                userViewModel.onAction(LoginAction.Signup(username, password, host, port))
             }
         ) {
             Text(

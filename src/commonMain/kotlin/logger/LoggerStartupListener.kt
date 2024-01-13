@@ -50,5 +50,4 @@ open class LoggerStartupListener : ContextAwareBase(), LoggerContextListener, Li
 
     }
 
-
 }

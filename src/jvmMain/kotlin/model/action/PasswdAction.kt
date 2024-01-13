@@ -12,23 +12,6 @@ sealed class PasswdAction {
 
     class ShowPasswd(val passwdId: Int) : PasswdAction()
 
-    class Login(
-        val username: String,
-        val password: String,
-        val secretKey: String,
-        val host: String,
-        val port: Int,
-        val saved: Boolean,
-        val silentlyLogin: Boolean
-    ) : PasswdAction()
-
-    class Signup(
-        val username: String,
-        val password: String,
-        val host: String,
-        val port: Int,
-    ) : PasswdAction()
-
     class NewGroup(val groupName: String, val groupComment: String) : PasswdAction()
 
     object ClearEffect : PasswdAction()

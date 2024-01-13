@@ -7,16 +7,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import model.action.LoginAction
 import model.action.PasswdAction
 import model.viewmodel.PasswdsViewModel
+import model.viewmodel.UserViewModel
 
 @Composable
 fun LoginInfoBox(
-    viewModel: PasswdsViewModel,
+    userViewModel: UserViewModel,
+    passwdsViewModel: PasswdsViewModel,
     enabled: Boolean,
     setEnabled: (Boolean) -> Unit
 ) {
-    val loginUiState = viewModel.loginUiState.collectAsState().value
+    val loginUiState = userViewModel.loginUiState.collectAsState().value
 
     var username by remember { mutableStateOf(loginUiState.historyData.username) }
     var password by remember { mutableStateOf(if (loginUiState.historyData.saved) loginUiState.historyData.password else "") }
@@ -31,7 +34,7 @@ fun LoginInfoBox(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        val histories = viewModel.loginUiState.collectAsState().value.historyDataList
+        val histories = userViewModel.loginUiState.collectAsState().value.historyDataList
         UsernameTextField(
             enabled = enabled,
             enabledDropMenu = true,
@@ -63,11 +66,11 @@ fun LoginInfoBox(
             histories = histories,
             onHostChanged = {
                 host = it
-                viewModel.onAction(PasswdAction.InitHost(Pair(host, port)))
+                passwdsViewModel.onAction(PasswdAction.InitHost(Pair(host, port)))
             },
             onPortChanged = {
                 port = Integer.valueOf(it)
-                viewModel.onAction(PasswdAction.InitHost(Pair(host, port)))
+                passwdsViewModel.onAction(PasswdAction.InitHost(Pair(host, port)))
             },
             onHistorySelected = { item ->
                 host = item.host
@@ -101,8 +104,8 @@ fun LoginInfoBox(
             enabled = enabled,
             onClick = {
                 setEnabled(false)
-                viewModel.onAction(
-                    PasswdAction.Login(
+                userViewModel.onAction(
+                    LoginAction.Login(
                         username = username,
                         password = password,
                         secretKey = secretKey,

@@ -17,6 +17,7 @@ import model.UiScreen
 import model.action.UiAction
 import model.viewmodel.UiConfigViewModel
 import model.viewmodel.PasswdsViewModel
+import model.viewmodel.UserViewModel
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.intui.standalone.theme.IntUiTheme
 import org.jetbrains.jewel.intui.standalone.theme.darkThemeDefinition
@@ -33,6 +34,7 @@ import ui.toolbar.TitleBarView
 fun main() = application {
     val state = rememberWindowState(width = 1100.dp, height = 800.dp)
 
+    val userViewModel = remember { UserViewModel() }
     val passwdsViewModel = remember { PasswdsViewModel() }
     val uiConfigViewModel = remember { UiConfigViewModel() }
 
@@ -100,6 +102,7 @@ fun main() = application {
                 Surface(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary)) {
                     Column(modifier = Modifier.fillMaxSize()) {
                         App(
+                            userViewModel = userViewModel,
                             passwdsViewModel = passwdsViewModel,
                             uiConfigViewModel = uiConfigViewModel
                         )

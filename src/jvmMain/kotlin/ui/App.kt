@@ -12,11 +12,13 @@ import model.UiScreen
 import model.uieffect.DialogUiEffect
 import model.viewmodel.UiConfigViewModel
 import model.viewmodel.PasswdsViewModel
+import model.viewmodel.UserViewModel
 import ui.common.TipsDialog
 import ui.login.LoginAndSignupScreen
 
 @Composable
 fun App(
+    userViewModel: UserViewModel,
     passwdsViewModel: PasswdsViewModel,
     uiConfigViewModel: UiConfigViewModel
 ) {
@@ -33,7 +35,7 @@ fun App(
             content = {
                 when (it) {
                     UiScreen.LoggedInScreen -> LoggedInScreen(windowUiState.uiScreen, passwdsViewModel, uiConfigViewModel, modifier)
-                    UiScreen.LoginAndSignup -> LoginAndSignupScreen(passwdsViewModel, modifier)
+                    UiScreen.LoginAndSignup -> LoginAndSignupScreen(userViewModel, passwdsViewModel, modifier)
                     UiScreen.Loadings -> LoadingScreen(modifier)
                     else -> {}
                 }

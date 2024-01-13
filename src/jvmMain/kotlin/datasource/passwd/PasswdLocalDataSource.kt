@@ -1,17 +1,63 @@
-package datasource
+package datasource.passwd
 
 import entity.Group
 import entity.Passwd
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import utils.AESUtil
+import java.util.*
 
 /**
  * 此 DataSource 作为单一数据源
  */
-class LocalDataSource {
+object PasswdLocalDataSource {
+
+    private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     var passwdsMap: MutableMap<Int, MutableList<Passwd>> = mutableMapOf()
     val groups = MutableStateFlow<MutableList<Group>>(arrayListOf())
     val groupPasswds = MutableStateFlow<MutableList<Passwd>>(arrayListOf())
+
+    private fun MutableList<Passwd>.mapToPasswdsMap(
+        secretKey: String
+    ): MutableMap<Int, MutableList<Passwd>> {
+        val secretKeyByteArray = Base64.getDecoder().decode(secretKey)
+        val passwdsMapResult: MutableMap<Int, MutableList<Passwd>> = hashMapOf()
+        forEach { passwd ->
+            if (passwdsMapResult[passwd.groupId] == null) {
+                passwdsMapResult[passwd.groupId] = arrayListOf()
+            }
+            passwdsMapResult[passwd.groupId]?.add(decodePasswd(secretKeyByteArray, passwd))
+        }
+        return passwdsMapResult
+    }
+
+    private fun decodePasswd(
+        secretKeyBytes: ByteArray? = null,
+        passwd: Passwd
+    ): Passwd = try {
+        passwd.copy(
+            title = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.title),
+            usernameString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.usernameString),
+            passwordString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.passwordString)
+        )
+    } catch (e: Exception) {
+        logger.error("(decodePasswd) error ", e)
+        passwd
+    }
+
+    suspend fun onLoginSuccess(passwds: MutableList<Passwd>, secretKey: String) {
+        passwdsMap = passwds.mapToPasswdsMap(secretKey)
+        emitGroups(arrayListOf())
+        emitGroupPasswds(arrayListOf())
+    }
+
+    suspend fun onSignupSuccess() {
+        passwdsMap = mutableMapOf()
+        emitGroups(arrayListOf())
+        emitGroupPasswds(arrayListOf())
+    }
 
     suspend fun newGroup(newGroup: Group) {
         passwdsMap[newGroup.id] = mutableListOf()

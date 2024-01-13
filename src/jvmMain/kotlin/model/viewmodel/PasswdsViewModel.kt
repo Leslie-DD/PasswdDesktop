@@ -1,28 +1,25 @@
 package model.viewmodel
 
 import com.google.gson.Gson
-import database.DataBase
-import database.entity.HistoryData
-import database.entity.HistoryData.Companion.defaultHistoryData
 import entity.Group
 import entity.IDragAndDrop
-import entity.LoginResult
 import entity.Passwd
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
-import model.action.PasswdAction
+import kotlinx.coroutines.launch
 import model.UiScreen
 import model.UiScreens
+import model.action.PasswdAction
 import model.uieffect.DialogUiEffect
 import model.uistate.DialogUiState
-import model.uistate.LoginUiState
 import model.uistate.PasswdUiState
 import model.uistate.WindowUiState
-import network.HttpClientObj
-import network.WebSocketSyncUtil
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import repository.PasswdRepository
+import repository.UserRepository
 import utils.FileUtils
 
 @OptIn(FlowPreview::class)
@@ -30,7 +27,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    private val repository: PasswdRepository = PasswdRepository()
+    private val passwdRepository: PasswdRepository = PasswdRepository
+    private val userRepository: UserRepository = UserRepository
 
     private val _windowUiState = MutableStateFlow(WindowUiState.Default)
     val windowUiState: StateFlow<WindowUiState> = _windowUiState
@@ -49,13 +47,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         _dialogUiState
     }
 
-    private val _loginUiState: MutableStateFlow<LoginUiState> by lazy {
-        MutableStateFlow(LoginUiState(defaultHistoryData(), dataBase.getSavedHistories()))
-    }
-    val loginUiState: StateFlow<LoginUiState> by lazy {
-        _loginUiState
-    }
-
     private val _searchFlow: MutableStateFlow<String> by lazy {
         MutableStateFlow("")
     }
@@ -63,15 +54,9 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         _searchFlow
     }
 
-    private val dataBase = DataBase.instance
-
     init {
         launch {
-            silentlyLogin()
-        }
-
-        launch {
-            repository.groupsFlow.collect {
+            passwdRepository.groupsFlow.collect {
                 logger.debug("collect groups changed, size: ${it.size}")
                 updateGroupUiState {
                     copy(
@@ -83,7 +68,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
 
         launch {
-            repository.groupPasswdsFlow.collect {
+            passwdRepository.groupPasswdsFlow.collect {
                 logger.debug("collect groupPasswds changed, size: ${it.size}")
                 updateGroupUiState {
                     copy(
@@ -96,198 +81,69 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
         launch {
             searchFlow.debounce(300).collectLatest {
-                repository.searchLikePasswdsAndUpdate(it)
+                passwdRepository.searchLikePasswdsAndUpdate(it)
                 updateGroupUiState {
                     copy(selectGroup = null)
                 }
             }
         }
 
+        collectLoginResult()
+        collectSignupResult()
+    }
+
+    private fun collectLoginResult() = launch {
+        userRepository.loginResultStateFlow.filterNotNull().collectLatest {
+            it.onSuccess {
+                updateDialogUiState {
+                    copy(effect = null)
+                }
+                updateWindowUiState {
+                    copy(
+                        uiScreen = UiScreen.Passwds,
+                        uiScreens = UiScreen.LoggedInScreen
+                    )
+                }
+            }.onFailure {
+                logger.error("(loginByPassword) error", it)
+                updateDialogUiState {
+                    copy(effect = if (it.message.isNullOrBlank()) null else DialogUiEffect.LoginAndSignupFailure(it.message))
+                }
+                updateWindowUiState {
+                    copy(
+                        uiScreen = UiScreen.Login,
+                        uiScreens = UiScreen.LoginAndSignup
+                    )
+                }
+            }
+        }
+    }
+
+    private fun collectSignupResult() {
         launch {
-//            val all = dataBase.getAll()
-        }
-    }
-
-    private suspend fun silentlyLogin() {
-        val savedHistoryData = dataBase.latestSavedLoginHistoryData()
-        if (savedHistoryData == null) {
-            updateWindowUiState {
-                copy(
-                    uiScreen = UiScreen.Login,
-                    uiScreens = UiScreen.LoginAndSignup
-                )
-            }
-            return
-        }
-        if (savedHistoryData.silentlyLogin) {
-            loginByPassword(
-                username = savedHistoryData.username,
-                password = savedHistoryData.password,
-                secretKey = savedHistoryData.secretKey,
-                host = savedHistoryData.host,
-                port = savedHistoryData.port,
-                saved = savedHistoryData.saved,
-                silentlyLogin = true,
-            )
-            updateLoginUiState {
-                copy(historyData = savedHistoryData)
-            }
-        } else {
-            if (savedHistoryData.saved) {
-                updateLoginUiState {
-                    copy(historyData = savedHistoryData)
+            userRepository.signResultStateFlow.filterNotNull().collectLatest {
+                it.onSuccess { signupResult ->
+                    if (signupResult == null) {
+                        return@onSuccess
+                    }
+                    updateDialogUiState {
+                        copy(effect = DialogUiEffect.SignupResult(signupResult.secretKey))
+                    }
+                }.onFailure {
+                    updateDialogUiState { copy(effect = DialogUiEffect.LoginAndSignupFailure(it.message)) }
+                    updateWindowUiState {
+                        copy(
+                            uiScreen = UiScreen.Signup,
+                            uiScreens = UiScreen.LoginAndSignup
+                        )
+                    }
                 }
             }
-            updateWindowUiState {
-                copy(
-                    uiScreen = UiScreen.Login,
-                    uiScreens = UiScreen.LoginAndSignup
-                )
-            }
-        }
-    }
-
-    private suspend fun loginByPassword(
-        username: String,
-        password: String,
-        secretKey: String,
-        host: String,
-        port: Int,
-        saved: Boolean,
-        silentlyLogin: Boolean,
-    ) {
-        if (username.isBlank() || password.isBlank() || secretKey.isBlank()) {
-            logger.warn("(loginByPassword) warn, $username, $password, $secretKey")
-            updateDialogUiState { copy(effect = DialogUiEffect.LoginAndSignupFailure("username, password and secret key can not be null")) }
-            updateWindowUiState {
-                copy(
-                    uiScreen = UiScreen.Login,
-                    uiScreens = UiScreen.LoginAndSignup
-                )
-            }
-            return
-        }
-
-        try {
-            HttpClientObj.forceUpdateHttpClient(host, port)
-        } catch (e: Throwable) {
-            logger.warn("(loginByPassword) warn, ${e.message}")
-            updateDialogUiState { copy(effect = DialogUiEffect.LoginAndSignupFailure(e.message)) }
-            updateWindowUiState {
-                copy(
-                    uiScreen = UiScreen.Login,
-                    uiScreens = UiScreen.LoginAndSignup
-                )
-            }
-            return
-        }
-
-        repository.loginByPassword(
-            username = username,
-            password = password,
-            secretKey = secretKey
-        ).onSuccess {
-            logger.info("(loginByPassword) success")
-            updateDB(username, password, secretKey, host, port, it.token, saved, silentlyLogin)
-            onLoginSuccess(host, port, secretKey, it)
-        }.onFailure {
-            logger.error("(loginByPassword) error: ${it.message}")
-            updateDialogUiState {
-                copy(effect = DialogUiEffect.LoginAndSignupFailure(it.message))
-            }
-            updateWindowUiState {
-                copy(
-                    uiScreen = UiScreen.Login,
-                    uiScreens = UiScreen.LoginAndSignup
-                )
-            }
-            it.printStackTrace()
-        }
-    }
-
-    private suspend fun onLoginSuccess(host: String, port: Int, secretKey: String, loginResult: LoginResult) {
-        coroutineScope {
-            withContext(Dispatchers.IO) {
-                dataBase.globalSecretKey.emit(secretKey)
-                dataBase.globalUserId.emit(loginResult.userId)
-                dataBase.globalUsername.emit(loginResult.username)
-                dataBase.globalAccessToken.emit(loginResult.token)
-            }
-            repository.fetchGroups()
-            updateDialogUiState {
-                copy(effect = null)
-            }
-            updateWindowUiState {
-                copy(
-                    uiScreen = UiScreen.Passwds,
-                    uiScreens = UiScreen.LoggedInScreen
-                )
-            }
-        }
-
-        WebSocketSyncUtil.startWebSocketListener(host, port, loginResult.userId)
-    }
-
-    private suspend fun signup(
-        username: String,
-        password: String,
-        host: String,
-        port: Int,
-    ) {
-        if (username.isBlank() || password.isBlank()) {
-            logger.warn("sign up username and password can not be empty")
-            updateDialogUiState { copy(effect = DialogUiEffect.LoginAndSignupFailure("sign up username and password can not be empty")) }
-            updateWindowUiState {
-                copy(
-                    uiScreen = UiScreen.Signup,
-                    uiScreens = UiScreen.LoginAndSignup
-                )
-            }
-            return
-        }
-
-        try {
-            HttpClientObj.forceUpdateHttpClient(host, port)
-        } catch (e: Throwable) {
-            logger.warn("(loginByPassword) warn, ${e.message}")
-            updateDialogUiState { copy(effect = DialogUiEffect.LoginAndSignupFailure(e.message)) }
-            updateWindowUiState {
-                copy(
-                    uiScreen = UiScreen.Signup,
-                    uiScreens = UiScreen.LoginAndSignup
-                )
-            }
-            return
-        }
-
-        repository.signup(
-            username = username,
-            password = password,
-        ).onSuccess {
-            if (it == null) {
-                return@onSuccess
-            }
-            updateDialogUiState {
-                copy(effect = DialogUiEffect.SignupResult(it.secretKey))
-            }
-            coroutineScope {
-                withContext(Dispatchers.IO) {
-                    dataBase.globalSecretKey.emit(it.secretKey)
-                    dataBase.globalUserId.emit(it.userId)
-                    dataBase.globalUsername.emit(username)
-                    dataBase.globalAccessToken.emit(it.token)
-                }
-            }
-        }.onFailure {
-            updateDialogUiState {
-                copy(effect = DialogUiEffect.LoginAndSignupFailure(it.message))
-            }
-            it.printStackTrace()
         }
     }
 
     private suspend fun refreshGroupPasswds(groupId: Int) {
-        repository.refreshGroupPasswds(groupId)
+        passwdRepository.refreshGroupPasswds(groupId)
     }
 
     private suspend fun newGroup(
@@ -298,7 +154,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             // TODO: tips 提示 groupName 不能为空
             return
         }
-        repository.newGroup(groupName, groupComment)
+        passwdRepository.newGroup(groupName, groupComment)
             .onSuccess {
                 updateDialogUiState {
                     copy(effect = DialogUiEffect.NewGroupResult(it))
@@ -317,7 +173,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private suspend fun deleteGroup(groupId: Int) {
-        repository.deleteGroup(groupId)
+        passwdRepository.deleteGroup(groupId)
             .onSuccess {
                 updateGroupUiState {
                     copy(selectGroup = null)
@@ -338,7 +194,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         groupName: String,
         groupComment: String
     ) {
-        repository.updateGroup(
+        passwdRepository.updateGroup(
             groupId = groupId,
             groupName = groupName,
             groupComment = groupComment
@@ -362,7 +218,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         link: String,
         comment: String,
     ) {
-        repository.newPasswd(
+        passwdRepository.newPasswd(
             groupId = groupId,
             title = title,
             usernameString = usernameString,
@@ -388,7 +244,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     private suspend fun updatePasswd(
         updatePasswd: Passwd
     ) {
-        repository.updatePasswd(
+        passwdRepository.updatePasswd(
             id = updatePasswd.id,
             title = updatePasswd.title,
             usernameString = updatePasswd.usernameString,
@@ -412,7 +268,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private suspend fun deletePasswd(passwdId: Int) {
-        repository.deletePasswd(passwdId)
+        passwdRepository.deletePasswd(passwdId)
             .onSuccess {
                 updateDialogUiState {
                     copy(effect = DialogUiEffect.DeletePasswdResult(it))
@@ -428,45 +284,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             }
     }
 
-    private fun updateDB(
-        username: String,
-        password: String,
-        secretKey: String,
-        host: String,
-        port: Int,
-        accessToken: String,
-        saved: Boolean,
-        silentlyLogin: Boolean
-    ) {
-        logger.info("(updateDB). username: $username, password: $password, secretKey: $secretKey, saved: $saved")
-        val insertHistoryData = HistoryData(
-            username = username,
-            password = if (saved) password else "",
-            secretKey = secretKey,
-            host = host,
-            port = port,
-            accessToken = accessToken,
-            saved = saved,
-            silentlyLogin = silentlyLogin
-        )
-        val insertResultId = dataBase.insert(insertHistoryData)
-
-        val historyData = if (insertResultId == -1) {
-            defaultHistoryData()
-        } else {
-            insertHistoryData
-        }
-        updateLoginUiState {
-            copy(
-                historyData = historyData,
-                historyDataList = dataBase.getSavedHistories()
-            )
-        }
-        logger.info("(saveLoginInfo) insertResultId: $insertResultId")
-    }
-
     fun onAction(action: PasswdAction) {
-        logger.debug("onAction: {}", action)
+        logger.info("onAction: {}", action)
         with(action) {
             when (this) {
                 is PasswdAction.GoScreen -> {
@@ -506,32 +325,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     val passwd = getGroupPasswd(passwdId)
                     updateGroupUiState {
                         copy(selectPasswd = passwd)
-                    }
-                }
-
-                is PasswdAction.Login -> {
-                    launch(Dispatchers.IO) {
-                        delay(200)
-                        loginByPassword(
-                            username = username,
-                            password = password,
-                            secretKey = secretKey,
-                            host = host,
-                            port = port,
-                            saved = saved,
-                            silentlyLogin = silentlyLogin
-                        )
-                    }
-                }
-
-                is PasswdAction.Signup -> {
-                    launch(Dispatchers.IO) {
-                        signup(
-                            username = username,
-                            password = password,
-                            host = host,
-                            port = port
-                        )
                     }
                 }
 
@@ -618,7 +411,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
                 is PasswdAction.ExportPasswdsToFile -> {
                     launch {
-                        val json = Gson().toJson(repository.getAllGroupsWithPasswds())
+                        val json = Gson().toJson(passwdRepository.getAllGroupsWithPasswds())
                         FileUtils.exportDataToFile(filePath, json)
                     }
                 }
@@ -718,10 +511,6 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     private fun updateDialogUiState(update: DialogUiState.() -> DialogUiState) {
         _dialogUiState.update { update(it) }
-    }
-
-    private fun updateLoginUiState(update: LoginUiState.() -> LoginUiState) {
-        _loginUiState.update { update(it) }
     }
 
 }

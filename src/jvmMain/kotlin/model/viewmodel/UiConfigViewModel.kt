@@ -46,7 +46,7 @@ class UiConfigViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) 
     }
 
     fun onAction(action: UiAction) {
-        logger.debug("onAction: {}", action)
+        logger.info("onAction: {}", action)
         with(action) {
             when (this) {
                 is UiAction.WindowVisible -> _windowVisible.value = visible

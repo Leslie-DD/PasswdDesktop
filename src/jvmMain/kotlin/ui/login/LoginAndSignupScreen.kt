@@ -26,10 +26,11 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import database.entity.HistoryData
-import model.action.PasswdAction
 import model.UiScreen
+import model.action.PasswdAction
 import model.uieffect.DialogUiEffect
 import model.viewmodel.PasswdsViewModel
+import model.viewmodel.UserViewModel
 import ui.common.EnabledOutlinedTextField
 import ui.common.HistoriesDropDownMenu
 import ui.common.TipsDialog
@@ -38,7 +39,8 @@ import ui.toolbar.NoRippleInteractionSource
 
 @Composable
 fun LoginAndSignupScreen(
-    viewModel: PasswdsViewModel,
+    userViewModel: UserViewModel,
+    passwdsViewModel: PasswdsViewModel,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -54,13 +56,16 @@ fun LoginAndSignupScreen(
         Box(
             modifier = Modifier.weight(0.6f).fillMaxHeight()
         ) {
-            LoginAndSignupBox(viewModel)
+            LoginAndSignupBox(userViewModel, passwdsViewModel)
         }
     }
 }
 
 @Composable
-private fun LoginAndSignupBox(viewModel: PasswdsViewModel) {
+private fun LoginAndSignupBox(
+    userViewModel: UserViewModel,
+    passwdsViewModel: PasswdsViewModel
+) {
     val isLoading = remember { mutableStateOf(false) }
 
     Column(
@@ -83,13 +88,15 @@ private fun LoginAndSignupBox(viewModel: PasswdsViewModel) {
             content = {
                 if (it is UiScreen.Login) {
                     LoginInfoBox(
-                        viewModel = viewModel,
+                        userViewModel = userViewModel,
+                        passwdsViewModel = passwdsViewModel,
                         enabled = !isLoading.value,
                         setEnabled = { enabled -> isLoading.value = !enabled }
                     )
                 } else if (it is UiScreen.Signup) {
                     SignupInfoBox(
-                        viewModel = viewModel,
+                        userViewModel = userViewModel,
+                        passwdsViewModel = passwdsViewModel,
                         enabled = !isLoading.value,
                         setEnabled = { enabled -> isLoading.value = !enabled }
                     )
@@ -111,11 +118,11 @@ private fun LoginAndSignupBox(viewModel: PasswdsViewModel) {
             buttonValue = "Got it, I've written it down!"
         ) {
             isImportantTipsDialogOpen.value = false
-            viewModel.onAction(PasswdAction.ClearEffect)
-            viewModel.onAction(PasswdAction.GoScreen(UiScreen.Passwds))
+            passwdsViewModel.onAction(PasswdAction.ClearEffect)
+            passwdsViewModel.onAction(PasswdAction.GoScreen(UiScreen.Passwds))
         }
     }
-    val dialogUiState = viewModel.dialogUiState.collectAsState().value
+    val dialogUiState = passwdsViewModel.dialogUiState.collectAsState().value
     with(dialogUiState.effect) {
         when (this) {
             is DialogUiEffect.SignupResult -> {
