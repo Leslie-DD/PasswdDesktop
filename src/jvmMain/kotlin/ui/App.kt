@@ -7,11 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import model.action.PasswdAction
 import model.UiScreen
+import model.action.PasswdAction
 import model.uieffect.DialogUiEffect
-import model.viewmodel.UiConfigViewModel
 import model.viewmodel.PasswdsViewModel
+import model.viewmodel.UiConfigViewModel
 import model.viewmodel.UserViewModel
 import ui.common.TipsDialog
 import ui.login.LoginAndSignupScreen

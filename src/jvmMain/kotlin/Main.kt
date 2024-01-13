@@ -12,11 +12,10 @@ import androidx.compose.ui.window.Tray
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import model.Res
-import model.action.PasswdAction
 import model.UiScreen
 import model.action.UiAction
-import model.viewmodel.UiConfigViewModel
 import model.viewmodel.PasswdsViewModel
+import model.viewmodel.UiConfigViewModel
 import model.viewmodel.UserViewModel
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.intui.standalone.theme.IntUiTheme
@@ -88,7 +87,6 @@ fun main() = application {
                 rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
                 rootPane.putClientProperty("apple.awt.windowTitleVisible", false)
             }
-
             MaterialTheme(colorScheme = theme.materialColorScheme) {
                 var titleBarVisible by remember { mutableStateOf(false) }
                 titleBarVisible = when (windowUiState.uiScreen) {

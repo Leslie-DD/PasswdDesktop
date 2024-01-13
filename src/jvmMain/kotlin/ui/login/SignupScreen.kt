@@ -48,11 +48,9 @@ fun SignupInfoBox(
             histories = histories,
             onHostChanged = {
                 host = it
-                passwdsViewModel.onAction(PasswdAction.InitHost(Pair(host, port)))
             },
             onPortChanged = {
                 port = Integer.valueOf(it)
-                passwdsViewModel.onAction(PasswdAction.InitHost(Pair(host, port)))
             },
             onHistorySelected = {
                 host = it.host

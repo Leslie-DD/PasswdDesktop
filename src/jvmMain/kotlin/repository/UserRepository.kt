@@ -23,7 +23,6 @@ object UserRepository {
     val signResultStateFlow = _signResultFlow.asStateFlow()
 
 
-
     fun loginFailure(e: Throwable) {
         _loginResultFlow.value = Result.failure(e)
     }

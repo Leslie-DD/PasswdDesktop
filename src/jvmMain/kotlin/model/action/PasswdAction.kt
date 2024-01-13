@@ -37,11 +37,7 @@ sealed class PasswdAction {
 
     class SearchPasswds(val content: String) : PasswdAction()
 
-    class ReorderGroupDragEnd(val reorderedGroupList: MutableList<Group>) : PasswdAction()
-
     class ExportPasswdsToFile(val filePath: String) : PasswdAction()
-
-    class InitHost(val host: Pair<String, Int>) : PasswdAction()
 
     class UpdateEditEnabled(val editEnabled: Boolean) : PasswdAction()
 

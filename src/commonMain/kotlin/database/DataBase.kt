@@ -20,13 +20,8 @@ internal class DataBase {
     val globalAccessToken = MutableStateFlow("")
 
     private val longOfIntAdapter = object : ColumnAdapter<Int, Long> {
-        override fun decode(databaseValue: Long): Int {
-            return databaseValue.toInt()
-        }
-
-        override fun encode(value: Int): Long {
-            return value.toLong()
-        }
+        override fun decode(databaseValue: Long): Int = databaseValue.toInt()
+        override fun encode(value: Int): Long = value.toLong()
     }
 
     private val database = HistoryDatabase(

@@ -66,11 +66,9 @@ fun LoginInfoBox(
             histories = histories,
             onHostChanged = {
                 host = it
-                passwdsViewModel.onAction(PasswdAction.InitHost(Pair(host, port)))
             },
             onPortChanged = {
                 port = Integer.valueOf(it)
-                passwdsViewModel.onAction(PasswdAction.InitHost(Pair(host, port)))
             },
             onHistorySelected = { item ->
                 host = item.host

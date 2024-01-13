@@ -16,8 +16,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import database.DataBase
-import model.viewmodel.UiConfigViewModel
 import model.viewmodel.PasswdsViewModel
+import model.viewmodel.UiConfigViewModel
 import ui.common.EditLimitTextField
 import ui.common.copyToClipboard
 import ui.common.defaultIconButtonColors

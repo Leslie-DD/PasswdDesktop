@@ -11,7 +11,6 @@ import model.uistate.LoginUiState
 import network.WebSocketSyncUtil
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import repository.PasswdRepository
 import repository.UserRepository
 
 class UserViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
@@ -21,7 +20,6 @@ class UserViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     private val dataBase = DataBase.instance
 
     private val userRepository: UserRepository = UserRepository
-    private val passwdRepository: PasswdRepository = PasswdRepository
 
     private val _loginUiState: MutableStateFlow<LoginUiState> by lazy {
         MutableStateFlow(LoginUiState(HistoryData.defaultHistoryData(), dataBase.getSavedHistories()))
@@ -111,7 +109,6 @@ class UserViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         ).onSuccess {
             logger.info("(loginByPassword) success")
             updateDB(it.userId, username, password, secretKey, host, port, it.token, saved, silentlyLogin)
-            passwdRepository.fetchGroups()
             WebSocketSyncUtil.startWebSocketListener(host, port, it.userId)
         }.onFailure {
             logger.error("(loginByPassword) error", it)

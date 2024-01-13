@@ -25,10 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import model.action.PasswdAction
 import model.UiScreen
-import model.viewmodel.UiConfigViewModel
+import model.action.PasswdAction
 import model.viewmodel.PasswdsViewModel
+import model.viewmodel.UiConfigViewModel
 import ui.common.defaultIconButtonColors
 
 @Composable

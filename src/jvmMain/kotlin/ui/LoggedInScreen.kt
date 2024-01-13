@@ -4,8 +4,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import model.UiScreen
-import model.viewmodel.UiConfigViewModel
 import model.viewmodel.PasswdsViewModel
+import model.viewmodel.UiConfigViewModel
 import ui.passwd.PasswdsScreen
 import ui.setting.SettingsScreen
 

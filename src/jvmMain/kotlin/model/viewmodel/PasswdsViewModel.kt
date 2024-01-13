@@ -33,89 +33,61 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     private val _windowUiState = MutableStateFlow(WindowUiState.Default)
     val windowUiState: StateFlow<WindowUiState> = _windowUiState
 
-    private val _passwdUiState: MutableStateFlow<PasswdUiState> by lazy {
-        MutableStateFlow(PasswdUiState.defaultPasswdUiState())
-    }
-    val passwdUiState: StateFlow<PasswdUiState> by lazy {
-        _passwdUiState
-    }
+    private val _passwdUiState: MutableStateFlow<PasswdUiState> by lazy { MutableStateFlow(PasswdUiState.defaultPasswdUiState()) }
+    val passwdUiState: StateFlow<PasswdUiState> by lazy { _passwdUiState }
 
-    private val _dialogUiState: MutableStateFlow<DialogUiState> by lazy {
-        MutableStateFlow(DialogUiState.defaultDialogUiState())
-    }
-    val dialogUiState: StateFlow<DialogUiState> by lazy {
-        _dialogUiState
-    }
+    private val _dialogUiState: MutableStateFlow<DialogUiState> by lazy { MutableStateFlow(DialogUiState.defaultDialogUiState()) }
+    val dialogUiState: StateFlow<DialogUiState> by lazy { _dialogUiState }
 
-    private val _searchFlow: MutableStateFlow<String> by lazy {
-        MutableStateFlow("")
-    }
-    private val searchFlow: StateFlow<String> by lazy {
-        _searchFlow
-    }
+    private val _searchFlow: MutableStateFlow<String> by lazy { MutableStateFlow("") }
+    private val searchFlow: StateFlow<String> by lazy { _searchFlow }
 
     init {
-        launch {
-            passwdRepository.groupsFlow.collect {
-                logger.debug("collect groups changed, size: ${it.size}")
-                updateGroupUiState {
-                    copy(
-                        groups = it,
-                        selectGroup = if (it.isEmpty()) null else it.first()
-                    )
-                }
-            }
-        }
-
-        launch {
-            passwdRepository.groupPasswdsFlow.collect {
-                logger.debug("collect groupPasswds changed, size: ${it.size}")
-                updateGroupUiState {
-                    copy(
-                        groupPasswds = it,
-                        selectPasswd = if (it.isEmpty()) null else it.first()
-                    )
-                }
-            }
-        }
-
-        launch {
-            searchFlow.debounce(300).collectLatest {
-                passwdRepository.searchLikePasswdsAndUpdate(it)
-                updateGroupUiState {
-                    copy(selectGroup = null)
-                }
-            }
-        }
+        collectGroups()
+        collectGroupPasswds()
 
         collectLoginResult()
         collectSignupResult()
+
+        collectSearch()
+    }
+
+    private fun collectGroups() = launch {
+        passwdRepository.groupsFlow.collect { groups ->
+            logger.debug("collect groups changed, size: ${groups.size}")
+            val selectGroup = if (groups.isEmpty()) null else groups.first()
+            updateGroupUiState { copy(groups = groups, selectGroup = selectGroup) }
+        }
+    }
+
+    private fun collectGroupPasswds() = launch {
+        passwdRepository.groupPasswdsFlow.collect { groupPasswds ->
+            logger.debug("collect groupPasswds changed, size: ${groupPasswds.size}")
+            val selectPasswd = if (groupPasswds.isEmpty()) null else groupPasswds.first()
+            updateGroupUiState { copy(groupPasswds = groupPasswds, selectPasswd = selectPasswd) }
+        }
     }
 
     private fun collectLoginResult() = launch {
         userRepository.loginResultStateFlow.filterNotNull().collectLatest {
+            var effect: DialogUiEffect? = null
+            var uiScreen: UiScreen = UiScreen.Passwds
+            var uiScreens: UiScreens = UiScreen.LoggedInScreen
+
             it.onSuccess {
-                updateDialogUiState {
-                    copy(effect = null)
-                }
-                updateWindowUiState {
-                    copy(
-                        uiScreen = UiScreen.Passwds,
-                        uiScreens = UiScreen.LoggedInScreen
-                    )
-                }
-            }.onFailure {
-                logger.error("(loginByPassword) error", it)
-                updateDialogUiState {
-                    copy(effect = if (it.message.isNullOrBlank()) null else DialogUiEffect.LoginAndSignupFailure(it.message))
-                }
-                updateWindowUiState {
-                    copy(
-                        uiScreen = UiScreen.Login,
-                        uiScreens = UiScreen.LoginAndSignup
-                    )
-                }
+                effect = null
+                uiScreen = UiScreen.Passwds
+                uiScreens = UiScreen.LoggedInScreen
+                passwdRepository.fetchGroups()
+            }.onFailure { e ->
+                logger.error("(loginByPassword) error", e)
+                effect = if (e.message.isNullOrBlank()) null else DialogUiEffect.LoginAndSignupFailure(e.message)
+                uiScreen = UiScreen.Login
+                uiScreens = UiScreen.LoginAndSignup
             }
+
+            updateDialogUiState { copy(effect = effect) }
+            updateWindowUiState { copy(uiScreen = uiScreen, uiScreens = uiScreens) }
         }
     }
 
@@ -126,98 +98,73 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     if (signupResult == null) {
                         return@onSuccess
                     }
-                    updateDialogUiState {
-                        copy(effect = DialogUiEffect.SignupResult(signupResult.secretKey))
-                    }
+                    updateDialogUiState { copy(effect = DialogUiEffect.SignupResult(signupResult.secretKey)) }
                 }.onFailure {
                     updateDialogUiState { copy(effect = DialogUiEffect.LoginAndSignupFailure(it.message)) }
-                    updateWindowUiState {
-                        copy(
-                            uiScreen = UiScreen.Signup,
-                            uiScreens = UiScreen.LoginAndSignup
-                        )
-                    }
+                    updateWindowUiState { copy(uiScreen = UiScreen.Signup, uiScreens = UiScreen.LoginAndSignup) }
                 }
             }
         }
     }
 
-    private suspend fun refreshGroupPasswds(groupId: Int) {
-        passwdRepository.refreshGroupPasswds(groupId)
+    private fun collectSearch() = launch {
+        searchFlow.debounce(300).collectLatest {
+            passwdRepository.searchLikePasswdsAndUpdate(it)
+            updateGroupUiState { copy(selectGroup = null) }
+        }
     }
 
-    private suspend fun newGroup(
+    private fun newGroup(
         groupName: String,
         groupComment: String
-    ) {
+    ) = launch {
         if (groupName.isBlank()) {
             // TODO: tips 提示 groupName 不能为空
-            return
+            return@launch
         }
         passwdRepository.newGroup(groupName, groupComment)
             .onSuccess {
-                updateDialogUiState {
-                    copy(effect = DialogUiEffect.NewGroupResult(it))
-                }
-                updateGroupUiState {
-                    copy(selectGroup = it)
-                }
-                updateGroupUiState {
-                    copy(selectPasswd = null)
-                }
+                updateDialogUiState { copy(effect = DialogUiEffect.NewGroupResult(it)) }
+                updateGroupUiState { copy(selectGroup = it, selectPasswd = null) }
             }.onFailure {
-                updateDialogUiState {
-                    copy(effect = DialogUiEffect.NewGroupResult(null))
-                }
+                // TODO: 新增失败的情况 tips 提示
+                updateDialogUiState { copy(effect = DialogUiEffect.NewGroupResult(null)) }
             }
     }
 
-    private suspend fun deleteGroup(groupId: Int) {
+    private fun deleteGroup(groupId: Int) = launch {
         passwdRepository.deleteGroup(groupId)
             .onSuccess {
-                updateGroupUiState {
-                    copy(selectGroup = null)
-                }
-                updateDialogUiState {
-                    copy(effect = DialogUiEffect.DeleteGroupResult(it))
-                }
+                updateGroupUiState { copy(selectGroup = null) }
+                updateDialogUiState { copy(effect = DialogUiEffect.DeleteGroupResult(it)) }
             }.onFailure {
                 // TODO: 删除失败的情况 tips 提示
-                updateDialogUiState {
-                    copy(effect = DialogUiEffect.DeleteGroupResult(null))
-                }
+                updateDialogUiState { copy(effect = DialogUiEffect.DeleteGroupResult(null)) }
             }
     }
 
-    private suspend fun updateGroup(
+    private fun updateGroup(
         groupId: Int,
         groupName: String,
         groupComment: String
-    ) {
-        passwdRepository.updateGroup(
-            groupId = groupId,
-            groupName = groupName,
-            groupComment = groupComment
-        ).onSuccess {
-            updateDialogUiState {
-                copy(effect = DialogUiEffect.UpdateGroupResult(it))
+    ) = launch {
+        passwdRepository.updateGroup(groupId, groupName, groupComment)
+            .onSuccess {
+                updateDialogUiState { copy(effect = DialogUiEffect.UpdateGroupResult(it)) }
+            }.onFailure {
+                // TODO: 更新失败的情况 tips 提示
+                updateDialogUiState { copy(effect = DialogUiEffect.UpdateGroupResult(null)) }
             }
-        }.onFailure {
-            // TODO: 删除失败的情况 tips 提示
-            updateDialogUiState {
-                copy(effect = DialogUiEffect.UpdateGroupResult(null))
-            }
-        }
     }
 
-    private suspend fun newPasswd(
+    private fun newPasswd(
         groupId: Int,
         title: String,
         usernameString: String,
         passwordString: String,
         link: String,
         comment: String,
-    ) {
+    ) = launch {
         passwdRepository.newPasswd(
             groupId = groupId,
             title = title,
@@ -226,24 +173,18 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             link = link,
             comment = comment,
         ).onSuccess {
-            updateDialogUiState {
-                copy(effect = DialogUiEffect.NewPasswdResult(it))
-            }
-            updateGroupUiState {
-                copy(selectPasswd = it)
-            }
+            updateDialogUiState { copy(effect = DialogUiEffect.NewPasswdResult(it)) }
+            updateGroupUiState { copy(selectPasswd = it) }
         }.onFailure {
             it.printStackTrace()
-            updateDialogUiState {
-                copy(effect = DialogUiEffect.NewGroupResult(null))
-            }
+            updateDialogUiState { copy(effect = DialogUiEffect.NewGroupResult(null)) }
         }
     }
 
 
-    private suspend fun updatePasswd(
+    private fun updatePasswd(
         updatePasswd: Passwd
-    ) {
+    ) = launch {
         passwdRepository.updatePasswd(
             id = updatePasswd.id,
             title = updatePasswd.title,
@@ -253,34 +194,22 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             comment = updatePasswd.comment
         ).onSuccess { passwd ->
             logger.info("updatePasswd onSuccess $passwd")
-            updateDialogUiState {
-                copy(effect = DialogUiEffect.UpdatePasswdResult(passwd))
-            }
-            updateGroupUiState {
-                copy(selectPasswd = passwd)
-            }
+            updateDialogUiState { copy(effect = DialogUiEffect.UpdatePasswdResult(passwd)) }
+            updateGroupUiState { copy(selectPasswd = passwd) }
         }.onFailure {
             it.printStackTrace()
-            updateDialogUiState {
-                copy(effect = DialogUiEffect.UpdatePasswdResult(null))
-            }
+            updateDialogUiState { copy(effect = DialogUiEffect.UpdatePasswdResult(null)) }
         }
     }
 
-    private suspend fun deletePasswd(passwdId: Int) {
+    private fun deletePasswd(passwdId: Int) = launch {
         passwdRepository.deletePasswd(passwdId)
             .onSuccess {
-                updateDialogUiState {
-                    copy(effect = DialogUiEffect.DeletePasswdResult(it))
-                }
-                updateGroupUiState {
-                    copy(selectPasswd = null)
-                }
+                updateDialogUiState { copy(effect = DialogUiEffect.DeletePasswdResult(it)) }
+                updateGroupUiState { copy(selectPasswd = null) }
             }.onFailure {
                 // TODO: 删除失败的情况 tips 提示
-                updateDialogUiState {
-                    copy(effect = DialogUiEffect.DeletePasswdResult(null))
-                }
+                updateDialogUiState { copy(effect = DialogUiEffect.DeletePasswdResult(null)) }
             }
     }
 
@@ -289,142 +218,62 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         with(action) {
             when (this) {
                 is PasswdAction.GoScreen -> {
-                    val uiScreens: UiScreens? = when (screen) {
+                    val uiScreens: UiScreens = when (screen) {
                         in UiScreen.LoginAndSignup -> UiScreen.LoginAndSignup
                         in UiScreen.LoggedInScreen -> UiScreen.LoggedInScreen
                         in UiScreen.Loadings -> UiScreen.Loadings
-                        else -> null
+                        else -> windowUiState.value.uiScreens
                     }
-                    if (uiScreens == null) {
-                        updateWindowUiState {
-                            copy(uiScreen = screen)
-                        }
-                    } else {
-                        updateWindowUiState {
-                            copy(
-                                uiScreen = screen,
-                                uiScreens = uiScreens
-                            )
-                        }
-                    }
+                    updateWindowUiState { copy(uiScreen = screen, uiScreens = uiScreens) }
                 }
 
                 is PasswdAction.ShowGroupPasswds -> {
-                    updateGroupUiState {
-                        copy(
-                            selectGroup = getGroup(groupId),
-                            selectPasswd = null
-                        )
-                    }
-                    launch(Dispatchers.IO) {
-                        refreshGroupPasswds(groupId)
-                    }
+                    updateGroupUiState { copy(selectGroup = getGroup(groupId), selectPasswd = null) }
+                    launch { passwdRepository.refreshGroupPasswds(groupId) }
                 }
 
-                is PasswdAction.ShowPasswd -> {
-                    val passwd = getGroupPasswd(passwdId)
-                    updateGroupUiState {
-                        copy(selectPasswd = passwd)
-                    }
-                }
+                is PasswdAction.ShowPasswd -> updateGroupUiState { copy(selectPasswd = getGroupPasswd(passwdId)) }
 
-                is PasswdAction.NewGroup -> {
-                    launch(Dispatchers.IO) {
-                        newGroup(
-                            groupName = groupName,
-                            groupComment = groupComment
-                        )
-                    }
-                }
+                is PasswdAction.NewGroup -> newGroup(groupName, groupComment)
 
                 is PasswdAction.DeleteGroup -> {
                     val selectGroupId = passwdUiState.value.selectGroup?.id ?: return
-                    launch(Dispatchers.IO) {
-                        deleteGroup(selectGroupId)
-                    }
+                    deleteGroup(selectGroupId)
                 }
 
                 is PasswdAction.UpdateGroup -> {
                     val selectGroupId = passwdUiState.value.selectGroup?.id ?: return
-                    launch(Dispatchers.IO) {
-                        updateGroup(
-                            groupId = selectGroupId,
-                            groupName = groupName,
-                            groupComment = groupComment
-                        )
-                    }
+                    updateGroup(selectGroupId, groupName, groupComment)
                 }
 
-                is PasswdAction.ClearEffect -> {
-                    updateDialogUiState {
-                        copy(effect = null)
-                    }
-                }
+                is PasswdAction.ClearEffect -> updateDialogUiState { copy(effect = null) }
 
-                is PasswdAction.NewPasswd -> {
-                    launch(Dispatchers.IO) {
-                        newPasswd(
-                            groupId = groupId,
-                            title = title,
-                            usernameString = usernameString,
-                            passwordString = passwordString,
-                            link = link,
-                            comment = comment,
-                        )
-                    }
-                }
+                is PasswdAction.NewPasswd -> newPasswd(
+                    groupId = groupId,
+                    title = title,
+                    usernameString = usernameString,
+                    passwordString = passwordString,
+                    link = link,
+                    comment = comment,
+                )
 
-                is PasswdAction.UpdatePasswd -> {
-                    launch(Dispatchers.IO) {
-                        updatePasswd(passwd)
-                    }
-                }
+                is PasswdAction.UpdatePasswd -> updatePasswd(passwd)
 
                 is PasswdAction.DeletePasswd -> {
                     val selectGroupId = passwdUiState.value.selectPasswd?.id ?: return
-                    launch(Dispatchers.IO) {
-                        deletePasswd(selectGroupId)
-                    }
+                    deletePasswd(selectGroupId)
                 }
 
-                is PasswdAction.MenuOpenOrClose -> {
-                    updateWindowUiState {
-                        copy(menuOpen = open)
-                    }
+                is PasswdAction.MenuOpenOrClose -> updateWindowUiState { copy(menuOpen = open) }
+
+                is PasswdAction.SearchPasswds -> _searchFlow.tryEmit(content)
+
+                is PasswdAction.ExportPasswdsToFile -> launch {
+                    val json = Gson().toJson(passwdRepository.getAllGroupsWithPasswds())
+                    FileUtils.exportDataToFile(filePath, json)
                 }
 
-                is PasswdAction.SearchPasswds -> {
-                    _searchFlow.tryEmit(content)
-                }
-
-                is PasswdAction.ReorderGroupDragEnd -> {
-                    /**
-                     * TODO: 服务端实现。
-                     * 暂时服务端未实现，所以直接更新GroupUiState，
-                     * 但是repository.groupsFlow未更新，违反了单一数据源的原则，
-                     * 所以目前会有重新排序后，会有添加删除 Group，UI数据都不会更新的问题
-                     */
-                    updateGroupUiState {
-                        copy(groups = reorderedGroupList)
-                    }
-                }
-
-                is PasswdAction.ExportPasswdsToFile -> {
-                    launch {
-                        val json = Gson().toJson(passwdRepository.getAllGroupsWithPasswds())
-                        FileUtils.exportDataToFile(filePath, json)
-                    }
-                }
-
-                is PasswdAction.InitHost -> {
-                    // TODO: host valid check
-                }
-
-                is PasswdAction.UpdateEditEnabled -> {
-                    _passwdUiState.update {
-                        it.copy(editEnabled = editEnabled)
-                    }
-                }
+                is PasswdAction.UpdateEditEnabled -> _passwdUiState.update { it.copy(editEnabled = editEnabled) }
             }
         }
     }
@@ -439,9 +288,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 remove(dynamicItem)
                 add(index, dynamicItem)
             }
-            updateGroupUiState {
-                copy(groupPasswds = passwdList)
-            }
+            updateGroupUiState { copy(groupPasswds = passwdList) }
         }
     }
 
@@ -452,9 +299,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                     return
                 }
             }
-            updateGroupUiState {
-                copy(groupPasswds = passwdList)
-            }
+            updateGroupUiState { copy(groupPasswds = passwdList) }
         }
 
         // TODO: 往Group中添加Passwd
@@ -465,9 +310,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             val passwdList = passwdUiState.value.groupPasswds.toMutableList().apply {
                 remove(dynamicItem)
             }
-            updateGroupUiState {
-                copy(groupPasswds = passwdList)
-            }
+            updateGroupUiState { copy(groupPasswds = passwdList) }
 
             logger.info("will put the passwd into the groups[${passwdUiState.value.groups.indexOf(item)}]")
             // TODO: 往Group中添加Passwd
@@ -480,9 +323,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 remove(dynamicItem)
                 add(index, dynamicItem)
             }
-            updateGroupUiState {
-                copy(groups = groupList)
-            }
+            updateGroupUiState { copy(groups = groupList) }
         }
     }
 
@@ -501,12 +342,8 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private fun updateGroupUiState(update: PasswdUiState.() -> PasswdUiState) {
-        _passwdUiState.update {
-            update(it)
-        }
-        _passwdUiState.update {
-            it.copy(editEnabled = false)
-        }
+        _passwdUiState.update { update(it) }
+        _passwdUiState.update { it.copy(editEnabled = false) }
     }
 
     private fun updateDialogUiState(update: DialogUiState.() -> DialogUiState) {

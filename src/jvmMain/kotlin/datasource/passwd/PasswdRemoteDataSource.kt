@@ -3,7 +3,6 @@ package datasource.passwd
 import entity.Group
 import entity.LoginResult
 import entity.Passwd
-import entity.SignupResult
 import network.Apis
 import network.KtorRequest
 import network.entity.Param
@@ -25,19 +24,6 @@ object PasswdRemoteDataSource {
 
     suspend fun fetchGroups(): Result<MutableList<Group>> = KtorRequest.postRequest(
         api = Apis.API_GROUPS
-    )
-
-    suspend fun loginByToken(
-        username: String,
-        token: String
-    ): Result<LoginResult> = KtorRequest.postRequest(
-        needToken = false,
-        needUserId = false,
-        api = Apis.API_LOGIN_BY_TOKEN,
-        params = listOf(
-            Param("username", username),
-            Param("token", token),
-        )
     )
 
     suspend fun newGroup(
