@@ -1,6 +1,7 @@
 package repository
 
-import datasource.passwd.PasswdLocalDataSource
+import datasource.DatabaseDataSource
+import datasource.passwd.PasswdMemoryDataSource
 import datasource.user.UserRemoteDataSource
 import entity.LoginResult
 import entity.SignupResult
@@ -14,13 +15,23 @@ object UserRepository {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private val userRemoteDataSource: UserRemoteDataSource = UserRemoteDataSource
-    private val passwdLocalDataSource: PasswdLocalDataSource = PasswdLocalDataSource
+    private val passwdMemoryDataSource: PasswdMemoryDataSource = PasswdMemoryDataSource
+    private val databaseDataSource: DatabaseDataSource = DatabaseDataSource
 
-    private val _loginResultFlow = MutableStateFlow<Result<LoginResult>?>(null)
-    val loginResultStateFlow = _loginResultFlow.asStateFlow()
+    private val _loginResultFlow: MutableStateFlow<Result<LoginResult>?> by lazy { MutableStateFlow(null) }
+    val loginResultStateFlow by lazy { _loginResultFlow.asStateFlow() }
 
     private val _signResultFlow = MutableStateFlow<Result<SignupResult?>?>(null)
     val signResultStateFlow = _signResultFlow.asStateFlow()
+
+    val historyDataFlow
+        get() = databaseDataSource.historyData
+
+    val savedHistories
+        get() = databaseDataSource.savedHistories
+
+    val latestSavedLoginHistoryData
+        get() = databaseDataSource.latestSavedLoginHistoryData
 
 
     fun loginFailure(e: Throwable) {
@@ -33,9 +44,10 @@ object UserRepository {
         secretKey: String,
         host: String,
         port: Int,
+        saved: Boolean,
+        silentlyLogin: Boolean,
     ): Result<LoginResult> {
         if (username.isBlank() || password.isBlank() || secretKey.isBlank()) {
-            logger.warn("(loginByPassword) warn, $username, $password, $secretKey can not be empty")
             val result = Result.failure<LoginResult>(Throwable("username, password, secretKey can not be empty or blank"))
             _loginResultFlow.value = result
             return result
@@ -44,7 +56,6 @@ object UserRepository {
         try {
             HttpClientObj.forceUpdateHttpClient(host, port)
         } catch (e: Throwable) {
-            logger.warn("(loginByPassword) warn, ${e.message}")
             val result = Result.failure<LoginResult>(e)
             _loginResultFlow.value = result
             return result
@@ -54,7 +65,14 @@ object UserRepository {
             username = username,
             password = password,
         ).onSuccess { loginResult ->
-            passwdLocalDataSource.onLoginSuccess(loginResult.passwds, secretKey)
+            passwdMemoryDataSource.onLoginSuccess(loginResult.passwds, secretKey)
+            databaseDataSource.insertHistoryData(username, password, secretKey, host, port, loginResult.token, saved, silentlyLogin)
+            databaseDataSource.updateGlobalValues(
+                secretKey = secretKey,
+                userId = loginResult.userId,
+                username = username,
+                token = loginResult.token
+            )
             val result = Result.success(loginResult)
             _loginResultFlow.value = result
         }.onFailure {
@@ -68,9 +86,8 @@ object UserRepository {
         password: String,
         host: String,
         port: Int,
-    ): Result<SignupResult?> {
+    ): Result<SignupResult> {
         if (username.isBlank() || password.isBlank()) {
-            logger.warn("sign up username and password can not be empty")
             val result = Result.failure<SignupResult>(Throwable("sign up username and password can not be empty"))
             _signResultFlow.value = result
             return result
@@ -79,7 +96,6 @@ object UserRepository {
         try {
             HttpClientObj.forceUpdateHttpClient(host, port)
         } catch (e: Throwable) {
-            logger.warn("(signup) forceUpdateHttpClient error, ${e.message}")
             val result = Result.failure<SignupResult>(e)
             _signResultFlow.value = result
             return result
@@ -88,9 +104,15 @@ object UserRepository {
         return userRemoteDataSource.signup(
             username = username,
             password = password
-        ).onSuccess { signupResult ->
-            passwdLocalDataSource.onSignupSuccess()
-            val result = Result.success(signupResult)
+        ).onSuccess {
+            passwdMemoryDataSource.onSignupSuccess()
+            databaseDataSource.updateGlobalValues(
+                secretKey = it.secretKey,
+                userId = it.userId,
+                username = username,
+                token = it.token
+            )
+            val result = Result.success(it)
             _signResultFlow.value = result
         }.onFailure {
             val result = Result.failure<SignupResult>(it)

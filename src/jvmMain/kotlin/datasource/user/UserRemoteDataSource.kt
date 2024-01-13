@@ -41,7 +41,7 @@ object UserRemoteDataSource {
     suspend fun signup(
         username: String,
         password: String,
-    ): Result<SignupResult?> = KtorRequest.postRequest(
+    ): Result<SignupResult> = KtorRequest.postRequest(
         needToken = false,
         needUserId = false,
         api = Apis.API_SIGNUP,

@@ -1,7 +1,7 @@
 package repository
 
 import database.DataBase
-import datasource.passwd.PasswdLocalDataSource
+import datasource.passwd.PasswdMemoryDataSource
 import datasource.passwd.PasswdRemoteDataSource
 import entity.Group
 import entity.Passwd
@@ -20,32 +20,30 @@ object PasswdRepository {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private val passwdRemoteDataSource: PasswdRemoteDataSource = PasswdRemoteDataSource
-    private val passwdLocalDataSource: PasswdLocalDataSource = PasswdLocalDataSource
+    private val passwdMemoryDataSource: PasswdMemoryDataSource = PasswdMemoryDataSource
 
 
     val groupsFlow: StateFlow<MutableList<Group>>
-        get() = passwdLocalDataSource.groups.asStateFlow()
+        get() = passwdMemoryDataSource.groups.asStateFlow()
 
     val groupPasswdsFlow: StateFlow<MutableList<Passwd>>
-        get() = passwdLocalDataSource.groupPasswds.asStateFlow()
+        get() = passwdMemoryDataSource.groupPasswds.asStateFlow()
 
 
     suspend fun refreshGroupPasswds(groupId: Int) {
-        passwdLocalDataSource.emitGroupPasswds(groupId)
+        passwdMemoryDataSource.emitGroupPasswds(groupId)
     }
 
-    suspend fun fetchGroups() {
-        passwdRemoteDataSource.fetchGroups()
-            .onSuccess { remoteGroups ->
-                passwdLocalDataSource.emitGroups(remoteGroups)
-                if (remoteGroups.isNotEmpty()) {
-                    passwdLocalDataSource.emitGroupPasswds(remoteGroups.first().id)
-                }
-            }.onFailure {
-                clearGroupAndGroupPasswds()
-                logger.error("(fetchGroups) error", it)
+    suspend fun fetchGroups() = passwdRemoteDataSource.fetchGroups()
+        .onSuccess { remoteGroups ->
+            passwdMemoryDataSource.emitGroups(remoteGroups)
+            if (remoteGroups.isNotEmpty()) {
+                passwdMemoryDataSource.emitGroupPasswds(remoteGroups.first().id)
             }
-    }
+        }.onFailure {
+            clearGroupAndGroupPasswds()
+            logger.error("(fetchGroups) error", it)
+        }
 
     suspend fun newGroup(
         groupName: String,
@@ -62,7 +60,7 @@ object PasswdRepository {
                 groupName = groupName,
                 groupComment = groupComment
             )
-            passwdLocalDataSource.newGroup(newGroup)
+            passwdMemoryDataSource.newGroup(newGroup)
             result = Result.success(newGroup)
         }.onFailure {
             result = Result.failure(it)
@@ -77,7 +75,7 @@ object PasswdRepository {
         passwdRemoteDataSource.deleteGroup(
             groupId = groupId
         ).onSuccess {
-            val deleteGroup = passwdLocalDataSource.deleteGroup(groupId)
+            val deleteGroup = passwdMemoryDataSource.deleteGroup(groupId)
             result = if (deleteGroup == null) {
                 Result.failure(Throwable("no such group"))
             } else {
@@ -100,7 +98,7 @@ object PasswdRepository {
             groupName = groupName,
             groupComment = groupComment
         ).onSuccess {
-            val updateGroup = passwdLocalDataSource.updateGroup(groupId, groupName, groupComment)
+            val updateGroup = passwdMemoryDataSource.updateGroup(groupId, groupName, groupComment)
             result = if (updateGroup == null) {
                 Result.failure(Throwable("no such group"))
             } else {
@@ -140,7 +138,7 @@ object PasswdRepository {
                 usernameString = usernameString,
                 passwordString = passwordString
             )
-            passwdLocalDataSource.newPasswd(newPasswd)
+            passwdMemoryDataSource.newPasswd(newPasswd)
             result = Result.success(newPasswd)
         }.onFailure {
             result = Result.failure(it)
@@ -152,7 +150,7 @@ object PasswdRepository {
         var result = Result.failure<Passwd>(Throwable())
         passwdRemoteDataSource.deletePasswd(id = id)
             .onSuccess {
-                val deletePasswd = passwdLocalDataSource.deletePasswd(id)
+                val deletePasswd = passwdMemoryDataSource.deletePasswd(id)
                 result = if (deletePasswd == null) {
                     Result.failure(Throwable("no such passwd"))
                 } else {
@@ -182,7 +180,7 @@ object PasswdRepository {
             link = link,
             comment = comment
         ).onSuccess {
-            val updatePasswd = passwdLocalDataSource.updatePasswd(
+            val updatePasswd = passwdMemoryDataSource.updatePasswd(
                 id = id,
                 title = title,
                 usernameString = usernameString,
@@ -203,25 +201,25 @@ object PasswdRepository {
 
     suspend fun searchLikePasswdsAndUpdate(value: String) {
         if (value.isBlank()) {
-            passwdLocalDataSource.emitGroupPasswds(arrayListOf())
+            passwdMemoryDataSource.emitGroupPasswds(arrayListOf())
         } else {
             val pattern = Regex(PATTERN_PREFIX + value + PATTERN_SUFFIX)
             val result = arrayListOf<Passwd>()
-            passwdLocalDataSource.passwdsMap
+            passwdMemoryDataSource.passwdsMap
                 .flatMap { it.value }
                 .forEach { passwd ->
                     if (passwd.title?.matches(pattern) == true || passwd.usernameString?.matches(pattern) == true) {
                         result.add(passwd)
                     }
                 }
-            passwdLocalDataSource.emitGroupPasswds(result)
+            passwdMemoryDataSource.emitGroupPasswds(result)
         }
     }
 
     fun getAllGroupsWithPasswds(): MutableMap<String, MutableList<Passwd>> {
-        val passwdsMap = passwdLocalDataSource.passwdsMap
+        val passwdsMap = passwdMemoryDataSource.passwdsMap
         val resultMap: MutableMap<String, MutableList<Passwd>> = mutableMapOf()
-        passwdLocalDataSource.groups.value.forEach { group ->
+        passwdMemoryDataSource.groups.value.forEach { group ->
             passwdsMap[group.id]?.let {
                 val keyString: String = if (group.groupName.isNullOrEmpty()) {
                     if (group.groupComment.isNullOrEmpty()) {
@@ -239,8 +237,8 @@ object PasswdRepository {
     }
 
     private suspend fun clearGroupAndGroupPasswds() {
-        passwdLocalDataSource.emitGroups(arrayListOf())
-        passwdLocalDataSource.emitGroupPasswds(arrayListOf())
+        passwdMemoryDataSource.emitGroups(arrayListOf())
+        passwdMemoryDataSource.emitGroupPasswds(arrayListOf())
     }
 
 }

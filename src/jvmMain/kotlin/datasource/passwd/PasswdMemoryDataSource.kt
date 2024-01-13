@@ -11,7 +11,7 @@ import java.util.*
 /**
  * 此 DataSource 作为单一数据源
  */
-object PasswdLocalDataSource {
+object PasswdMemoryDataSource {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 

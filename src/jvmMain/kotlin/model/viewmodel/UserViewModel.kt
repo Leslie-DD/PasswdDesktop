@@ -1,11 +1,10 @@
 package model.viewmodel
 
-import database.DataBase
 import database.entity.HistoryData
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import model.action.LoginAction
 import model.uistate.LoginUiState
 import network.WebSocketSyncUtil
@@ -17,19 +16,22 @@ class UserViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    private val dataBase = DataBase.instance
-
-    private val userRepository: UserRepository = UserRepository
+    private val userRepository: UserRepository by lazy { UserRepository }
 
     private val _loginUiState: MutableStateFlow<LoginUiState> by lazy {
-        MutableStateFlow(LoginUiState(HistoryData.defaultHistoryData(), dataBase.getSavedHistories()))
+        MutableStateFlow(LoginUiState(HistoryData.defaultHistoryData(), userRepository.savedHistories))
     }
-    val loginUiState: StateFlow<LoginUiState> by lazy {
-        _loginUiState
-    }
+    val loginUiState: StateFlow<LoginUiState> by lazy { _loginUiState }
 
     init {
         silentlyLogin()
+        collectHistoryData()
+    }
+
+    private fun collectHistoryData() = launch {
+        userRepository.historyDataFlow.filterNotNull().collectLatest {
+            updateLoginUiState { copy(historyData = it, historyDataList = userRepository.savedHistories) }
+        }
     }
 
     fun onAction(action: LoginAction) {
@@ -37,7 +39,6 @@ class UserViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         with(action) {
             when (this) {
                 is LoginAction.Login -> launch {
-                    delay(200)
                     loginByPassword(
                         username = username,
                         password = password,
@@ -62,11 +63,14 @@ class UserViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
     }
 
-    private fun silentlyLogin() = launch {
-        val savedHistoryData = dataBase.latestSavedLoginHistoryData()
+    private fun silentlyLogin() = launch(Dispatchers.IO) {
+        val savedHistoryData = userRepository.latestSavedLoginHistoryData
         if (savedHistoryData == null) {
             userRepository.loginFailure(Throwable())
             return@launch
+        }
+        if (savedHistoryData.saved) {
+            updateLoginUiState { copy(historyData = savedHistoryData) }
         }
         if (savedHistoryData.silentlyLogin) {
             loginByPassword(
@@ -78,16 +82,8 @@ class UserViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 saved = savedHistoryData.saved,
                 silentlyLogin = true,
             )
-            updateLoginUiState {
-                copy(historyData = savedHistoryData)
-            }
         } else {
-            if (savedHistoryData.saved) {
-                updateLoginUiState {
-                    copy(historyData = savedHistoryData)
-                }
-            }
-            userRepository.loginFailure(Throwable())
+            userRepository.loginFailure(Throwable(message = null))
         }
     }
 
@@ -106,9 +102,10 @@ class UserViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             secretKey = secretKey,
             host = host,
             port = port,
+            saved = saved,
+            silentlyLogin = silentlyLogin
         ).onSuccess {
             logger.info("(loginByPassword) success")
-            updateDB(it.userId, username, password, secretKey, host, port, it.token, saved, silentlyLogin)
             WebSocketSyncUtil.startWebSocketListener(host, port, it.userId)
         }.onFailure {
             logger.error("(loginByPassword) error", it)
@@ -123,66 +120,11 @@ class UserViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     ) {
         userRepository.signup(username, password, host, port)
             .onSuccess {
-                if (it == null) {
-                    return@onSuccess
-                }
-                coroutineScope {
-                    withContext(Dispatchers.IO) {
-                        dataBase.globalSecretKey.emit(it.secretKey)
-                        dataBase.globalUserId.emit(it.userId)
-                        dataBase.globalUsername.emit(username)
-                        dataBase.globalAccessToken.emit(it.token)
-                    }
-                }
+                logger.info("(signup) success")
+                WebSocketSyncUtil.startWebSocketListener(host, port, it.userId)
             }.onFailure {
-                it.printStackTrace()
+                logger.error("(signup) error", it)
             }
-    }
-
-    private suspend fun updateDB(
-        userId: Int,
-        username: String,
-        password: String,
-        secretKey: String,
-        host: String,
-        port: Int,
-        accessToken: String,
-        saved: Boolean,
-        silentlyLogin: Boolean
-    ) {
-        logger.info("(updateDB). username: $username, password: $password, secretKey: $secretKey, saved: $saved")
-        val insertHistoryData = HistoryData(
-            username = username,
-            password = if (saved) password else "",
-            secretKey = secretKey,
-            host = host,
-            port = port,
-            accessToken = accessToken,
-            saved = saved,
-            silentlyLogin = silentlyLogin
-        )
-        val insertResultId = dataBase.insert(insertHistoryData)
-
-        val historyData = if (insertResultId == -1) {
-            HistoryData.defaultHistoryData()
-        } else {
-            insertHistoryData
-        }
-
-        withContext(Dispatchers.IO) {
-            dataBase.globalSecretKey.emit(secretKey)
-            dataBase.globalUserId.emit(userId)
-            dataBase.globalUsername.emit(username)
-            dataBase.globalAccessToken.emit(accessToken)
-        }
-
-        updateLoginUiState {
-            copy(
-                historyData = historyData,
-                historyDataList = dataBase.getSavedHistories()
-            )
-        }
-        logger.info("(saveLoginInfo) insertResultId: $insertResultId")
     }
 
     private fun updateLoginUiState(update: LoginUiState.() -> LoginUiState) {

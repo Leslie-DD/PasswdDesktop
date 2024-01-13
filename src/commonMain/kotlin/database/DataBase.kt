@@ -48,7 +48,7 @@ internal class DataBase {
     }
 
     internal fun insert(item: HistoryData): Int {
-        logger.debug("DataBase insert result")
+        logger.debug("DataBase insert user: ${item.username}")
         item.run {
             dbQuery.deleteHistoryByUsername(item.username)
             dbQuery.insertHistory(mapToHistory())
