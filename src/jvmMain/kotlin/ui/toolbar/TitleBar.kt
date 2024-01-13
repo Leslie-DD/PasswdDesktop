@@ -11,11 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.AwtWindow
-import model.action.PasswdAction
 import model.UiScreen
+import model.action.PasswdAction
 import model.action.UiAction
-import model.viewmodel.UiConfigViewModel
 import model.viewmodel.PasswdsViewModel
+import model.viewmodel.UiConfigViewModel
 import org.jetbrains.jewel.intui.core.theme.IntUiDarkTheme
 import org.jetbrains.jewel.intui.core.theme.IntUiLightTheme
 import org.jetbrains.jewel.intui.window.styling.dark
@@ -97,6 +97,27 @@ fun DecoratedWindowScope.TitleBarView(
             modifier = Modifier.align(Alignment.End),
             verticalAlignment = Alignment.CenterVertically
         ) {
+
+            Tooltip({
+                Text("Sync with Cloud")
+            }) {
+                val enable = false
+                IconButton(
+                    enabled = enable,
+                    onClick = {
+
+                    },
+                    modifier = Modifier.size(40.dp).padding(5.dp)
+                ) {
+                    Icon(
+                        resource = "icons/cloud-sync.svg",
+                        contentDescription = "Sync",
+                        iconClass = StandaloneSampleIcons::class.java,
+                        tint = if (enable) Color(0xFF3A80FC) else MaterialTheme.colorScheme.outline
+                    )
+                }
+            }
+
             Tooltip({
                 Text("Search passwds (Ctrl + F)")
             }) {
