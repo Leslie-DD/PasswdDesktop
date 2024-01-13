@@ -96,7 +96,13 @@ object PasswdMemoryDataSource {
     }
 
     suspend fun newPasswd(newPasswd: Passwd) {
-        passwdsMap[newPasswd.groupId]?.add(newPasswd)
+        val groupPasswds = passwdsMap[newPasswd.groupId]
+        if (groupPasswds == null) {
+            logger.warn("groupPasswd is null")
+            passwdsMap[newPasswd.groupId] = arrayListOf(newPasswd)
+        } else {
+            groupPasswds.add(newPasswd)
+        }
         emitGroupPasswds(newPasswd.groupId)
     }
 

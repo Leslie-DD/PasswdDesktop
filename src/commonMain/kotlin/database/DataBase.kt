@@ -14,11 +14,6 @@ internal class DataBase {
 
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
-    val globalUserId = MutableStateFlow(-1)
-    val globalUsername = MutableStateFlow("")
-    val globalSecretKey = MutableStateFlow("")
-    val globalAccessToken = MutableStateFlow("")
-
     private val longOfIntAdapter = object : ColumnAdapter<Int, Long> {
         override fun decode(databaseValue: Long): Int = databaseValue.toInt()
         override fun encode(value: Int): Long = value.toLong()

@@ -1,6 +1,6 @@
 package network
 
-import database.DataBase
+import datasource.user.UserMemoryDataSource
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
@@ -26,12 +26,12 @@ object KtorRequest {
     init {
         GlobalScope.launch {
             launch {
-                DataBase.instance.globalAccessToken.collectLatest {
+                UserMemoryDataSource.globalAccessToken.collectLatest {
                     accessToken = it
                 }
             }
             launch {
-                DataBase.instance.globalUserId.collectLatest {
+                UserMemoryDataSource.globalUserId.collectLatest {
                     userId = it
                 }
             }

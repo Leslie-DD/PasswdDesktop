@@ -1,5 +1,6 @@
 package repository
 
+import datasource.user.UserMemoryDataSource
 import datasource.DatabaseDataSource
 import datasource.passwd.PasswdMemoryDataSource
 import datasource.user.UserRemoteDataSource
@@ -15,6 +16,7 @@ object UserRepository {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
 
     private val userRemoteDataSource: UserRemoteDataSource = UserRemoteDataSource
+    private val userMemoryDataSource: UserMemoryDataSource = UserMemoryDataSource
     private val passwdMemoryDataSource: PasswdMemoryDataSource = PasswdMemoryDataSource
     private val databaseDataSource: DatabaseDataSource = DatabaseDataSource
 
@@ -67,7 +69,7 @@ object UserRepository {
         ).onSuccess { loginResult ->
             passwdMemoryDataSource.onLoginSuccess(loginResult.passwds, secretKey)
             databaseDataSource.insertHistoryData(username, password, secretKey, host, port, loginResult.token, saved, silentlyLogin)
-            databaseDataSource.updateGlobalValues(
+            userMemoryDataSource.updateGlobalValues(
                 secretKey = secretKey,
                 userId = loginResult.userId,
                 username = username,
@@ -106,7 +108,7 @@ object UserRepository {
             password = password
         ).onSuccess {
             passwdMemoryDataSource.onSignupSuccess()
-            databaseDataSource.updateGlobalValues(
+            userMemoryDataSource.updateGlobalValues(
                 secretKey = it.secretKey,
                 userId = it.userId,
                 username = username,

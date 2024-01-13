@@ -46,24 +46,10 @@ object DatabaseDataSource {
         val insertResultId = database.insert(insertHistoryData)
         logger.debug("(insertHistoryData) insertResultId: $insertResultId")
 
-        val historyData = if (insertResultId == -1) {
+        _historyDataFlow.value = if (insertResultId == -1) {
             HistoryData.defaultHistoryData()
         } else {
             insertHistoryData
         }
-
-        _historyDataFlow.value = historyData
-    }
-
-    suspend fun updateGlobalValues(
-        secretKey: String,
-        userId: Int,
-        username: String,
-        token: String
-    ) {
-        database.globalSecretKey.emit(secretKey)
-        database.globalUserId.emit(userId)
-        database.globalUsername.emit(username)
-        database.globalAccessToken.emit(token)
     }
 }

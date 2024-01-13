@@ -1,6 +1,6 @@
 package repository
 
-import database.DataBase
+import datasource.user.UserMemoryDataSource
 import datasource.passwd.PasswdMemoryDataSource
 import datasource.passwd.PasswdRemoteDataSource
 import entity.Group
@@ -56,7 +56,7 @@ object PasswdRepository {
         ).onSuccess {
             val newGroup = Group(
                 id = it,
-                userId = DataBase.instance.globalUserId.value,
+                userId = UserMemoryDataSource.globalUserId.value,
                 groupName = groupName,
                 groupComment = groupComment
             )
@@ -118,7 +118,7 @@ object PasswdRepository {
         link: String,
         comment: String,
     ): Result<Passwd> {
-        val secretKeyByteArray = Base64.getDecoder().decode(DataBase.instance.globalSecretKey.value)
+        val secretKeyByteArray = Base64.getDecoder().decode(UserMemoryDataSource.globalSecretKey.value)
         var result = Result.failure<Passwd>(Throwable())
         passwdRemoteDataSource.newPasswd(
             groupId = groupId,
@@ -132,7 +132,7 @@ object PasswdRepository {
                 id = it,
                 groupId = groupId,
                 title = title,
-                userId = DataBase.instance.globalUserId.value,
+                userId = UserMemoryDataSource.globalUserId.value,
                 link = link,
                 comment = comment,
                 usernameString = usernameString,
@@ -170,7 +170,7 @@ object PasswdRepository {
         link: String?,
         comment: String?
     ): Result<Passwd> {
-        val secretKeyByteArray = Base64.getDecoder().decode(DataBase.instance.globalSecretKey.value)
+        val secretKeyByteArray = Base64.getDecoder().decode(UserMemoryDataSource.globalSecretKey.value)
         var result = Result.failure<Passwd>(Throwable())
         passwdRemoteDataSource.updatePasswd(
             id = id,

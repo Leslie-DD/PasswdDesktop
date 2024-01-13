@@ -1,5 +1,6 @@
 package ui.setting
 
+import datasource.user.UserMemoryDataSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Key
@@ -15,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import database.DataBase
 import model.viewmodel.PasswdsViewModel
 import model.viewmodel.UiConfigViewModel
 import ui.common.EditLimitTextField
@@ -38,9 +38,9 @@ fun SettingsScreen(
             Column(
                 modifier = Modifier.wrapContentSize(), horizontalAlignment = Alignment.Start
             ) {
-                UsernameView(DataBase.instance.globalUsername.value)
+                UsernameView(UserMemoryDataSource.globalUsername.value)
                 Spacer(modifier = Modifier.height(10.dp))
-                SecretKeyView(DataBase.instance.globalSecretKey.value)
+                SecretKeyView(UserMemoryDataSource.globalSecretKey.value)
             }
         }
     }

@@ -1,6 +1,6 @@
 package utils
 
-import database.DataBase
+import datasource.user.UserMemoryDataSource
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collectLatest
@@ -34,7 +34,7 @@ object AESUtil {
 
     init {
         GlobalScope.launch {
-            DataBase.instance.globalSecretKey.collectLatest {
+            UserMemoryDataSource.globalSecretKey.collectLatest {
                 secretKeyByteArray = getDecoder().decode(it)
             }
         }
