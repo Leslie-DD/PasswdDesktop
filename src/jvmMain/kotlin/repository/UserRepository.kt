@@ -26,14 +26,14 @@ object UserRepository {
     private val _signResultFlow = MutableStateFlow<Result<SignupResult?>?>(null)
     val signResultStateFlow = _signResultFlow.asStateFlow()
 
-    val historyDataFlow
-        get() = databaseDataSource.historyData
+    val userDataFlow
+        get() = databaseDataSource.userData
 
     val savedHistories
-        get() = databaseDataSource.savedHistories
+        get() = databaseDataSource.savedUsers
 
-    val latestSavedLoginHistoryData
-        get() = databaseDataSource.latestSavedLoginHistoryData
+    val latestSavedUserData
+        get() = databaseDataSource.latestSavedUserData
 
 
     fun loginFailure(e: Throwable) {

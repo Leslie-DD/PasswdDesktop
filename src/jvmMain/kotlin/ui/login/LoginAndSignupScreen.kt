@@ -25,7 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import database.entity.HistoryData
+import database.entity.UserData
 import model.UiScreen
 import model.action.PasswdAction
 import model.uieffect.DialogUiEffect
@@ -145,8 +145,8 @@ fun UsernameTextField(
     enabled: Boolean,
     enabledDropMenu: Boolean = false,
     value: String,
-    histories: List<HistoryData> = arrayListOf(),
-    onHistorySelected: (HistoryData) -> Unit = {},
+    histories: List<UserData> = arrayListOf(),
+    onHistorySelected: (UserData) -> Unit = {},
     onUsernameChanged: (String) -> Unit
 ) {
     var menuVisible by remember { mutableStateOf(false) }
@@ -251,10 +251,10 @@ fun HostTextField(
     enabled: Boolean,
     hostValue: String,
     portValue: String,
-    histories: List<HistoryData> = arrayListOf(),
+    histories: List<UserData> = arrayListOf(),
     onHostChanged: (String) -> Unit,
     onPortChanged: (String) -> Unit,
-    onHistorySelected: (HistoryData) -> Unit = {},
+    onHistorySelected: (UserData) -> Unit = {},
 ) {
     Row(
         modifier = Modifier.width(330.dp),
@@ -321,7 +321,7 @@ fun HostTextField(
 
 @Composable
 private fun UsernameHistoryMenuItem(
-    item: HistoryData,
+    item: UserData,
     selected: Boolean,
     onItemSelected: () -> Unit,
 ) {
@@ -355,7 +355,7 @@ private fun UsernameHistoryMenuItem(
 
 @Composable
 private fun HostAndPortHistoryMenuItem(
-    item: HistoryData,
+    item: UserData,
     selected: Boolean,
     onItemSelected: () -> Unit,
 ) {

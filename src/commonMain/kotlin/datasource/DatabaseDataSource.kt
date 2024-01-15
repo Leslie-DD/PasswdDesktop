@@ -1,7 +1,7 @@
 package datasource
 
-import database.DataBase
-import database.entity.HistoryData
+import database.user.DataBase
+import database.entity.UserData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.slf4j.Logger
@@ -13,14 +13,14 @@ object DatabaseDataSource {
 
     private val database = DataBase.instance
 
-    private val _historyDataFlow = MutableStateFlow<HistoryData?>(null)
-    val historyData = _historyDataFlow.asStateFlow()
+    private val _userDataFlow = MutableStateFlow<UserData?>(null)
+    val userData = _userDataFlow.asStateFlow()
 
-    val savedHistories
-        get() = database.getSavedHistories()
+    val savedUsers
+        get() = database.getSavedUsers()
 
-    val latestSavedLoginHistoryData
-        get() = database.latestSavedLoginHistoryData()
+    val latestSavedUserData
+        get() = database.latestSavedUserData()
 
     fun insertHistoryData(
         username: String,
@@ -33,7 +33,7 @@ object DatabaseDataSource {
         silentlyLogin: Boolean
     ) {
         logger.debug("(insertHistoryData). username: $username, password: $password, secretKey: $secretKey, saved: $saved")
-        val insertHistoryData = HistoryData(
+        val insertUserData = UserData(
             username = username,
             password = if (saved) password else "",
             secretKey = secretKey,
@@ -43,13 +43,13 @@ object DatabaseDataSource {
             saved = saved,
             silentlyLogin = silentlyLogin
         )
-        val insertResultId = database.insert(insertHistoryData)
+        val insertResultId = database.insert(insertUserData)
         logger.debug("(insertHistoryData) insertResultId: $insertResultId")
 
-        _historyDataFlow.value = if (insertResultId == -1) {
-            HistoryData.defaultHistoryData()
+        _userDataFlow.value = if (insertResultId == -1) {
+            UserData.defaultUserData()
         } else {
-            insertHistoryData
+            insertUserData
         }
     }
 }

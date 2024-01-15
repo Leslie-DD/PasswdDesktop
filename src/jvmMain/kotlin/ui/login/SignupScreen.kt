@@ -11,7 +11,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import model.action.LoginAction
-import model.action.PasswdAction
 import model.viewmodel.PasswdsViewModel
 import model.viewmodel.UserViewModel
 
@@ -32,7 +31,7 @@ fun SignupInfoBox(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val histories = userViewModel.loginUiState.collectAsState().value.historyDataList
+        val histories = userViewModel.loginUiState.collectAsState().value.userDataList
         UsernameTextField(
             enabled = enabled,
             value = username

@@ -1,0 +1,54 @@
+import kotlin.Boolean;
+import kotlin.Int;
+
+CREATE TABLE IF NOT EXISTS passwd_user (
+    id              INTEGER AS Int PRIMARY KEY AUTOINCREMENT,
+    userId          INTEGER AS Int,
+    username        TEXT,
+    password        TEXT,
+    secretKey       TEXT,
+    host            TEXT,
+    port            INTEGER AS Int,
+    accessToken     TEXT,
+    saved           INTEGER AS Boolean DEFAULT 0,
+    silentlyLogin   INTEGER AS Boolean DEFAULT 0,
+    updateTime      INTEGER
+);
+
+getUserByUserId:
+SELECT * FROM passwd_user WHERE userId = ?;
+
+getSavedUsers:
+SELECT * FROM passwd_user WHERE saved = 1 ORDER BY updateTime DESC;
+
+getAllUsers:
+SELECT * FROM passwd_user;
+
+insertUser:
+INSERT INTO passwd_user(userId, username, password, secretKey, host, port, accessToken, saved, silentlyLogin, updateTime)
+VALUES ?;
+
+latestLoginUser:
+SELECT * FROM passwd_user ORDER BY updateTime DESC LIMIT 1;
+
+deleteUserById:
+DELETE FROM passwd_user WHERE passwd_user.id == ?;
+
+deleteUserByUsername:
+DELETE FROM passwd_user WHERE passwd_user.username == ?;
+
+deleteAllUsers:
+DELETE FROM passwd_user;
+
+updateUserIdById:
+UPDATE passwd_user SET userId = ? WHERE id = ?;
+
+updateUserAccessTokenById:
+UPDATE passwd_user SET accessToken = ? WHERE id = ?;
+
+updateUserUpdateTimeById:
+UPDATE passwd_user SET updateTime = ? WHERE id = ?;
+
+getAccessTokenByUserId:
+SELECT accessToken FROM passwd_user WHERE userId = ?;
+

@@ -1,0 +1,11 @@
+import kotlin.Boolean;
+import kotlin.Int;
+
+CREATE TABLE IF NOT EXISTS passwd_group (
+    id              INTEGER AS Int PRIMARY KEY AUTOINCREMENT,
+    user_id         INTEGER,
+    group_name      TEXT,
+    group_comment   TEXT,
+    update_time     INTEGER,
+    syncd_to_cloud  INTEGER AS Boolean DEFAULT 0
+);

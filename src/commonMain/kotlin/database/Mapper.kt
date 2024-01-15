@@ -1,10 +1,10 @@
 package database
 
-import com.passwd.common.database.History
-import database.entity.HistoryData
+import com.passwd.common.database.Passwd_user
+import database.entity.UserData
 
-fun HistoryData.mapToHistory(): History {
-    return History(
+fun UserData.mapToPasswdUser(): Passwd_user {
+    return Passwd_user(
         id,
         userId,
         username,
@@ -15,11 +15,11 @@ fun HistoryData.mapToHistory(): History {
         accessToken,
         saved,
         silentlyLogin,
-        createTime
+        createTime,
     )
 }
 
-fun mapHistoryList(
+fun mapToUserData(
     id: Int,
     userId: Int?,
     username: String?,
@@ -31,8 +31,8 @@ fun mapHistoryList(
     saved: Boolean?,
     silentlyLogin: Boolean?,
     createTime: Long?,
-): HistoryData {
-    return HistoryData(
+): UserData {
+    return UserData(
         id = id,
         userId = userId ?: 0,
         username = username ?: "",

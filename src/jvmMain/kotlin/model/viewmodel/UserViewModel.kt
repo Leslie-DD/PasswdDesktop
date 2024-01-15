@@ -1,6 +1,6 @@
 package model.viewmodel
 
-import database.entity.HistoryData
+import database.entity.UserData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -19,7 +19,7 @@ class UserViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     private val userRepository: UserRepository by lazy { UserRepository }
 
     private val _loginUiState: MutableStateFlow<LoginUiState> by lazy {
-        MutableStateFlow(LoginUiState(HistoryData.defaultHistoryData(), userRepository.savedHistories))
+        MutableStateFlow(LoginUiState(UserData.defaultUserData(), userRepository.savedHistories))
     }
     val loginUiState: StateFlow<LoginUiState> by lazy { _loginUiState }
 
@@ -29,8 +29,8 @@ class UserViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private fun collectHistoryData() = launch {
-        userRepository.historyDataFlow.filterNotNull().collectLatest {
-            updateLoginUiState { copy(historyData = it, historyDataList = userRepository.savedHistories) }
+        userRepository.userDataFlow.filterNotNull().collectLatest {
+            updateLoginUiState { copy(userData = it, userDataList = userRepository.savedHistories) }
         }
     }
 
@@ -64,13 +64,13 @@ class UserViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     }
 
     private fun silentlyLogin() = launch(Dispatchers.IO) {
-        val savedHistoryData = userRepository.latestSavedLoginHistoryData
+        val savedHistoryData = userRepository.latestSavedUserData
         if (savedHistoryData == null) {
             userRepository.loginFailure(Throwable())
             return@launch
         }
         if (savedHistoryData.saved) {
-            updateLoginUiState { copy(historyData = savedHistoryData) }
+            updateLoginUiState { copy(userData = savedHistoryData) }
         }
         if (savedHistoryData.silentlyLogin) {
             loginByPassword(

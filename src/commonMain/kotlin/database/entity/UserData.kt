@@ -2,7 +2,7 @@ package database.entity
 
 import kotlinx.datetime.Clock
 
-data class HistoryData(
+data class UserData(
     val id: Int = 0,
     val userId: Int = 0,
     val username: String,
@@ -16,8 +16,8 @@ data class HistoryData(
     val createTime: Long = Clock.System.now().epochSeconds
 ) {
     companion object {
-        fun defaultHistoryData(): HistoryData {
-            return HistoryData(
+        fun defaultUserData(): UserData {
+            return UserData(
                 username = "",
                 password = "",
                 secretKey = "",

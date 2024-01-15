@@ -17,8 +17,12 @@ repositories {
 
 sqldelight {
     databases {
-        create("HistoryDatabase") {
+        create("ApplicationDatabase") {
             packageName.set("com.passwd.common.database")
+//            schemaOutputDirectory.set(file("com.passwd.common.database"))
+//            migrationOutputDirectory.set(file("com.passwd.common.database"))
+//            deriveSchemaFromMigrations.set(true)
+//            verifyMigrations.set(true)
         }
     }
 }

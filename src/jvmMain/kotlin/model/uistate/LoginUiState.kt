@@ -1,8 +1,8 @@
 package model.uistate
 
-import database.entity.HistoryData
+import database.entity.UserData
 
 data class LoginUiState(
-    val historyData: HistoryData,
-    val historyDataList: List<HistoryData>
+    val userData: UserData,
+    val userDataList: List<UserData>
 )

@@ -125,7 +125,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         passwdRepository.newGroup(groupName, groupComment)
             .onSuccess {
                 updateDialogUiState { copy(effect = DialogUiEffect.NewGroupResult(it)) }
-                updateGroupUiState { copy(selectGroup = it, selectPasswd = null) }
+                updateGroupUiState { copy(selectGroup = passwdUiState.value.groups.last(), selectPasswd = null) }
             }.onFailure {
                 // TODO: 新增失败的情况 tips 提示
                 updateDialogUiState { copy(effect = DialogUiEffect.NewGroupResult(null)) }

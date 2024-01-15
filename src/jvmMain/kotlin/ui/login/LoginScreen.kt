@@ -8,7 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import model.action.LoginAction
-import model.action.PasswdAction
 import model.viewmodel.PasswdsViewModel
 import model.viewmodel.UserViewModel
 
@@ -21,20 +20,20 @@ fun LoginInfoBox(
 ) {
     val loginUiState = userViewModel.loginUiState.collectAsState().value
 
-    var username by remember { mutableStateOf(loginUiState.historyData.username) }
-    var password by remember { mutableStateOf(if (loginUiState.historyData.saved) loginUiState.historyData.password else "") }
-    var secretKey by remember { mutableStateOf(if (loginUiState.historyData.saved) loginUiState.historyData.secretKey else "") }
-    var host by remember { mutableStateOf(if (loginUiState.historyData.saved) loginUiState.historyData.host else "") }
-    var port by remember { mutableStateOf(if (loginUiState.historyData.saved) loginUiState.historyData.port else 8080) }
-    var saved by remember { mutableStateOf(loginUiState.historyData.saved) }
-    var silentlyLogin by remember { mutableStateOf(loginUiState.historyData.silentlyLogin) }
+    var username by remember { mutableStateOf(loginUiState.userData.username) }
+    var password by remember { mutableStateOf(if (loginUiState.userData.saved) loginUiState.userData.password else "") }
+    var secretKey by remember { mutableStateOf(if (loginUiState.userData.saved) loginUiState.userData.secretKey else "") }
+    var host by remember { mutableStateOf(if (loginUiState.userData.saved) loginUiState.userData.host else "") }
+    var port by remember { mutableStateOf(if (loginUiState.userData.saved) loginUiState.userData.port else 8080) }
+    var saved by remember { mutableStateOf(loginUiState.userData.saved) }
+    var silentlyLogin by remember { mutableStateOf(loginUiState.userData.silentlyLogin) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        val histories = userViewModel.loginUiState.collectAsState().value.historyDataList
+        val histories = userViewModel.loginUiState.collectAsState().value.userDataList
         UsernameTextField(
             enabled = enabled,
             enabledDropMenu = true,
