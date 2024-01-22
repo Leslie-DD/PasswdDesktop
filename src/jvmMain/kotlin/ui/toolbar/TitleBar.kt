@@ -47,6 +47,20 @@ fun DecoratedWindowScope.TitleBarView(
     }
 
     val theme = uiConfigViewModel.theme.collectAsState().value
+
+    var fileChooserOpen by remember { mutableStateOf(false) }
+    if (fileChooserOpen) {
+        println("fileChooserOpen")
+        SaveFileDialog(
+            allowedExtensions = listOf(".json"),
+            onCloseRequest = {
+                fileChooserOpen = false
+                println("Result $it")
+                it?.let { passwdsViewModel.onAction(PasswdAction.ExportPasswdsToFile(it)) }
+            }
+        )
+    }
+
     TitleBar(
         modifier = Modifier.newFullscreenControls(),
         gradientStartColor = if (theme.isDark) {
@@ -61,7 +75,6 @@ fun DecoratedWindowScope.TitleBarView(
         }
     ) {
         Row(modifier = Modifier.align(Alignment.Start)) {
-            var fileChooserOpen by remember { mutableStateOf(false) }
             Dropdown(
                 enabled = pluginVisible,
                 modifier = Modifier.height(30.dp),
@@ -70,13 +83,7 @@ fun DecoratedWindowScope.TitleBarView(
                         selected = false,
                         onClick = { fileChooserOpen = true },
                     ) {
-                        ExportPasswdsFileIcon(
-                            fileChooserOpen = fileChooserOpen
-                        ) {
-                            fileChooserOpen = false
-                            println("Result $it")
-                            it?.let { passwdsViewModel.onAction(PasswdAction.ExportPasswdsToFile(it)) }
-                        }
+                        ExportPasswdsFileIcon()
                     }
                 }
             ) {
@@ -143,10 +150,7 @@ fun DecoratedWindowScope.TitleBarView(
 }
 
 @Composable
-private fun ExportPasswdsFileIcon(
-    fileChooserOpen: Boolean,
-    onCloseRequest: (String?) -> Unit
-) {
+private fun ExportPasswdsFileIcon() {
     Row(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -158,12 +162,6 @@ private fun ExportPasswdsFileIcon(
             tint = MaterialTheme.colorScheme.onPrimaryContainer
         )
         Text("save data to disk")
-    }
-    if (fileChooserOpen) {
-        SaveFileDialog(
-            allowedExtensions = listOf(".json"),
-            onCloseRequest = { onCloseRequest(it) }
-        )
     }
 }
 
