@@ -19,7 +19,7 @@ val Material3LightTheme = lightColorScheme(
     // toolbar background
     tertiary = Color(0xFFF3F4F6),
 
-    tertiaryContainer = LIGHT_ITEM_SELECTED_COLOR,
+    tertiaryContainer = COLOR_SUBJECT_LIGHT,
 
     background = Color(0xFFFAFAFA),
     onBackground = Color(0xFFEDEDED)
@@ -40,7 +40,7 @@ val Material3DarkTheme = darkColorScheme(
     // toolbar background
     tertiary = Color(0xFF292C30),
 
-    tertiaryContainer = DARK_ITEM_SELECTED_COLOR,
+    tertiaryContainer = COLOR_SUBJECT_DARK,
 
     background = Color(0xFF2B2B2B),
     onBackground = Color(0xFF3E3E3E)

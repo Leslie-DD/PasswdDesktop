@@ -26,6 +26,10 @@ import org.jetbrains.jewel.window.TitleBar
 import org.jetbrains.jewel.window.newFullscreenControls
 import org.jetbrains.jewel.window.styling.TitleBarColors
 import org.jetbrains.jewel.window.styling.TitleBarStyle
+import theme.COLOR_SUBJECT_DARK
+import theme.COLOR_SUBJECT_LIGHT
+import theme.COLOR_TITLE_GRADIENT_DARK
+import theme.COLOR_TITLE_GRADIENT_LIGHT
 import java.awt.Desktop
 import java.awt.FileDialog
 import java.awt.Frame
@@ -64,9 +68,9 @@ fun DecoratedWindowScope.TitleBarView(
     TitleBar(
         modifier = Modifier.newFullscreenControls(),
         gradientStartColor = if (theme.isDark) {
-            Color(0xFF654B40)
+            COLOR_TITLE_GRADIENT_DARK
         } else {
-            Color(0xFFF5D4C1)
+            COLOR_TITLE_GRADIENT_LIGHT
         },
         style = if (theme.isDark) {
             TitleBarStyle.dark(colors = TitleBarColors.Companion.dark())

@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import model.action.LoginAction
 import model.uistate.LoginUiState
-import network.WebSocketSyncUtil
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import repository.UserRepository
@@ -106,7 +105,6 @@ class UserViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
             silentlyLogin = silentlyLogin
         ).onSuccess {
             logger.info("(loginByPassword) success")
-            WebSocketSyncUtil.startWebSocketListener(host, port, it.userId)
         }.onFailure {
             logger.error("(loginByPassword) error", it)
         }
@@ -121,7 +119,6 @@ class UserViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         userRepository.signup(username, password, host, port)
             .onSuccess {
                 logger.info("(signup) success")
-                WebSocketSyncUtil.startWebSocketListener(host, port, it.userId)
             }.onFailure {
                 logger.error("(signup) error", it)
             }

@@ -9,7 +9,9 @@ import io.ktor.client.plugins.logging.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
-import kotlinx.coroutines.DelicateCoroutinesApi
+import io.ktor.websocket.*
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.serialization.json.Json
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -27,6 +29,8 @@ object HttpClientObj {
 
     val httpClient: HttpClient?
         get() = _httpClient
+
+    private var webSocketSession: DefaultClientWebSocketSession? = null
 
     @Throws
     private fun createHttpClient(hostStr: String, portInt: Int): HttpClient {
@@ -62,11 +66,34 @@ object HttpClientObj {
         }
     }
 
+    suspend fun startWebSocketListener(host: String, port: Int, userId: Int) {
+        httpClient?.ws(
+            method = HttpMethod.Get,
+            host = host,
+            port = port,
+            path = "/Passwd/webSocket/$userId"
+        ) {
+            logger.info("Create a new webSocketSession $this")
+            webSocketSession = this
+            incoming.receiveAsFlow()
+                .filterIsInstance<Frame.Text>()
+                .collect {
+                    // process frame
+                    logger.info("websocket incoming.receive() ${it.readText()}")
+                }
+        }
+    }
 
-    @OptIn(DelicateCoroutinesApi::class)
     @Throws
-    fun forceUpdateHttpClient(host: String, port: Int) {
+    suspend fun forceUpdateHttpClient(host: String, port: Int) {
+        closeSocketSession()
         _httpClient = createHttpClient(host, port)
+    }
+
+    private suspend fun closeSocketSession(closeReason: CloseReason = CloseReason(CloseReason.Codes.NORMAL, "")) {
+        logger.info("Close an old webSocketSession $webSocketSession")
+        webSocketSession?.close(closeReason)
+        webSocketSession = null
     }
 
     private fun isIpv4HostValid(hostStr: String): Boolean {

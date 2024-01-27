@@ -77,6 +77,7 @@ object UserRepository {
             )
             val result = Result.success(loginResult)
             _loginResultFlow.value = result
+            HttpClientObj.startWebSocketListener(host, port, loginResult.userId)
         }.onFailure {
             val result = Result.failure<LoginResult>(it)
             _loginResultFlow.value = result
@@ -106,16 +107,17 @@ object UserRepository {
         return userRemoteDataSource.signup(
             username = username,
             password = password
-        ).onSuccess {
+        ).onSuccess { signupResult ->
             passwdMemoryDataSource.onSignupSuccess()
             userMemoryDataSource.updateGlobalValues(
-                secretKey = it.secretKey,
-                userId = it.userId,
+                secretKey = signupResult.secretKey,
+                userId = signupResult.userId,
                 username = username,
-                token = it.token
+                token = signupResult.token
             )
-            val result = Result.success(it)
+            val result = Result.success(signupResult)
             _signResultFlow.value = result
+            HttpClientObj.startWebSocketListener(host, port, signupResult.userId)
         }.onFailure {
             val result = Result.failure<SignupResult>(it)
             _signResultFlow.value = result
