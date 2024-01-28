@@ -1,5 +1,6 @@
 package entity
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -8,7 +9,9 @@ data class Group(
     val id: Int,
     val userId: Int,
     var groupName: String?,
-    var groupComment: String?
+    var groupComment: String?,
+    @SerialName("updateTimeExpose")
+    var updateTime: Long? = 0L
 ) : IDragAndDrop {
 
     override fun toString(): String {

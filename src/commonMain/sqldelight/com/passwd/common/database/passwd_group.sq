@@ -3,9 +3,20 @@ import kotlin.Int;
 
 CREATE TABLE IF NOT EXISTS passwd_group (
     id              INTEGER AS Int PRIMARY KEY AUTOINCREMENT,
-    user_id         INTEGER,
+    user_id         INTEGER AS Int,
     group_name      TEXT,
     group_comment   TEXT,
     update_time     INTEGER,
     syncd_to_cloud  INTEGER AS Boolean DEFAULT 0
 );
+
+
+getGroupById:
+SELECT * FROM passwd_group WHERE id = ?;
+
+insertGroup:
+INSERT INTO passwd_group(id, user_id, group_name, group_comment, update_time, syncd_to_cloud)
+VALUES ?;
+
+deleteGroup:
+DELETE FROM passwd_group WHERE id = ?;

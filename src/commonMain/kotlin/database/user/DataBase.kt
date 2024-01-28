@@ -27,11 +27,27 @@ internal class DataBase {
                 idAdapter = longOfIntAdapter,
                 userIdAdapter = longOfIntAdapter,
                 portAdapter = longOfIntAdapter
+            ),
+            passwdAdapter = com.passwd.common.database.Passwd.Adapter(
+                idAdapter = longOfIntAdapter,
+                user_idAdapter = longOfIntAdapter,
+                group_idAdapter = longOfIntAdapter,
+            ),
+            passwd_groupAdapter = com.passwd.common.database.Passwd_group.Adapter(
+                idAdapter = longOfIntAdapter,
+                user_idAdapter = longOfIntAdapter
             )
         )
     }
 
-    private val userQuery = database.passwd_userQueries
+    private val userQuery
+        get() = database.passwd_userQueries
+
+    val passwdQuery
+        get() = database.passwdQueries
+
+    val groupQuery
+        get() = database.passwd_groupQueries
 
     internal fun delete(userData: UserData?) {
         if (userData == null) {

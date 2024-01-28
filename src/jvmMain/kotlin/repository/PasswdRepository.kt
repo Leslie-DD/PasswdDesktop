@@ -1,5 +1,6 @@
 package repository
 
+import database.user.PasswdDataBaDataSource
 import datasource.user.UserMemoryDataSource
 import datasource.passwd.PasswdMemoryDataSource
 import datasource.passwd.PasswdRemoteDataSource
@@ -21,6 +22,7 @@ object PasswdRepository {
 
     private val passwdRemoteDataSource: PasswdRemoteDataSource = PasswdRemoteDataSource
     private val passwdMemoryDataSource: PasswdMemoryDataSource = PasswdMemoryDataSource
+    private val passwdDataBaDataSource: PasswdDataBaDataSource = PasswdDataBaDataSource
 
 
     val groupsFlow: StateFlow<MutableList<Group>>
@@ -36,6 +38,7 @@ object PasswdRepository {
 
     suspend fun fetchGroups() = passwdRemoteDataSource.fetchGroups()
         .onSuccess { remoteGroups ->
+            passwdDataBaDataSource.updateGroups(remoteGroups)
             passwdMemoryDataSource.emitGroups(remoteGroups)
             if (remoteGroups.isNotEmpty()) {
                 passwdMemoryDataSource.emitGroupPasswds(remoteGroups.first().id)
@@ -60,6 +63,7 @@ object PasswdRepository {
                 groupName = groupName,
                 groupComment = groupComment
             )
+            passwdDataBaDataSource.updateOrInsertGroupIfNotExist(newGroup)
             passwdMemoryDataSource.newGroup(newGroup)
             result = Result.success(newGroup)
         }.onFailure {
@@ -75,6 +79,7 @@ object PasswdRepository {
         passwdRemoteDataSource.deleteGroup(
             groupId = groupId
         ).onSuccess {
+            passwdDataBaDataSource.deleteGroup(groupId)
             val deleteGroup = passwdMemoryDataSource.deleteGroup(groupId)
             result = if (deleteGroup == null) {
                 Result.failure(Throwable("no such group"))
@@ -98,12 +103,9 @@ object PasswdRepository {
             groupName = groupName,
             groupComment = groupComment
         ).onSuccess {
-            val updateGroup = passwdMemoryDataSource.updateGroup(groupId, groupName, groupComment)
-            result = if (updateGroup == null) {
-                Result.failure(Throwable("no such group"))
-            } else {
-                Result.success(updateGroup)
-            }
+            val updateGroup = passwdDataBaDataSource.updateOrInsertGroupIfNotExist(groupId, groupName, groupComment)
+            passwdMemoryDataSource.updateGroup(updateGroup)
+            result = Result.success(updateGroup)
         }.onFailure {
             result = Result.failure(it)
         }
@@ -138,6 +140,7 @@ object PasswdRepository {
                 usernameString = usernameString,
                 passwordString = passwordString
             )
+            passwdDataBaDataSource.updateOrInsertPasswdIfNotExist(newPasswd)
             passwdMemoryDataSource.newPasswd(newPasswd)
             result = Result.success(newPasswd)
         }.onFailure {
@@ -150,6 +153,7 @@ object PasswdRepository {
         var result = Result.failure<Passwd>(Throwable())
         passwdRemoteDataSource.deletePasswd(id = id)
             .onSuccess {
+                passwdDataBaDataSource.deletePasswd(id)
                 val deletePasswd = passwdMemoryDataSource.deletePasswd(id)
                 result = if (deletePasswd == null) {
                     Result.failure(Throwable("no such passwd"))
@@ -164,6 +168,7 @@ object PasswdRepository {
 
     suspend fun updatePasswd(
         id: Int,
+        groupId: Int,
         title: String?,
         usernameString: String?,
         passwordString: String?,
@@ -180,19 +185,17 @@ object PasswdRepository {
             link = link,
             comment = comment
         ).onSuccess {
-            val updatePasswd = passwdMemoryDataSource.updatePasswd(
+            val updatePasswd = passwdDataBaDataSource.updateOrInsertPasswdIfNotExist(
                 id = id,
+                groupId = groupId,
                 title = title,
                 usernameString = usernameString,
                 passwordString = passwordString,
                 link = link,
                 comment = comment
             )
-            result = if (updatePasswd == null) {
-                Result.failure(Throwable("no such passwd"))
-            } else {
-                Result.success(updatePasswd)
-            }
+            passwdMemoryDataSource.updatePasswd(updatePasswd)
+            result = Result.success(updatePasswd)
         }.onFailure {
             result = Result.failure(it)
         }

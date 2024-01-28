@@ -47,7 +47,7 @@ object HttpClientObj {
                 }
             }
             install(HttpTimeout) {
-                requestTimeoutMillis = 3000
+                requestTimeoutMillis = 10000
             }
             install(Logging) {
                 level = LogLevel.NONE

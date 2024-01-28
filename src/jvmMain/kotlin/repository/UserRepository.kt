@@ -1,5 +1,6 @@
 package repository
 
+import database.user.PasswdDataBaDataSource
 import datasource.user.UserMemoryDataSource
 import datasource.DatabaseDataSource
 import datasource.passwd.PasswdMemoryDataSource
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import network.HttpClientObj
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import utils.DecodeUtils.decodePasswds
 
 object UserRepository {
     private val logger: Logger = LoggerFactory.getLogger(javaClass)
@@ -18,6 +20,7 @@ object UserRepository {
     private val userRemoteDataSource: UserRemoteDataSource = UserRemoteDataSource
     private val userMemoryDataSource: UserMemoryDataSource = UserMemoryDataSource
     private val passwdMemoryDataSource: PasswdMemoryDataSource = PasswdMemoryDataSource
+    private val passwdDatabaDataSource: PasswdDataBaDataSource = PasswdDataBaDataSource
     private val databaseDataSource: DatabaseDataSource = DatabaseDataSource
 
     private val _loginResultFlow: MutableStateFlow<Result<LoginResult>?> by lazy { MutableStateFlow(null) }
@@ -67,7 +70,9 @@ object UserRepository {
             username = username,
             password = password,
         ).onSuccess { loginResult ->
-            passwdMemoryDataSource.onLoginSuccess(loginResult.passwds, secretKey)
+            val decodePasswds = loginResult.passwds.decodePasswds(secretKey)
+            passwdDatabaDataSource.updatePasswds(decodePasswds)
+            passwdMemoryDataSource.onLoginSuccess(decodePasswds)
             databaseDataSource.insertHistoryData(username, password, secretKey, host, port, loginResult.token, saved, silentlyLogin)
             userMemoryDataSource.updateGlobalValues(
                 secretKey = secretKey,

@@ -187,6 +187,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     ) = launch {
         passwdRepository.updatePasswd(
             id = updatePasswd.id,
+            groupId = updatePasswd.groupId,
             title = updatePasswd.title,
             usernameString = updatePasswd.usernameString,
             passwordString = updatePasswd.passwordString,

@@ -5,8 +5,6 @@ import entity.Passwd
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import utils.AESUtil
-import java.util.*
 
 /**
  * 此 DataSource 作为单一数据源
@@ -19,38 +17,22 @@ object PasswdMemoryDataSource {
     val groups = MutableStateFlow<MutableList<Group>>(arrayListOf())
     val groupPasswds = MutableStateFlow<MutableList<Passwd>>(arrayListOf())
 
-    private fun MutableList<Passwd>.mapToPasswdsMap(
-        secretKey: String
-    ): MutableMap<Int, MutableList<Passwd>> {
-        val secretKeyByteArray = Base64.getDecoder().decode(secretKey)
+    private fun MutableList<Passwd>.mapToPasswdsMap(): MutableMap<Int, MutableList<Passwd>> {
         val passwdsMapResult: MutableMap<Int, MutableList<Passwd>> = hashMapOf()
         forEach { passwd ->
             if (passwdsMapResult[passwd.groupId] == null) {
                 passwdsMapResult[passwd.groupId] = arrayListOf()
             }
-            passwdsMapResult[passwd.groupId]?.add(decodePasswd(secretKeyByteArray, passwd))
+            passwdsMapResult[passwd.groupId]?.add(passwd)
         }
         return passwdsMapResult
     }
 
-    private fun decodePasswd(
-        secretKeyBytes: ByteArray? = null,
-        passwd: Passwd
-    ): Passwd = try {
-        passwd.copy(
-            title = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.title),
-            usernameString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.usernameString),
-            passwordString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.passwordString)
-        )
-    } catch (e: Exception) {
-        logger.error("(decodePasswd) error ", e)
-        passwd
-    }
-
-    suspend fun onLoginSuccess(passwds: MutableList<Passwd>, secretKey: String) {
-        passwdsMap = passwds.mapToPasswdsMap(secretKey)
+    suspend fun onLoginSuccess(passwds: MutableList<Passwd>): List<Passwd> {
+        passwdsMap = passwds.mapToPasswdsMap()
         emitGroups(arrayListOf())
         emitGroupPasswds(arrayListOf())
+        return passwdsMap.toList().flatMap { it.second }
     }
 
     suspend fun onSignupSuccess() {
@@ -84,19 +66,14 @@ object PasswdMemoryDataSource {
     }
 
     suspend fun updateGroup(
-        groupId: Int,
-        groupName: String,
-        groupComment: String
-    ): Group? {
-        var updateGroup: Group? = null
+        updateGroup: Group
+    ) {
         val originGroups = groups.value
-        originGroups.find { group: Group -> group.id == groupId }?.let {
-            it.groupName = groupName
-            it.groupComment = groupComment
-            updateGroup = it
+        originGroups.find { group: Group -> group.id == updateGroup.id }?.let {
+            it.groupName = updateGroup.groupName
+            it.groupComment = updateGroup.groupComment
         }
         emitGroups(originGroups)
-        return updateGroup
     }
 
     suspend fun newPasswd(newPasswd: Passwd) {
@@ -122,22 +99,10 @@ object PasswdMemoryDataSource {
     }
 
     suspend fun updatePasswd(
-        id: Int,
-        title: String?,
-        usernameString: String?,
-        passwordString: String?,
-        link: String?,
-        comment: String?
+        updatePasswd: Passwd
     ): Passwd? {
         var updateResultPasswd: Passwd? = null
-        passwdsMap.flatMap { it.value }.find { it.id == id }?.let { originPasswd ->
-            val updatePasswd = originPasswd.copy(
-                title = title,
-                usernameString = usernameString,
-                passwordString = passwordString,
-                link = link,
-                comment = comment
-            )
+        passwdsMap.flatMap { it.value }.find { it.id == updatePasswd.id }?.let { originPasswd ->
             passwdsMap[updatePasswd.groupId]?.apply {
                 val index = indexOf(originPasswd)
                 if (index != -1) {

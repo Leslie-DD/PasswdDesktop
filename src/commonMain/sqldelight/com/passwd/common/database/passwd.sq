@@ -13,3 +13,20 @@ CREATE TABLE IF NOT EXISTS passwd (
     update_time     INTEGER,
     syncd_to_cloud  INTEGER AS Boolean DEFAULT 0
 );
+
+getPasswdById:
+SELECT * FROM passwd WHERE id = ?;
+
+insertPasswd:
+INSERT INTO passwd(id, user_id, group_id, title, username, password, link, comment, update_time, syncd_to_cloud)
+VALUES ?;
+
+deletePasswd:
+DELETE FROM passwd WHERE id = ?;
+
+deletePasswdByGroupId:
+DELETE FROM passwd WHERE group_id = ?;
+
+updatePasswd:
+UPDATE passwd SET group_id = ?, title = ?, username = ?, password = ?, link = ?, comment = ?, update_time = ?, syncd_to_cloud = ?
+WHERE id = ?;

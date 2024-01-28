@@ -1,5 +1,6 @@
 package database
 
+import com.passwd.common.database.Passwd
 import com.passwd.common.database.Passwd_user
 import database.entity.UserData
 
@@ -31,18 +32,16 @@ fun mapToUserData(
     saved: Boolean?,
     silentlyLogin: Boolean?,
     createTime: Long?,
-): UserData {
-    return UserData(
-        id = id,
-        userId = userId ?: 0,
-        username = username ?: "",
-        password = password ?: "",
-        secretKey = secretKey ?: "",
-        accessToken = accessToken ?: "",
-        host = host ?: "",
-        port = port ?: 8080,
-        saved = saved ?: false,
-        silentlyLogin = silentlyLogin ?: false,
-        createTime = createTime ?: 0
-    )
-}
+): UserData = UserData(
+    id = id,
+    userId = userId ?: 0,
+    username = username ?: "",
+    password = password ?: "",
+    secretKey = secretKey ?: "",
+    accessToken = accessToken ?: "",
+    host = host ?: "",
+    port = port ?: 8080,
+    saved = saved ?: false,
+    silentlyLogin = silentlyLogin ?: false,
+    createTime = createTime ?: 0
+)
