@@ -23,9 +23,9 @@ object DecodeUtils {
         passwd: Passwd
     ): Passwd = try {
         passwd.copy(
-            title = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.title),
-            usernameString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.usernameString),
-            passwordString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.passwordString)
+            title = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.title?.replace("-", "+")),
+            usernameString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.usernameString?.replace("-", "+")),
+            passwordString = AESUtil.decrypt(secretKeyBytes = secretKeyBytes, cipherText = passwd.passwordString?.replace("-", "+"))
         )
     } catch (e: Exception) {
         logger.error("(decodePasswd) error ", e)
