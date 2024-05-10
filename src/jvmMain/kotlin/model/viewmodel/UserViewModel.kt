@@ -62,7 +62,7 @@ class UserViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
     }
 
-    private fun silentlyLogin() = launch(Dispatchers.IO) {
+    private fun silentlyLogin() = launch {
         val savedHistoryData = userRepository.latestSavedUserData
         if (savedHistoryData == null) {
             userRepository.loginFailure(Throwable())

@@ -56,7 +56,6 @@ kotlin {
         dependencies {
             commonMainImplementation(libs.ktor.client.core)
             commonMainImplementation(libs.ktor.client.cio)
-            commonMainImplementation(libs.ktor.client.okhttp)
             commonMainImplementation(libs.ktor.client.logging)
             commonMainImplementation(libs.ktor.client.serialization)
             commonMainImplementation(libs.ktor.client.content.negotiation)
@@ -87,6 +86,10 @@ compose.desktop {
 
         mainClass = "MainKt"
         jvmArgs += listOf("-Dapple.awt.application.appearance=system")
+        jvmArgs += listOf("-XX:ParallelGCThreads=2")
+        jvmArgs += listOf("-XX:ConcGCThreads=2")
+        jvmArgs += listOf("-Xms30M")
+        jvmArgs += listOf("-Xmx30M")
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
