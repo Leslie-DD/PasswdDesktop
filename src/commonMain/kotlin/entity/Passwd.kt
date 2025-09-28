@@ -5,14 +5,14 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Passwd(
-    var comment: String?,
-    val groupId: Int,
+    var comment: String? = "",
+    var groupId: Int,
     val id: Int,
-    var link: String?,
-    var usernameString: String?,
-    var passwordString: String?,
-    var title: String?,
-    val userId: Int?,
+    var link: String? = "",
+    var usernameString: String? = "",
+    var passwordString: String? = "",
+    var title: String? = "",
+    val userId: Int? = -1,
     @SerialName("updateTimeExpose")
     var updateTime: Long? = 0L
 ) : IDragAndDrop

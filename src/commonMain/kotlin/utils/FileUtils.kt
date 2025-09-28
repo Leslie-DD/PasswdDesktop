@@ -1,5 +1,10 @@
 package utils
 
+import entity.Passwd
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import platform.desktop.storageDir
@@ -40,5 +45,26 @@ object FileUtils {
             } catch (_: Exception) {
             }
         }
+    }
+
+
+    /**
+     * 从JSON字符串导入密码数据，忽略分组名称和其他字段
+     * @param jsonString JSON格式的密码数据
+     * @return 解析后的Passwd对象列表
+     */
+    fun importFromJsonString(jsonString: String): Map<String, List<Passwd>> {
+        val json = Json { ignoreUnknownKeys = true }
+        return json.decodeFromString(jsonString)
+    }
+
+    /**
+     * 从JSON文件导入密码数据，忽略分组名称和其他字段
+     * @param filePath JSON文件路径
+     * @return 解析后的Passwd对象列表
+     */
+    fun importFromJsonFile(filePath: String): Map<String, List<Passwd>> {
+        val jsonString = File(filePath).readText()
+        return importFromJsonString(jsonString)
     }
 }

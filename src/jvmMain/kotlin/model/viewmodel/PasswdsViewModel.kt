@@ -1,14 +1,20 @@
 package model.viewmodel
 
-import com.google.gson.Gson
 import entity.Group
 import entity.IDragAndDrop
 import entity.Passwd
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import model.UiScreen
 import model.UiScreens
 import model.action.PasswdAction
@@ -125,7 +131,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         passwdRepository.newGroup(groupName, groupComment)
             .onSuccess {
                 updateDialogUiState { copy(effect = DialogUiEffect.NewGroupResult(it)) }
-                updateGroupUiState { copy(selectGroup = passwdUiState.value.groups.last(), selectPasswd = null) }
+                updateGroupUiState { copy(selectGroup = passwdUiState.value.groups.lastOrNull(), selectPasswd = null) }
             }.onFailure {
                 // TODO: 新增失败的情况 tips 提示
                 updateDialogUiState { copy(effect = DialogUiEffect.NewGroupResult(null)) }
@@ -270,8 +276,43 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
                 is PasswdAction.SearchPasswds -> _searchFlow.tryEmit(content)
 
                 is PasswdAction.ExportPasswdsToFile -> launch {
-                    val json = Gson().toJson(passwdRepository.getAllGroupsWithPasswds())
-                    FileUtils.exportDataToFile(filePath, json)
+                    FileUtils.exportDataToFile(
+                        filePath = filePath,
+                        data = Json.encodeToString(passwdRepository.getAllGroupsWithPasswds())
+                    )
+                }
+
+                is PasswdAction.ImportPasswdsFromFile -> launch {
+                    val finalPasswds = mutableListOf<Passwd>()
+                    val groupsPasswds = FileUtils.importFromJsonFile(filePath)
+                    for (entry in groupsPasswds.iterator()) {
+                        try {
+                            val newGroup = passwdRepository.newGroup2(entry.key, "")
+                            println("INSERT Group: {$newGroup}")
+                            entry.value.forEach { passwd -> passwd.groupId = newGroup.id }
+                            finalPasswds.addAll(entry.value)
+                            updateDialogUiState { copy(effect = DialogUiEffect.NewGroupResult(newGroup)) }
+                            updateGroupUiState { copy(selectGroup = passwdUiState.value.groups.lastOrNull(), selectPasswd = null) }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                    for (passwd in finalPasswds) {
+                        passwdRepository.newPasswd(
+                            groupId = passwd.groupId,
+                            title = passwd.title ?: "",
+                            usernameString = passwd.usernameString ?: "",
+                            passwordString = passwd.passwordString ?: "",
+                            link = passwd.link ?: "",
+                            comment = passwd.comment ?: "",
+                        ).onSuccess {
+                            println("INSERT Passwd: {$it}")
+                            updateDialogUiState { copy(effect = DialogUiEffect.NewPasswdResult(it)) }
+                            updateGroupUiState { copy(selectPasswd = it) }
+                        }.onFailure {
+                            it.printStackTrace()
+                        }
+                    }
                 }
 
                 is PasswdAction.UpdateEditEnabled -> _passwdUiState.update { it.copy(editEnabled = editEnabled) }

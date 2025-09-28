@@ -65,6 +65,20 @@ fun DecoratedWindowScope.TitleBarView(
         )
     }
 
+    var fileImportOpen by remember { mutableStateOf(false) }
+    if (fileImportOpen) {
+        println("fileImportOpen")
+        SaveFileDialog(
+            saveFile = false,
+            allowedExtensions = listOf(".json"),
+            onCloseRequest = {
+                fileImportOpen = false
+                println("Result $it")
+                it?.let { passwdsViewModel.onAction(PasswdAction.ImportPasswdsFromFile(it)) }
+            }
+        )
+    }
+
     TitleBar(
         modifier = Modifier.newFullscreenControls(),
         gradientStartColor = if (theme.isDark) {
@@ -87,7 +101,14 @@ fun DecoratedWindowScope.TitleBarView(
                         selected = false,
                         onClick = { fileChooserOpen = true },
                     ) {
-                        ExportPasswdsFileIcon()
+                        ExportPasswdsFileIcon(text = "Export data to file", desc = "Export data to file")
+                    }
+
+                    selectableItem(
+                        selected = false,
+                        onClick = { fileImportOpen = true },
+                    ) {
+                        ExportPasswdsFileIcon(text = "Import data from file", desc = "Import data from file")
                     }
                 }
             ) {
@@ -154,7 +175,7 @@ fun DecoratedWindowScope.TitleBarView(
 }
 
 @Composable
-private fun ExportPasswdsFileIcon() {
+private fun ExportPasswdsFileIcon(text: String, desc: String) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -162,10 +183,10 @@ private fun ExportPasswdsFileIcon() {
         Icon(
             modifier = Modifier.size(20.dp),
             imageVector = Icons.Default.SaveAs,
-            contentDescription = "save data to disk",
+            contentDescription = desc,
             tint = MaterialTheme.colorScheme.onPrimaryContainer
         )
-        Text("save data to disk")
+        Text(text)
     }
 }
 
@@ -203,13 +224,14 @@ fun TitleBarColors.Companion.customLight(
 
 @Composable
 fun SaveFileDialog(
+    saveFile: Boolean = true,
     parent: Frame? = null,
     allowedExtensions: List<String>,
     allowMultiSelection: Boolean = false,
     onCloseRequest: (result: String?) -> Unit
 ) = AwtWindow(
     create = {
-        object : FileDialog(parent, "Choose a file", SAVE) {
+        object : FileDialog(parent, "Choose a file", if (saveFile) SAVE else LOAD) {
             override fun setVisible(value: Boolean) {
                 super.setVisible(value)
                 if (value) {

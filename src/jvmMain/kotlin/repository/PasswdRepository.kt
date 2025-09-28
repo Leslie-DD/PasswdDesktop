@@ -72,6 +72,30 @@ object PasswdRepository {
         return result
     }
 
+    suspend fun newGroup2(
+        groupName: String,
+        groupComment: String,
+    ): Group {
+        val result = passwdRemoteDataSource.newGroup(
+            groupName = groupName,
+            groupComment = groupComment
+        )
+
+        if (result.isFailure) {
+            throw Throwable()
+        }
+
+        val newGroup = Group(
+            id = result.getOrDefault(-1),
+            userId = UserMemoryDataSource.globalUserId.value,
+            groupName = groupName,
+            groupComment = groupComment
+        )
+        passwdDataBaDataSource.updateOrInsertGroupIfNotExist(newGroup)
+        passwdMemoryDataSource.newGroup(newGroup)
+        return newGroup
+    }
+
     suspend fun deleteGroup(
         groupId: Int
     ): Result<Group> {

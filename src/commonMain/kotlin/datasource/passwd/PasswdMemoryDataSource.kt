@@ -43,12 +43,10 @@ object PasswdMemoryDataSource {
 
     suspend fun newGroup(newGroup: Group) {
         passwdsMap[newGroup.id] = mutableListOf()
-//        val groupList = groups.value.toMutableList().apply {
-//            add(newGroup)
-//        }
-//        emitGroups(groupList)
-        groups.value.add(newGroup)
-        emitGroups(groups.value)
+        val groupList = groups.value.toMutableList().apply {
+            add(newGroup)
+        }
+        emitGroups(groupList)
         emitGroupPasswds(arrayListOf())
     }
 

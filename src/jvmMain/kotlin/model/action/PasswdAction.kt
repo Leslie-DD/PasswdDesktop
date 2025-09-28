@@ -39,6 +39,8 @@ sealed class PasswdAction {
 
     class ExportPasswdsToFile(val filePath: String) : PasswdAction()
 
+    class ImportPasswdsFromFile(val filePath: String) : PasswdAction()
+
     class UpdateEditEnabled(val editEnabled: Boolean) : PasswdAction()
 
 }
