@@ -239,7 +239,7 @@ fun PasswdItem(
             Spacer(modifier = Modifier.weight(0.1f))
             Text(
                 text = passwd.title ?: "",
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -247,7 +247,7 @@ fun PasswdItem(
             if (!passwd.usernameString.isNullOrBlank()) {
                 Text(
                     text = passwd.usernameString!!,
-                    fontSize = 13.sp,
+                    fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     color = if (isSelected) {
