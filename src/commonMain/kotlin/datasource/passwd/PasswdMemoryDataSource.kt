@@ -66,7 +66,7 @@ object PasswdMemoryDataSource {
     suspend fun updateGroup(
         updateGroup: Group
     ) {
-        val originGroups = groups.value
+        val originGroups = groups.value.toMutableList()
         originGroups.find { group: Group -> group.id == updateGroup.id }?.let {
             it.groupName = updateGroup.groupName
             it.groupComment = updateGroup.groupComment

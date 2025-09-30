@@ -1,10 +1,10 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization") version "1.8.10"
-    id("org.jetbrains.compose")
-    id("app.cash.sqldelight") version "2.0.0-alpha05"
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.compose)
+    alias(libs.plugins.sqldelight)
 }
 
 repositories {
@@ -28,12 +28,12 @@ sqldelight {
 }
 
 kotlin {
-    jvm {
-        jvmToolchain(17)
-        withJava()
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(17)) // Or your desired Java version
     }
+
     sourceSets {
-        val jvmMain by getting {
+        jvm().compilations["main"].defaultSourceSet {
             @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
             dependencies {
                 implementation(compose.desktop.currentOs)
@@ -51,7 +51,6 @@ kotlin {
                 implementation(libs.jewel.init.ui.decorated.window)
             }
         }
-        val jvmTest by getting
 
         dependencies {
             commonMainImplementation(libs.ktor.client.core)
