@@ -1,6 +1,5 @@
 package model
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShieldMoon
 import androidx.compose.material.icons.filled.WbAuto
@@ -62,7 +61,7 @@ sealed interface Theme {
         override val isLight
             @Composable get() = !isDark
         override val isDark
-            @Composable get() = isSystemInDarkTheme() || dark
+            @Composable get() = dark
 
         override val name = "Sync OS"
 
