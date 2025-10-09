@@ -26,6 +26,8 @@ import com.mohamedrejeb.compose.dnd.annotation.ExperimentalDndApi
 import com.mohamedrejeb.compose.dnd.drop.dropTarget
 import com.mohamedrejeb.compose.dnd.reorder.ReorderState
 import com.mohamedrejeb.compose.dnd.reorder.ReorderableItem
+import datasource.sys.OS
+import datasource.sys.getOperatingSystem
 import entity.IDragAndDrop
 import entity.Passwd
 import kotlinx.coroutines.CoroutineScope
@@ -267,7 +269,6 @@ private fun SearchBox(
     passwdsViewModel: PasswdsViewModel,
     uiConfigViewModel: UiConfigViewModel
 ) {
-    val searchFocus by uiConfigViewModel.searchFocus.collectAsState()
     CustomOutlinedTextField(
         requestFocus = true,
         onFocusChanged = {
@@ -275,18 +276,7 @@ private fun SearchBox(
                 uiConfigViewModel.onAction(UiAction.FocusOnSearch(true))
             }
         },
-        modifier = Modifier.height(32.dp).fillMaxWidth().onPreviewKeyEvent {
-            when {
-                (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyDown) -> {
-                    if (searchFocus) {
-                        uiConfigViewModel.onAction(UiAction.FocusOnSearch(false))
-                    }
-                    true
-                }
-
-                else -> false
-            }
-        },
+        modifier = Modifier.height(32.dp).fillMaxWidth(),
         leadingIcon = {
             Icon(
                 modifier = Modifier.size(20.dp),

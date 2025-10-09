@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.painterResource
@@ -19,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Tray
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import datasource.sys.OS
+import datasource.sys.getOperatingSystem
 import model.Res
 import model.UiScreen
 import model.action.UiAction
@@ -47,15 +50,19 @@ fun main() = application {
 
     val theme by uiConfigViewModel.theme.collectAsState()
     val windowUiState by passwdsViewModel.windowUiState.collectAsState()
+    val windowVisible by uiConfigViewModel.windowVisible.collectAsState()
 
     Tray(
         icon = painterResource(Res.Drawable.APP_ICON_ROUND_CORNER),
         onAction = { uiConfigViewModel.onAction(UiAction.WindowVisible(true)) },
-        tooltip = "双击(windows)\\右击(mac)打开密码管理器",
+        tooltip = if (getOperatingSystem() == OS.MAC_OS) "点击显示更多" else "双击打开应用",
     ) {
-        Item("Open Window", onClick = { uiConfigViewModel.onAction(UiAction.WindowVisible(true)) })
+        Item(
+            text = if (windowVisible) "Hide window" else "Show window",
+            onClick = { uiConfigViewModel.onAction(UiAction.WindowVisible(!windowVisible)) }
+        )
         Separator()
-        Item("Exit App", onClick = ::exitApplication)
+        Item("Exit", onClick = ::exitApplication)
     }
 
     IntUiTheme(
@@ -73,7 +80,6 @@ fun main() = application {
         ),
         swingCompatMode = false
     ) {
-        val windowVisible by uiConfigViewModel.windowVisible.collectAsState()
         DecoratedWindow(
             onCloseRequest = { uiConfigViewModel.onAction(UiAction.WindowVisible(false)) },
             visible = windowVisible,
@@ -82,8 +88,27 @@ fun main() = application {
             onKeyEvent = {
                 when {
                     (it.isCtrlPressed && it.key == Key.F && it.type == KeyEventType.KeyDown) -> {
-                        uiConfigViewModel.onAction(UiAction.FocusOnSearch(!uiConfigViewModel.searchFocus.value))
-                        true
+                        if (getOperatingSystem() != OS.MAC_OS) {
+                            uiConfigViewModel.onAction(UiAction.FocusOnSearch(!uiConfigViewModel.searchFocus.value))
+                            true
+                        }
+                        false
+                    }
+
+                    (it.isMetaPressed && it.key == Key.F && it.type == KeyEventType.KeyDown) -> {
+                        if (getOperatingSystem() == OS.MAC_OS) {
+                            uiConfigViewModel.onAction(UiAction.FocusOnSearch(!uiConfigViewModel.searchFocus.value))
+                            true
+                        }
+                        false
+                    }
+
+                    (it.isMetaPressed && it.key == Key.W && it.type == KeyEventType.KeyDown) -> {
+                        if (getOperatingSystem() == OS.MAC_OS) {
+                            uiConfigViewModel.onAction(UiAction.WindowVisible(false))
+                            true
+                        }
+                        false
                     }
 
                     else -> false
@@ -105,7 +130,9 @@ fun main() = application {
                     TitleBarView(uiConfigViewModel, passwdsViewModel)
                 }
 
-                Surface(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary)) {
+                Surface(
+                    modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary)
+                ) {
                     Column(modifier = Modifier.fillMaxSize()) {
                         App(
                             userViewModel = userViewModel,
