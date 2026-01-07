@@ -63,15 +63,15 @@ object PasswdMemoryDataSource {
         return deleteGroup
     }
 
-    suspend fun updateGroup(
-        updateGroup: Group
-    ) {
-        val originGroups = groups.value.toMutableList()
-        originGroups.find { group: Group -> group.id == updateGroup.id }?.let {
-            it.groupName = updateGroup.groupName
-            it.groupComment = updateGroup.groupComment
+    suspend fun updateGroup(updateGroup: Group) {
+        val updatedGroups = groups.value.map { group ->
+            if (group.id == updateGroup.id) {
+                updateGroup
+            } else {
+                group
+            }
         }
-        emitGroups(originGroups)
+        emitGroups(updatedGroups.toMutableList())
     }
 
     suspend fun newPasswd(newPasswd: Passwd) {

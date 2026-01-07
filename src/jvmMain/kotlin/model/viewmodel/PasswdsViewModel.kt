@@ -97,18 +97,16 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
         }
     }
 
-    private fun collectSignupResult() {
-        launch {
-            userRepository.signResultStateFlow.filterNotNull().collectLatest {
-                it.onSuccess { signupResult ->
-                    if (signupResult == null) {
-                        return@onSuccess
-                    }
-                    updateDialogUiState { copy(effect = DialogUiEffect.SignupResult(signupResult.secretKey)) }
-                }.onFailure {
-                    updateDialogUiState { copy(effect = DialogUiEffect.LoginAndSignupFailure(it.message)) }
-                    updateWindowUiState { copy(uiScreen = UiScreen.Signup, uiScreens = UiScreen.LoginAndSignup) }
+    private fun collectSignupResult() = launch {
+        userRepository.signResultStateFlow.filterNotNull().collectLatest {
+            it.onSuccess { signupResult ->
+                if (signupResult == null) {
+                    return@onSuccess
                 }
+                updateDialogUiState { copy(effect = DialogUiEffect.SignupResult(signupResult.secretKey)) }
+            }.onFailure {
+                updateDialogUiState { copy(effect = DialogUiEffect.LoginAndSignupFailure(it.message)) }
+                updateWindowUiState { copy(uiScreen = UiScreen.Signup, uiScreens = UiScreen.LoginAndSignup) }
             }
         }
     }
@@ -156,6 +154,7 @@ class PasswdsViewModel : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     ) = launch {
         passwdRepository.updateGroup(groupId, groupName, groupComment)
             .onSuccess {
+//                updateGroupUiState { copy(selectGroup = it) }
                 updateDialogUiState { copy(effect = DialogUiEffect.UpdateGroupResult(it)) }
             }.onFailure {
                 // TODO: 更新失败的情况 tips 提示
